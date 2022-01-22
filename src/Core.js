@@ -141,6 +141,24 @@ export default class Core {
 	}
 
 	/**
+	 * Add an event listener.
+	 * @param {string} event
+	 * @param {any} callback
+	 */
+	on(event, callback) {
+		E.on(event, callback)
+	}
+
+	/**
+	 * Remove an event listener.
+	 * @param {string} event
+	 * @param {any} callback
+	 */
+	off(event, callback) {
+		E.off(event, callback)
+	}
+
+	/**
 	 * @private
 	 * @param {{ raw: string, href: string, hasHash: boolean, pathname: string }} url
 	 * @param {Transition} TransitionClass
@@ -150,7 +168,6 @@ export default class Core {
 	beforeFetch(url, TransitionClass, trigger) {
 		this.isTransitioning = true
 
-		console.log('NAVIGATE_OUT')
 		E.emit('NAVIGATE_OUT', {
 			from: this.currentView,
 			trigger
@@ -184,7 +201,6 @@ export default class Core {
 
 		this.currentLocation = url
 
-		console.log('NAVIGATE_IN')
 		E.emit('NAVIGATE_IN', {
 			from: this.currentView,
 			to: entry,
@@ -198,8 +214,7 @@ export default class Core {
 
 			entry.view.enter(TransitionClass, trigger)
 				.then(() => {
-					console.log('NAVIGATE_COMPLETE', this.cache)
-					E.emit('NAVIGATE_COMPLETE', {
+					E.emit('NAVIGATE_END', {
 						from: this.currentView,
 						to: entry,
 						trigger

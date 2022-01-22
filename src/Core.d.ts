@@ -67,6 +67,18 @@ export default class Core {
         pathname: string;
     };
     /**
+     * Add an event listener.
+     * @param {string} event
+     * @param {any} callback
+     */
+    on(event: string, callback: any): void;
+    /**
+     * Remove an event listener.
+     * @param {string} event
+     * @param {any} callback
+     */
+    off(event: string, callback: any): void;
+    /**
      * @private
      * @param {{ raw: string, href: string, hasHash: boolean, pathname: string }} url
      * @param {Transition} TransitionClass
