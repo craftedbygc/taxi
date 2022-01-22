@@ -1,0 +1,41 @@
+{
+	"name": "@unseenco/taxi",
+	"type":"module",
+	"description": "A modern page transition library which supports routing, preloading, and additional script reloading.",
+	"version": "0.1.4",
+	"license": "GPL-3.0-or-later",
+	"source": "src/taxi.js",
+	"main": "src/taxi.js",
+	"module": "./dist/taxi.js",
+	"umd:main": "./dist/taxi.umd.js",
+	"types": "./dist/taxi.d.ts",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/craftedbygc/taxi.git"
+	},
+	"bugs": {
+		"url": "https://github.com/craftedbygc/taxi/issues"
+	},
+	"homepage": "https://github.com/craftedbygc/taxi#readme",
+	"contributors": [
+		{
+			"name": "Jake Whiteley",
+			"email": "jake@craftedbygc.com"
+		}
+	],
+	"dependencies": {
+		"@unseenco/e": "^2.1.0"
+	},
+	"devDependencies": {
+		"browser-sync": "^2.27.7",
+		"browser-sync-webpack-plugin": "^2.3.0",
+		"laravel-mix": "^6.0.41",
+		"microbundle": "^0.14.2",
+		"typescript": "^4.5.5"
+	},
+	"scripts": {
+		"build": "microbundle",
+		"start": "npx mix watch",
+		"ts": "tsc"
+	}
+}

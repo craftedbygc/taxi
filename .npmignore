@@ -1,0 +1,5 @@
+tests
+.idea/
+node_modules/
+*.mix.js
+vanilla.js
