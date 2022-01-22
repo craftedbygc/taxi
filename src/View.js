@@ -8,10 +8,11 @@ export default class View {
 	 * @param {{content: HTMLElement|Element, page: Document|Node, title: string, wrapper: Element}} props
 	 */
 	constructor({ content, page, title, wrapper }) {
-		this.content = content
+		this._contentString = content.outerHTML
 		this.page = page
 		this.title = title
 		this.wrapper = wrapper
+		this.content = this.wrapper.lastElementChild
 	}
 
 	onEnter() {
@@ -37,7 +38,8 @@ export default class View {
 
 	update() {
 		document.title = this.title
-		this.wrapper.insertAdjacentHTML('beforeend', this.content.outerHTML)
+		this.wrapper.insertAdjacentHTML('beforeend', this._contentString)
+		this.content = this.wrapper.lastElementChild
 	}
 
 	remove() {

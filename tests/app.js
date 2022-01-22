@@ -1,5 +1,5 @@
 import E from '@unseenco/e'
-import { Core } from '../src'
+import { Core } from '../src/taxi'
 import DefaultView from "./views/Default"
 import DefaultTransition from "./transitions/DefaultTransition"
 import OverrideTransition from "./transitions/OverrideTransition"

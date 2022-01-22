@@ -1,4 +1,4 @@
-import { Transition } from '../../src'
+import { Transition } from '../../src/taxi'
 
 export default class OverrideTransition extends Transition {
 	onLeave({ from, trigger, done }) {

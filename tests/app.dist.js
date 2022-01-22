@@ -36,7 +36,7 @@ class E {
      * Binds all provided methods to a provided context.
      *
      * @param {object} context
-     * @param {array<string>} [methods] Optional.
+     * @param {string[]} [methods] Optional.
      */
     bindAll(context, methods) {
         if (!methods) {
@@ -169,7 +169,7 @@ class E {
      * Emit a DOM or Bus event.
      *
      * @param {string} event
-     * @param {...*} [args]
+     * @param {...*} args
      */
     emit(event, ...args) {
         (0,_utils__WEBPACK_IMPORTED_MODULE_1__.triggerBus)(event, args)
@@ -351,145 +351,22 @@ function clone(object) {
 
 /***/ }),
 
-/***/ "./src/RouteStore.js":
-/*!***************************!*\
-  !*** ./src/RouteStore.js ***!
-  \***************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ RouteStore)
-/* harmony export */ });
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
-
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"]; if (_i == null) return; var _arr = []; var _n = true; var _d = false; var _s, _e; try { for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
-
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-var RouteStore = /*#__PURE__*/function () {
-  function RouteStore() {
-    _classCallCheck(this, RouteStore);
-
-    _defineProperty(this, "data", new Map());
-
-    _defineProperty(this, "regexCache", new Map());
-  }
-
-  _createClass(RouteStore, [{
-    key: "add",
-    value:
-    /**
-     *
-     * @param {string} fromPattern
-     * @param {string} toPattern
-     * @param {string} transition
-     */
-    function add(fromPattern, toPattern, transition) {
-      if (!this.data.has(fromPattern)) {
-        this.data.set(fromPattern, new Map());
-        this.regexCache.set(fromPattern, new RegExp("^".concat(fromPattern, "$")));
-      }
-
-      this.data.get(fromPattern).set(toPattern, transition);
-      this.regexCache.set(toPattern, new RegExp("^".concat(toPattern, "$")));
-    }
-    /**
-     *
-     * @param {{ raw: string, href: string, hasHash: boolean, pathname: string }} currentUrl
-     * @param {{ raw: string, href: string, hasHash: boolean, pathname: string }} nextUrl
-     * @return {string|null}
-     */
-
-  }, {
-    key: "findMatch",
-    value: function findMatch(currentUrl, nextUrl) {
-      // Loop through all from patterns
-      var _iterator = _createForOfIteratorHelper(this.data),
-          _step;
-
-      try {
-        for (_iterator.s(); !(_step = _iterator.n()).done;) {
-          var _step$value = _slicedToArray(_step.value, 2),
-              fromPattern = _step$value[0],
-              potentialMatches = _step$value[1];
-
-          // If we have a match
-          if (currentUrl.pathname.match(this.regexCache.get(fromPattern))) {
-            // loop through all associated to patterns
-            var _iterator2 = _createForOfIteratorHelper(potentialMatches),
-                _step2;
-
-            try {
-              for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-                var _step2$value = _slicedToArray(_step2.value, 2),
-                    toPattern = _step2$value[0],
-                    transition = _step2$value[1];
-
-                // If we find a match, return it
-                if (nextUrl.pathname.match(this.regexCache.get(toPattern))) {
-                  return transition;
-                }
-              }
-            } catch (err) {
-              _iterator2.e(err);
-            } finally {
-              _iterator2.f();
-            }
-
-            break;
-          }
-        }
-      } catch (err) {
-        _iterator.e(err);
-      } finally {
-        _iterator.f();
-      }
-
-      return null;
-    }
-  }]);
-
-  return RouteStore;
-}();
-
-
-
-/***/ }),
-
-/***/ "./src/Taxi.js":
+/***/ "./src/Core.js":
 /*!*********************!*\
-  !*** ./src/Taxi.js ***!
+  !*** ./src/Core.js ***!
   \*********************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ Taxi)
+/* harmony export */   "default": () => (/* binding */ Core)
 /* harmony export */ });
 /* harmony import */ var _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/regenerator */ "./node_modules/@babel/runtime/regenerator/index.js");
 /* harmony import */ var _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _unseenco_e__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @unseenco/e */ "./node_modules/@unseenco/e/src/e.js");
 /* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./helpers */ "./src/helpers.js");
-/* harmony import */ var _index__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./index */ "./src/index.js");
+/* harmony import */ var _taxi__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./taxi */ "./src/taxi.js");
 /* harmony import */ var _RouteStore__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./RouteStore */ "./src/RouteStore.js");
 function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
@@ -533,7 +410,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  * @property {HTMLElement|Element} content
  */
 
-var Taxi = /*#__PURE__*/function () {
+var Core = /*#__PURE__*/function () {
   /**
    * @type {CacheEntry|null}
    */
@@ -548,12 +425,12 @@ var Taxi = /*#__PURE__*/function () {
    * @param {Object.<string, Transition>} [parameters.transitions] All Transitions for the application
    * @param {function(node: HTMLElement)} [parameters.reloadJsFilter]
    */
-  function Taxi() {
+  function Core() {
     var _this = this;
 
     var parameters = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-    _classCallCheck(this, Taxi);
+    _classCallCheck(this, Core);
 
     _defineProperty(this, "isTransitioning", false);
 
@@ -601,11 +478,11 @@ var Taxi = /*#__PURE__*/function () {
         links = _parameters$links === void 0 ? 'a:not([target]):not([href^=\\#]):not([data-taxi-ignore])' : _parameters$links,
         _parameters$views = parameters.views,
         views = _parameters$views === void 0 ? {
-      "default": _index__WEBPACK_IMPORTED_MODULE_3__.View
+      "default": _taxi__WEBPACK_IMPORTED_MODULE_3__.View
     } : _parameters$views,
         _parameters$transitio = parameters.transitions,
         transitions = _parameters$transitio === void 0 ? {
-      "default": _index__WEBPACK_IMPORTED_MODULE_3__.Transition
+      "default": _taxi__WEBPACK_IMPORTED_MODULE_3__.Transition
     } : _parameters$transitio,
         _parameters$reloadJsF = parameters.reloadJsFilter,
         reloadJsFilter = _parameters$reloadJsF === void 0 ? function (node) {
@@ -613,8 +490,8 @@ var Taxi = /*#__PURE__*/function () {
     } : _parameters$reloadJsF;
     this.views = views;
     this.transitions = transitions;
-    this.defaultView = this.views["default"] || _index__WEBPACK_IMPORTED_MODULE_3__.View;
-    this.defaultTransition = this.transitions["default"] || _index__WEBPACK_IMPORTED_MODULE_3__.Transition;
+    this.defaultView = this.views["default"] || _taxi__WEBPACK_IMPORTED_MODULE_3__.View;
+    this.defaultTransition = this.transitions["default"] || _taxi__WEBPACK_IMPORTED_MODULE_3__.Transition;
     this.wrapper = document.querySelector('[data-taxi]');
     this.reloadJsFilter = reloadJsFilter;
     this.cache = new Map(); // Add delegated link events
@@ -632,7 +509,7 @@ var Taxi = /*#__PURE__*/function () {
    */
 
 
-  _createClass(Taxi, [{
+  _createClass(Core, [{
     key: "setDefaultView",
     value: function setDefaultView(view) {
       this.defaultView = this.views[view];
@@ -659,7 +536,7 @@ var Taxi = /*#__PURE__*/function () {
      * Prime the cache for a given URL
      *
      * @param {string} url
-     * @return {Taxi}
+     * @return {Core}
      */
 
   }, {
@@ -775,6 +652,28 @@ var Taxi = /*#__PURE__*/function () {
       });
     }
     /**
+     * Add an event listener.
+     * @param {string} event
+     * @param {any} callback
+     */
+
+  }, {
+    key: "on",
+    value: function on(event, callback) {
+      _unseenco_e__WEBPACK_IMPORTED_MODULE_1__["default"].on(event, callback);
+    }
+    /**
+     * Remove an event listener.
+     * @param {string} event
+     * @param {any} callback
+     */
+
+  }, {
+    key: "off",
+    value: function off(event, callback) {
+      _unseenco_e__WEBPACK_IMPORTED_MODULE_1__["default"].off(event, callback);
+    }
+    /**
      * @private
      * @param {{ raw: string, href: string, hasHash: boolean, pathname: string }} url
      * @param {Transition} TransitionClass
@@ -788,7 +687,6 @@ var Taxi = /*#__PURE__*/function () {
       var _this4 = this;
 
       this.isTransitioning = true;
-      console.log('NAVIGATE_OUT');
       _unseenco_e__WEBPACK_IMPORTED_MODULE_1__["default"].emit('NAVIGATE_OUT', {
         from: this.currentView,
         trigger: trigger
@@ -823,7 +721,6 @@ var Taxi = /*#__PURE__*/function () {
       }
 
       this.currentLocation = url;
-      console.log('NAVIGATE_IN');
       _unseenco_e__WEBPACK_IMPORTED_MODULE_1__["default"].emit('NAVIGATE_IN', {
         from: this.currentView,
         to: entry,
@@ -835,8 +732,7 @@ var Taxi = /*#__PURE__*/function () {
         _this5.loadScripts(entry.scripts);
 
         entry.view.enter(TransitionClass, trigger).then(function () {
-          console.log('NAVIGATE_COMPLETE', _this5.cache);
-          _unseenco_e__WEBPACK_IMPORTED_MODULE_1__["default"].emit('NAVIGATE_COMPLETE', {
+          _unseenco_e__WEBPACK_IMPORTED_MODULE_1__["default"].emit('NAVIGATE_END', {
             from: _this5.currentView,
             to: entry,
             trigger: trigger
@@ -992,7 +888,130 @@ var Taxi = /*#__PURE__*/function () {
     }
   }]);
 
-  return Taxi;
+  return Core;
+}();
+
+
+
+/***/ }),
+
+/***/ "./src/RouteStore.js":
+/*!***************************!*\
+  !*** ./src/RouteStore.js ***!
+  \***************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ RouteStore)
+/* harmony export */ });
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"]; if (_i == null) return; var _arr = []; var _n = true; var _d = false; var _s, _e; try { for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var RouteStore = /*#__PURE__*/function () {
+  function RouteStore() {
+    _classCallCheck(this, RouteStore);
+
+    _defineProperty(this, "data", new Map());
+
+    _defineProperty(this, "regexCache", new Map());
+  }
+
+  _createClass(RouteStore, [{
+    key: "add",
+    value:
+    /**
+     *
+     * @param {string} fromPattern
+     * @param {string} toPattern
+     * @param {string} transition
+     */
+    function add(fromPattern, toPattern, transition) {
+      if (!this.data.has(fromPattern)) {
+        this.data.set(fromPattern, new Map());
+        this.regexCache.set(fromPattern, new RegExp("^".concat(fromPattern, "$")));
+      }
+
+      this.data.get(fromPattern).set(toPattern, transition);
+      this.regexCache.set(toPattern, new RegExp("^".concat(toPattern, "$")));
+    }
+    /**
+     *
+     * @param {{ raw: string, href: string, hasHash: boolean, pathname: string }} currentUrl
+     * @param {{ raw: string, href: string, hasHash: boolean, pathname: string }} nextUrl
+     * @return {string|null}
+     */
+
+  }, {
+    key: "findMatch",
+    value: function findMatch(currentUrl, nextUrl) {
+      // Loop through all from patterns
+      var _iterator = _createForOfIteratorHelper(this.data),
+          _step;
+
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var _step$value = _slicedToArray(_step.value, 2),
+              fromPattern = _step$value[0],
+              potentialMatches = _step$value[1];
+
+          // If we have a match
+          if (currentUrl.pathname.match(this.regexCache.get(fromPattern))) {
+            // loop through all associated to patterns
+            var _iterator2 = _createForOfIteratorHelper(potentialMatches),
+                _step2;
+
+            try {
+              for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+                var _step2$value = _slicedToArray(_step2.value, 2),
+                    toPattern = _step2$value[0],
+                    transition = _step2$value[1];
+
+                // If we find a match, return it
+                if (nextUrl.pathname.match(this.regexCache.get(toPattern))) {
+                  return transition;
+                }
+              }
+            } catch (err) {
+              _iterator2.e(err);
+            } finally {
+              _iterator2.f();
+            }
+
+            break;
+          }
+        }
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
+      }
+
+      return null;
+    }
+  }]);
+
+  return RouteStore;
 }();
 
 
@@ -1023,6 +1042,9 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
 
 var Transition = /*#__PURE__*/function () {
+  /**
+   * @param {{wrapper: HTMLElement}} props
+   */
   function Transition(_ref) {
     var wrapper = _ref.wrapper;
 
@@ -1065,10 +1087,7 @@ var Transition = /*#__PURE__*/function () {
     }
     /**
      * Handle the transition leaving the previous page.
-     *
-     * @param {HTMLElement} from The previous page's content
-     * @param {string|HTMLElement|false} trigger The navigation trigger
-     * @param {function} done
+     * @param {{from: HTMLElement, trigger: string|HTMLElement|false, done: function}} props
      */
 
   }, {
@@ -1081,10 +1100,7 @@ var Transition = /*#__PURE__*/function () {
     }
     /**
      * Handle the transition entering the next page.
-     *
-     * @param {HTMLElement} to The next page's content
-     * @param {string|HTMLElement|false} trigger The navigation trigger
-     * @param {function} done
+     * @param {{to: HTMLElement, trigger: string|HTMLElement|false, done: function}} props
      */
 
   }, {
@@ -1115,21 +1131,21 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ View)
 /* harmony export */ });
+/* harmony import */ var _Transition__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Transition */ "./src/Transition.js");
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
 
+
 /**
  * @module Taxi/View
  */
+
 var View = /*#__PURE__*/function () {
   /**
-   * @param {HTMLElement|Element} content
-   * @param {Document|Node} page
-   * @param {string} title
-   * @param {Element} wrapper
+   * @param {{content: HTMLElement|Element, page: Document|Node, title: string, wrapper: Element}} props
    */
   function View(_ref) {
     var content = _ref.content,
@@ -1139,10 +1155,11 @@ var View = /*#__PURE__*/function () {
 
     _classCallCheck(this, View);
 
-    this.content = content;
+    this.contentString = content.outerHTML;
     this.page = page;
     this.title = title;
     this.wrapper = wrapper;
+    this.content = this.wrapper.lastElementChild;
   }
 
   _createClass(View, [{
@@ -1167,7 +1184,8 @@ var View = /*#__PURE__*/function () {
     key: "update",
     value: function update() {
       document.title = this.title;
-      this.wrapper.insertAdjacentHTML('beforeend', this.content.outerHTML);
+      this.wrapper.insertAdjacentHTML('beforeend', this.contentString);
+      this.content = this.wrapper.lastElementChild;
     }
   }, {
     key: "remove",
@@ -1327,20 +1345,20 @@ function duplicateScript(node) {
 
 /***/ }),
 
-/***/ "./src/index.js":
-/*!**********************!*\
-  !*** ./src/index.js ***!
-  \**********************/
+/***/ "./src/taxi.js":
+/*!*********************!*\
+  !*** ./src/taxi.js ***!
+  \*********************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "Taxi": () => (/* reexport safe */ _Taxi__WEBPACK_IMPORTED_MODULE_0__["default"]),
+/* harmony export */   "Core": () => (/* reexport safe */ _Core__WEBPACK_IMPORTED_MODULE_0__["default"]),
 /* harmony export */   "View": () => (/* reexport safe */ _View__WEBPACK_IMPORTED_MODULE_1__["default"]),
 /* harmony export */   "Transition": () => (/* reexport safe */ _Transition__WEBPACK_IMPORTED_MODULE_2__["default"])
 /* harmony export */ });
-/* harmony import */ var _Taxi__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Taxi */ "./src/Taxi.js");
+/* harmony import */ var _Core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Core */ "./src/Core.js");
 /* harmony import */ var _View__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./View */ "./src/View.js");
 /* harmony import */ var _Transition__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Transition */ "./src/Transition.js");
 
@@ -1361,7 +1379,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ DefaultTransition)
 /* harmony export */ });
-/* harmony import */ var _src__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../src */ "./src/index.js");
+/* harmony import */ var _src_taxi__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../src/taxi */ "./src/taxi.js");
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -1418,7 +1436,7 @@ var DefaultTransition = /*#__PURE__*/function (_Transition) {
   }]);
 
   return DefaultTransition;
-}(_src__WEBPACK_IMPORTED_MODULE_0__.Transition);
+}(_src_taxi__WEBPACK_IMPORTED_MODULE_0__.Transition);
 
 
 
@@ -1435,7 +1453,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ OverrideTransition)
 /* harmony export */ });
-/* harmony import */ var _src__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../src */ "./src/index.js");
+/* harmony import */ var _src_taxi__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../src/taxi */ "./src/taxi.js");
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -1493,7 +1511,7 @@ var OverrideTransition = /*#__PURE__*/function (_Transition) {
   }]);
 
   return OverrideTransition;
-}(_src__WEBPACK_IMPORTED_MODULE_0__.Transition);
+}(_src_taxi__WEBPACK_IMPORTED_MODULE_0__.Transition);
 
 
 
@@ -1510,7 +1528,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ DefaultView)
 /* harmony export */ });
-/* harmony import */ var _src__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../src */ "./src/index.js");
+/* harmony import */ var _src_taxi__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../src/taxi */ "./src/taxi.js");
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -1549,27 +1567,27 @@ var DefaultView = /*#__PURE__*/function (_View) {
   _createClass(DefaultView, [{
     key: "onEnter",
     value: function onEnter() {
-      console.log('view on enter', this.page);
+      console.log('view on enter', this.content);
     }
   }, {
     key: "onEnterCompleted",
     value: function onEnterCompleted() {
-      console.log('view on enter completed');
+      console.log('view on enter completed', this.content);
     }
   }, {
     key: "onLeave",
     value: function onLeave() {
-      console.log('view on leave');
+      console.log('view on leave', this.content);
     }
   }, {
     key: "onLeaveCompleted",
     value: function onLeaveCompleted() {
-      console.log('view on leave completed');
+      console.log('view on leave completed', this.content);
     }
   }]);
 
   return DefaultView;
-}(_src__WEBPACK_IMPORTED_MODULE_0__.View); // todo promisify?
+}(_src_taxi__WEBPACK_IMPORTED_MODULE_0__.View); // todo promisify?
 
 
 
@@ -2798,7 +2816,7 @@ SelectorSet.prototype.matches = function(el) {
 /************************************************************************/
 /******/ 	// The module cache
 /******/ 	var __webpack_module_cache__ = {};
-/******/
+/******/ 	
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
 /******/ 		// Check if module is in cache
@@ -2812,14 +2830,14 @@ SelectorSet.prototype.matches = function(el) {
 /******/ 			// no module.loaded needed
 /******/ 			exports: {}
 /******/ 		};
-/******/
+/******/ 	
 /******/ 		// Execute the module function
 /******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
-/******/
+/******/ 	
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-/******/
+/******/ 	
 /************************************************************************/
 /******/ 	/* webpack/runtime/compat get default export */
 /******/ 	(() => {
@@ -2832,7 +2850,7 @@ SelectorSet.prototype.matches = function(el) {
 /******/ 			return getter;
 /******/ 		};
 /******/ 	})();
-/******/
+/******/ 	
 /******/ 	/* webpack/runtime/define property getters */
 /******/ 	(() => {
 /******/ 		// define getter functions for harmony exports
@@ -2844,12 +2862,12 @@ SelectorSet.prototype.matches = function(el) {
 /******/ 			}
 /******/ 		};
 /******/ 	})();
-/******/
+/******/ 	
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */
 /******/ 	(() => {
 /******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
 /******/ 	})();
-/******/
+/******/ 	
 /******/ 	/* webpack/runtime/make namespace object */
 /******/ 	(() => {
 /******/ 		// define __esModule on exports
@@ -2860,7 +2878,7 @@ SelectorSet.prototype.matches = function(el) {
 /******/ 			Object.defineProperty(exports, '__esModule', { value: true });
 /******/ 		};
 /******/ 	})();
-/******/
+/******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be in strict mode.
@@ -2871,7 +2889,7 @@ var __webpack_exports__ = {};
   \**********************/
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _unseenco_e__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @unseenco/e */ "./node_modules/@unseenco/e/src/e.js");
-/* harmony import */ var _src__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../src */ "./src/index.js");
+/* harmony import */ var _src_taxi__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../src/taxi */ "./src/taxi.js");
 /* harmony import */ var _views_Default__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./views/Default */ "./tests/views/Default.js");
 /* harmony import */ var _transitions_DefaultTransition__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./transitions/DefaultTransition */ "./tests/transitions/DefaultTransition.js");
 /* harmony import */ var _transitions_OverrideTransition__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./transitions/OverrideTransition */ "./tests/transitions/OverrideTransition.js");
@@ -2881,7 +2899,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 _unseenco_e__WEBPACK_IMPORTED_MODULE_0__["default"].on('DOMContentLoaded', window, function () {
-  var taxi = new _src__WEBPACK_IMPORTED_MODULE_1__.Core({
+  var taxi = new _src_taxi__WEBPACK_IMPORTED_MODULE_1__.Core({
     links: 'a:not([target]):not([href^=\\#]):not([download]):not([data-router-disabled]):not(.sf-dump-toggle):not(#wpadminbar a)',
     views: {
       "default": _views_Default__WEBPACK_IMPORTED_MODULE_2__["default"]

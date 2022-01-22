@@ -1,20 +1,20 @@
-import { View } from '../../src'
+import { View } from '../../src/taxi'
 
 export default class DefaultView extends View {
 	onEnter() {
-		console.log('view on enter', this.page)
+		console.log('view on enter', this.content)
 	}
 
 	onEnterCompleted() {
-		console.log('view on enter completed')
+		console.log('view on enter completed', this.content)
 	}
 
 	onLeave() {
-		console.log('view on leave')
+		console.log('view on leave', this.content)
 	}
 
 	onLeaveCompleted() {
-		console.log('view on leave completed')
+		console.log('view on leave completed', this.content)
 	}
 }
 

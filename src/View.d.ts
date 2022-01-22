@@ -11,10 +11,11 @@ export default class View {
         title: string;
         wrapper: Element;
     });
-    content: Element | HTMLElement;
+    _contentString: string;
     page: Node | Document;
     title: string;
     wrapper: Element;
+    content: Element;
     onEnter(): void;
     onEnterCompleted(): void;
     onLeave(): void;
