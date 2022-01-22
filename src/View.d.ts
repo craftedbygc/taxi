@@ -3,16 +3,18 @@
  */
 export default class View {
     /**
-     * @param {HTMLElement|Element} content
-     * @param {Document|Node} page
-     * @param {string} title
-     * @param {Element} wrapper
+     * @param {{content: HTMLElement|Element, page: Document|Node, title: string, wrapper: Element}} props
      */
-    constructor({ content, page, title, wrapper }: HTMLElement | Element);
-    content: any;
-    page: any;
-    title: any;
-    wrapper: any;
+    constructor({ content, page, title, wrapper }: {
+        content: HTMLElement | Element;
+        page: Document | Node;
+        title: string;
+        wrapper: Element;
+    });
+    content: Element | HTMLElement;
+    page: Node | Document;
+    title: string;
+    wrapper: Element;
     onEnter(): void;
     onEnterCompleted(): void;
     onLeave(): void;
@@ -35,3 +37,4 @@ export default class View {
      */
     leave(transition: Transition, trigger: string | HTMLElement | false): Promise<null>;
 }
+import Transition from "./Transition";

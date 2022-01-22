@@ -1,4 +1,7 @@
 export default class Transition {
+	/**
+	 * @param {{wrapper: HTMLElement}} props
+	 */
 	constructor({ wrapper }) {
 		this.wrapper = wrapper
 	}
@@ -25,10 +28,7 @@ export default class Transition {
 
 	/**
 	 * Handle the transition leaving the previous page.
-	 *
-	 * @param {HTMLElement} from The previous page's content
-	 * @param {string|HTMLElement|false} trigger The navigation trigger
-	 * @param {function} done
+	 * @param {{from: HTMLElement, trigger: string|HTMLElement|false, done: function}} props
 	 */
 	onLeave({ from, trigger, done }) {
 		done()
@@ -36,10 +36,7 @@ export default class Transition {
 
 	/**
 	 * Handle the transition entering the next page.
-	 *
-	 * @param {HTMLElement} to The next page's content
-	 * @param {string|HTMLElement|false} trigger The navigation trigger
-	 * @param {function} done
+	 * @param {{to: HTMLElement, trigger: string|HTMLElement|false, done: function}} props
 	 */
 	onEnter({ to, trigger, done }) {
 		done()

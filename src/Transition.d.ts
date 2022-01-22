@@ -1,8 +1,11 @@
 export default class Transition {
+    /**
+     * @param {{wrapper: HTMLElement}} props
+     */
     constructor({ wrapper }: {
-        wrapper: any;
+        wrapper: HTMLElement;
     });
-    wrapper: any;
+    wrapper: HTMLElement;
     /**
      * @param {{ from: HTMLElement, trigger: string|HTMLElement|false }} props
      * @return {Promise<void>}
@@ -21,18 +24,20 @@ export default class Transition {
     }): Promise<void>;
     /**
      * Handle the transition leaving the previous page.
-     *
-     * @param {HTMLElement} from The previous page's content
-     * @param {string|HTMLElement|false} trigger The navigation trigger
-     * @param {function} done
+     * @param {{from: HTMLElement, trigger: string|HTMLElement|false, done: function}} props
      */
-    onLeave({ from, trigger, done }: HTMLElement): void;
+    onLeave({ from, trigger, done }: {
+        from: HTMLElement;
+        trigger: string | HTMLElement | false;
+        done: Function;
+    }): void;
     /**
      * Handle the transition entering the next page.
-     *
-     * @param {HTMLElement} to The next page's content
-     * @param {string|HTMLElement|false} trigger The navigation trigger
-     * @param {function} done
+     * @param {{to: HTMLElement, trigger: string|HTMLElement|false, done: function}} props
      */
-    onEnter({ to, trigger, done }: HTMLElement): void;
+    onEnter({ to, trigger, done }: {
+        to: HTMLElement;
+        trigger: string | HTMLElement | false;
+        done: Function;
+    }): void;
 }

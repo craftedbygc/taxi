@@ -1,12 +1,11 @@
+import Transition from "./Transition"
+
 /**
  * @module Taxi/View
  */
 export default class View {
 	/**
-	 * @param {HTMLElement|Element} content
-	 * @param {Document|Node} page
-	 * @param {string} title
-	 * @param {Element} wrapper
+	 * @param {{content: HTMLElement|Element, page: Document|Node, title: string, wrapper: Element}} props
 	 */
 	constructor({ content, page, title, wrapper }) {
 		this.content = content

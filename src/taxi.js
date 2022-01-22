@@ -1,9 +1,9 @@
-import * as Taxi from "./Core"
+import Core from "./Core"
 import View from "./View"
 import Transition from "./Transition"
 
 export {
-	Taxi,
+	Core,
 	View,
 	Transition
 }
