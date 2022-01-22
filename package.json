@@ -1,7 +1,7 @@
 {
 	"name": "@unseenco/taxi",
 	"description": "A modern page transition library which supports routing, preloading, and additional script reloading.",
-	"version": "0.1.9",
+	"version": "0.1.10",
 	"license": "GPL-3.0-or-later",
 	"source": "src/taxi.js",
 	"main": "src/taxi.js",
@@ -25,7 +25,7 @@
 		}
 	],
 	"dependencies": {
-		"@unseenco/e": "^2.1.1"
+		"@unseenco/e": "^2.2.1"
 	},
 	"devDependencies": {
 		"browser-sync": "^2.27.7",
