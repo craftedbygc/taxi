@@ -1,9 +1,6 @@
 import Transition from "./Transition"
 
-/**
- * @module Taxi/View
- */
-export default class View {
+export default class Renderer {
 	/**
 	 * @param {{content: HTMLElement|Element, page: Document|Node, title: string, wrapper: Element}} props
 	 */

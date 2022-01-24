@@ -403,7 +403,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 /**
  * @typedef CacheEntry
  * @type {object}
- * @property {View} view
+ * @property {Renderer} renderer
  * @property {Document|Node} page
  * @property {array} scripts
  * @property {string} title
@@ -421,7 +421,7 @@ var Core = /*#__PURE__*/function () {
 
   /**
    * @param {string} [parameters.links] Selector to select elements attach highway link events to
-   * @param {Object.<string, View>} [parameters.views] All Views for the application
+   * @param {Object.<string, Renderer>} [parameters.renderers] All Renderers for the application
    * @param {Object.<string, Transition>} [parameters.transitions] All Transitions for the application
    * @param {function(node: HTMLElement)} [parameters.reloadJsFilter]
    */
@@ -434,7 +434,7 @@ var Core = /*#__PURE__*/function () {
 
     _defineProperty(this, "isTransitioning", false);
 
-    _defineProperty(this, "currentView", null);
+    _defineProperty(this, "currentCacheEntry", null);
 
     _defineProperty(this, "cache", new Map());
 
@@ -446,7 +446,7 @@ var Core = /*#__PURE__*/function () {
         if (_this.currentLocation.href !== target.href || _this.currentLocation.hasHash && !target.hasHash) {
           e.preventDefault(); // noinspection JSIgnoredPromiseFromCall
 
-          _this.navigate(target.raw, e.currentTarget.dataset.taxiTransition || false, e.currentTarget);
+          _this.navigateTo(target.raw, e.currentTarget.dataset.taxiTransition || false, e.currentTarget);
 
           return;
         } // a click to the current URL was detected
@@ -471,15 +471,15 @@ var Core = /*#__PURE__*/function () {
       } // noinspection JSIgnoredPromiseFromCall
 
 
-      _this.navigate(window.location.href, false, 'popstate');
+      _this.navigateTo(window.location.href, false, 'popstate');
     });
 
     var _parameters$links = parameters.links,
         links = _parameters$links === void 0 ? 'a:not([target]):not([href^=\\#]):not([data-taxi-ignore])' : _parameters$links,
-        _parameters$views = parameters.views,
-        views = _parameters$views === void 0 ? {
-      "default": _taxi__WEBPACK_IMPORTED_MODULE_3__.View
-    } : _parameters$views,
+        _parameters$renderers = parameters.renderers,
+        renderers = _parameters$renderers === void 0 ? {
+      "default": _taxi__WEBPACK_IMPORTED_MODULE_3__.Renderer
+    } : _parameters$renderers,
         _parameters$transitio = parameters.transitions,
         transitions = _parameters$transitio === void 0 ? {
       "default": _taxi__WEBPACK_IMPORTED_MODULE_3__.Transition
@@ -488,9 +488,9 @@ var Core = /*#__PURE__*/function () {
         reloadJsFilter = _parameters$reloadJsF === void 0 ? function (node) {
       return !((node === null || node === void 0 ? void 0 : node.id) === '__bs_script__' || node !== null && node !== void 0 && node.src.includes('browser-sync-client.js'));
     } : _parameters$reloadJsF;
-    this.views = views;
+    this.renderers = renderers;
     this.transitions = transitions;
-    this.defaultView = this.views["default"] || _taxi__WEBPACK_IMPORTED_MODULE_3__.View;
+    this.defaultRenderer = this.renderers["default"] || _taxi__WEBPACK_IMPORTED_MODULE_3__.Renderer;
     this.defaultTransition = this.transitions["default"] || _taxi__WEBPACK_IMPORTED_MODULE_3__.Transition;
     this.wrapper = document.querySelector('[data-taxi]');
     this.reloadJsFilter = reloadJsFilter;
@@ -499,20 +499,20 @@ var Core = /*#__PURE__*/function () {
     this.attachEvents(links);
     this.currentLocation = (0,_helpers__WEBPACK_IMPORTED_MODULE_2__.processUrl)(window.location.href); // as this is the initial page load, prime this page into the cache
 
-    this.cache.set(this.currentLocation.href, this.createCacheEntry(document.cloneNode(true))); // fire the current view enter methods
+    this.cache.set(this.currentLocation.href, this.createCacheEntry(document.cloneNode(true))); // fire the current Renderer enter methods
 
-    this.currentView = this.cache.get(this.currentLocation.href);
-    this.currentView.view.initialLoad();
+    this.currentCacheEntry = this.cache.get(this.currentLocation.href);
+    this.currentCacheEntry.renderer.initialLoad();
   }
   /**
-   * @param {string} view
+   * @param {string} renderer
    */
 
 
   _createClass(Core, [{
-    key: "setDefaultView",
-    value: function setDefaultView(view) {
-      this.defaultView = this.views[view];
+    key: "setDefaultRenderer",
+    value: function setDefaultRenderer(renderer) {
+      this.defaultRenderer = this.renderers[renderer];
     }
     /**
      * @param {string} transition
@@ -580,8 +580,8 @@ var Core = /*#__PURE__*/function () {
      */
 
   }, {
-    key: "navigate",
-    value: function navigate(url) {
+    key: "navigateTo",
+    value: function navigateTo(url) {
       var _this3 = this;
 
       var transition = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
@@ -688,11 +688,11 @@ var Core = /*#__PURE__*/function () {
 
       this.isTransitioning = true;
       _unseenco_e__WEBPACK_IMPORTED_MODULE_1__["default"].emit('NAVIGATE_OUT', {
-        from: this.currentView,
+        from: this.currentCacheEntry,
         trigger: trigger
       });
       return new Promise(function (resolve) {
-        _this4.currentView.view.leave(TransitionClass, trigger).then(function () {
+        _this4.currentCacheEntry.renderer.leave(TransitionClass, trigger).then(function () {
           if (trigger !== 'popstate') {
             window.history.pushState({}, '', url.raw);
           }
@@ -722,22 +722,22 @@ var Core = /*#__PURE__*/function () {
 
       this.currentLocation = url;
       _unseenco_e__WEBPACK_IMPORTED_MODULE_1__["default"].emit('NAVIGATE_IN', {
-        from: this.currentView,
+        from: this.currentCacheEntry,
         to: entry,
         trigger: trigger
       });
       return new Promise(function (resolve) {
-        entry.view.update();
+        entry.renderer.update();
 
         _this5.loadScripts(entry.scripts);
 
-        entry.view.enter(TransitionClass, trigger).then(function () {
+        entry.renderer.enter(TransitionClass, trigger).then(function () {
           _unseenco_e__WEBPACK_IMPORTED_MODULE_1__["default"].emit('NAVIGATE_END', {
-            from: _this5.currentView,
+            from: _this5.currentCacheEntry,
             to: entry,
             trigger: trigger
           });
-          _this5.currentView = entry;
+          _this5.currentCacheEntry = entry;
           _this5.isTransitioning = false;
           resolve();
         });
@@ -872,13 +872,13 @@ var Core = /*#__PURE__*/function () {
     key: "createCacheEntry",
     value: function createCacheEntry(page) {
       var content = page.querySelector('[data-taxi-view]');
-      var View = content.dataset.taxiView.length ? this.views[content.dataset.taxiView] : this.defaultView;
+      var Renderer = content.dataset.taxiView.length ? this.renderers[content.dataset.taxiView] : this.defaultRenderer;
       return {
         page: page,
         content: content,
         scripts: _toConsumableArray(page.querySelectorAll('script:not([data-no-reload])')).filter(this.reloadJsFilter),
         title: page.title,
-        view: new View({
+        renderer: new Renderer({
           wrapper: this.wrapper,
           title: page.title,
           content: content,
@@ -889,6 +889,136 @@ var Core = /*#__PURE__*/function () {
   }]);
 
   return Core;
+}();
+
+
+
+/***/ }),
+
+/***/ "./src/Renderer.js":
+/*!*************************!*\
+  !*** ./src/Renderer.js ***!
+  \*************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Renderer)
+/* harmony export */ });
+/* harmony import */ var _Transition__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Transition */ "./src/Transition.js");
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+
+
+
+var Renderer = /*#__PURE__*/function () {
+  /**
+   * @param {{content: HTMLElement|Element, page: Document|Node, title: string, wrapper: Element}} props
+   */
+  function Renderer(_ref) {
+    var content = _ref.content,
+        page = _ref.page,
+        title = _ref.title,
+        wrapper = _ref.wrapper;
+
+    _classCallCheck(this, Renderer);
+
+    this._contentString = content.outerHTML;
+    this.page = page;
+    this.title = title;
+    this.wrapper = wrapper;
+    this.content = this.wrapper.lastElementChild;
+  }
+
+  _createClass(Renderer, [{
+    key: "onEnter",
+    value: function onEnter() {}
+  }, {
+    key: "onEnterCompleted",
+    value: function onEnterCompleted() {}
+  }, {
+    key: "onLeave",
+    value: function onLeave() {}
+  }, {
+    key: "onLeaveCompleted",
+    value: function onLeaveCompleted() {}
+  }, {
+    key: "initialLoad",
+    value: function initialLoad() {
+      this.onEnter();
+      this.onEnterCompleted();
+    }
+  }, {
+    key: "update",
+    value: function update() {
+      document.title = this.title;
+      this.wrapper.insertAdjacentHTML('beforeend', this._contentString);
+      this.content = this.wrapper.lastElementChild;
+    }
+  }, {
+    key: "remove",
+    value: function remove() {
+      this.wrapper.firstElementChild.remove();
+    }
+    /**
+     * Called when transitioning into the current page.
+     * @param {Transition} transition
+     * @param {string|HTMLElement|false} trigger
+     * @return {Promise<null>}
+     */
+
+  }, {
+    key: "enter",
+    value: function enter(transition, trigger) {
+      var _this = this;
+
+      return new Promise(function (resolve) {
+        _this.onEnter();
+
+        transition.enter({
+          trigger: trigger,
+          to: _this.content
+        }).then(function () {
+          _this.onEnterCompleted();
+
+          resolve();
+        });
+      });
+    }
+    /**
+     * Called when transitioning away from the current page.
+     * @param {Transition} transition
+     * @param {string|HTMLElement|false} trigger
+     * @return {Promise<null>}
+     */
+
+  }, {
+    key: "leave",
+    value: function leave(transition, trigger) {
+      var _this2 = this;
+
+      return new Promise(function (resolve) {
+        _this2.onLeave();
+
+        transition.leave({
+          trigger: trigger,
+          from: _this2.content
+        }).then(function () {
+          _this2.remove();
+
+          _this2.onLeaveCompleted();
+
+          resolve();
+        });
+      });
+    }
+  }]);
+
+  return Renderer;
 }();
 
 
@@ -1120,139 +1250,6 @@ var Transition = /*#__PURE__*/function () {
 
 /***/ }),
 
-/***/ "./src/View.js":
-/*!*********************!*\
-  !*** ./src/View.js ***!
-  \*********************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ View)
-/* harmony export */ });
-/* harmony import */ var _Transition__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Transition */ "./src/Transition.js");
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-
-
-/**
- * @module Taxi/View
- */
-
-var View = /*#__PURE__*/function () {
-  /**
-   * @param {{content: HTMLElement|Element, page: Document|Node, title: string, wrapper: Element}} props
-   */
-  function View(_ref) {
-    var content = _ref.content,
-        page = _ref.page,
-        title = _ref.title,
-        wrapper = _ref.wrapper;
-
-    _classCallCheck(this, View);
-
-    this.contentString = content.outerHTML;
-    this.page = page;
-    this.title = title;
-    this.wrapper = wrapper;
-    this.content = this.wrapper.lastElementChild;
-  }
-
-  _createClass(View, [{
-    key: "onEnter",
-    value: function onEnter() {}
-  }, {
-    key: "onEnterCompleted",
-    value: function onEnterCompleted() {}
-  }, {
-    key: "onLeave",
-    value: function onLeave() {}
-  }, {
-    key: "onLeaveCompleted",
-    value: function onLeaveCompleted() {}
-  }, {
-    key: "initialLoad",
-    value: function initialLoad() {
-      this.onEnter();
-      this.onEnterCompleted();
-    }
-  }, {
-    key: "update",
-    value: function update() {
-      document.title = this.title;
-      this.wrapper.insertAdjacentHTML('beforeend', this.contentString);
-      this.content = this.wrapper.lastElementChild;
-    }
-  }, {
-    key: "remove",
-    value: function remove() {
-      this.wrapper.firstElementChild.remove();
-    }
-    /**
-     * Called when transitioning into the current page.
-     * @param {Transition} transition
-     * @param {string|HTMLElement|false} trigger
-     * @return {Promise<null>}
-     */
-
-  }, {
-    key: "enter",
-    value: function enter(transition, trigger) {
-      var _this = this;
-
-      return new Promise(function (resolve) {
-        _this.onEnter();
-
-        transition.enter({
-          trigger: trigger,
-          to: _this.content
-        }).then(function () {
-          _this.onEnterCompleted();
-
-          resolve();
-        });
-      });
-    }
-    /**
-     * Called when transitioning away from the current page.
-     * @param {Transition} transition
-     * @param {string|HTMLElement|false} trigger
-     * @return {Promise<null>}
-     */
-
-  }, {
-    key: "leave",
-    value: function leave(transition, trigger) {
-      var _this2 = this;
-
-      return new Promise(function (resolve) {
-        _this2.onLeave();
-
-        transition.leave({
-          trigger: trigger,
-          from: _this2.content
-        }).then(function () {
-          _this2.remove();
-
-          _this2.onLeaveCompleted();
-
-          resolve();
-        });
-      });
-    }
-  }]);
-
-  return View;
-}();
-
-
-
-/***/ }),
-
 /***/ "./src/helpers.js":
 /*!************************!*\
   !*** ./src/helpers.js ***!
@@ -1355,13 +1352,90 @@ function duplicateScript(node) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "Core": () => (/* reexport safe */ _Core__WEBPACK_IMPORTED_MODULE_0__["default"]),
-/* harmony export */   "View": () => (/* reexport safe */ _View__WEBPACK_IMPORTED_MODULE_1__["default"]),
+/* harmony export */   "Renderer": () => (/* reexport safe */ _Renderer__WEBPACK_IMPORTED_MODULE_1__["default"]),
 /* harmony export */   "Transition": () => (/* reexport safe */ _Transition__WEBPACK_IMPORTED_MODULE_2__["default"])
 /* harmony export */ });
 /* harmony import */ var _Core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Core */ "./src/Core.js");
-/* harmony import */ var _View__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./View */ "./src/View.js");
+/* harmony import */ var _Renderer__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Renderer */ "./src/Renderer.js");
 /* harmony import */ var _Transition__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Transition */ "./src/Transition.js");
 
+
+
+
+
+/***/ }),
+
+/***/ "./tests/renderers/DefaultRenderer.js":
+/*!********************************************!*\
+  !*** ./tests/renderers/DefaultRenderer.js ***!
+  \********************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ DefaultRenderer)
+/* harmony export */ });
+/* harmony import */ var _src_taxi__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../src/taxi */ "./src/taxi.js");
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+
+
+var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
+  _inherits(DefaultRenderer, _Renderer);
+
+  var _super = _createSuper(DefaultRenderer);
+
+  function DefaultRenderer() {
+    _classCallCheck(this, DefaultRenderer);
+
+    return _super.apply(this, arguments);
+  }
+
+  _createClass(DefaultRenderer, [{
+    key: "onEnter",
+    value: function onEnter() {
+      console.log('view on enter', this.content);
+    }
+  }, {
+    key: "onEnterCompleted",
+    value: function onEnterCompleted() {
+      console.log('view on enter completed', this.content);
+    }
+  }, {
+    key: "onLeave",
+    value: function onLeave() {
+      console.log('view on leave', this.content);
+    }
+  }, {
+    key: "onLeaveCompleted",
+    value: function onLeaveCompleted() {
+      console.log('view on leave completed', this.content);
+    }
+  }]);
+
+  return DefaultRenderer;
+}(_src_taxi__WEBPACK_IMPORTED_MODULE_0__.Renderer); // todo promisify?
 
 
 
@@ -1512,83 +1586,6 @@ var OverrideTransition = /*#__PURE__*/function (_Transition) {
 
   return OverrideTransition;
 }(_src_taxi__WEBPACK_IMPORTED_MODULE_0__.Transition);
-
-
-
-/***/ }),
-
-/***/ "./tests/views/Default.js":
-/*!********************************!*\
-  !*** ./tests/views/Default.js ***!
-  \********************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ DefaultView)
-/* harmony export */ });
-/* harmony import */ var _src_taxi__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../src/taxi */ "./src/taxi.js");
-function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-
-
-var DefaultView = /*#__PURE__*/function (_View) {
-  _inherits(DefaultView, _View);
-
-  var _super = _createSuper(DefaultView);
-
-  function DefaultView() {
-    _classCallCheck(this, DefaultView);
-
-    return _super.apply(this, arguments);
-  }
-
-  _createClass(DefaultView, [{
-    key: "onEnter",
-    value: function onEnter() {
-      console.log('view on enter', this.content);
-    }
-  }, {
-    key: "onEnterCompleted",
-    value: function onEnterCompleted() {
-      console.log('view on enter completed', this.content);
-    }
-  }, {
-    key: "onLeave",
-    value: function onLeave() {
-      console.log('view on leave', this.content);
-    }
-  }, {
-    key: "onLeaveCompleted",
-    value: function onLeaveCompleted() {
-      console.log('view on leave completed', this.content);
-    }
-  }]);
-
-  return DefaultView;
-}(_src_taxi__WEBPACK_IMPORTED_MODULE_0__.View); // todo promisify?
-
 
 
 
@@ -2890,7 +2887,7 @@ var __webpack_exports__ = {};
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _unseenco_e__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @unseenco/e */ "./node_modules/@unseenco/e/src/e.js");
 /* harmony import */ var _src_taxi__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../src/taxi */ "./src/taxi.js");
-/* harmony import */ var _views_Default__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./views/Default */ "./tests/views/Default.js");
+/* harmony import */ var _renderers_DefaultRenderer__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./renderers/DefaultRenderer */ "./tests/renderers/DefaultRenderer.js");
 /* harmony import */ var _transitions_DefaultTransition__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./transitions/DefaultTransition */ "./tests/transitions/DefaultTransition.js");
 /* harmony import */ var _transitions_OverrideTransition__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./transitions/OverrideTransition */ "./tests/transitions/OverrideTransition.js");
 
@@ -2901,15 +2898,14 @@ __webpack_require__.r(__webpack_exports__);
 _unseenco_e__WEBPACK_IMPORTED_MODULE_0__["default"].on('DOMContentLoaded', window, function () {
   var taxi = new _src_taxi__WEBPACK_IMPORTED_MODULE_1__.Core({
     links: 'a:not([target]):not([href^=\\#]):not([download]):not([data-router-disabled]):not(.sf-dump-toggle):not(#wpadminbar a)',
-    views: {
-      "default": _views_Default__WEBPACK_IMPORTED_MODULE_2__["default"]
+    renderers: {
+      "default": _renderers_DefaultRenderer__WEBPACK_IMPORTED_MODULE_2__["default"]
     },
     transitions: {
       "default": _transitions_DefaultTransition__WEBPACK_IMPORTED_MODULE_3__["default"],
       override: _transitions_OverrideTransition__WEBPACK_IMPORTED_MODULE_4__["default"]
     }
   });
-  console.log('yo');
 });
 })();
 

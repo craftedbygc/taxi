@@ -1,7 +1,7 @@
 /**
  * @typedef CacheEntry
  * @type {object}
- * @property {View} view
+ * @property {Renderer} renderer
  * @property {Document|Node} page
  * @property {array} scripts
  * @property {string} title
@@ -10,7 +10,7 @@
 export default class Core {
     /**
      * @param {string} [parameters.links] Selector to select elements attach highway link events to
-     * @param {Object.<string, View>} [parameters.views] All Views for the application
+     * @param {Object.<string, Renderer>} [parameters.renderers] All Renderers for the application
      * @param {Object.<string, Transition>} [parameters.transitions] All Transitions for the application
      * @param {function(node: HTMLElement)} [parameters.reloadJsFilter]
      */
@@ -19,14 +19,14 @@ export default class Core {
     /**
      * @type {CacheEntry|null}
      */
-    currentView: CacheEntry | null;
+    currentCacheEntry: CacheEntry | null;
     /**
      * @type {Map<string, CacheEntry>}
      */
     cache: Map<string, CacheEntry>;
-    views: any;
+    renderers: any;
     transitions: any;
-    defaultView: any;
+    defaultRenderer: any;
     defaultTransition: any;
     wrapper: Element;
     reloadJsFilter: any;
@@ -37,9 +37,9 @@ export default class Core {
         pathname: string;
     };
     /**
-     * @param {string} view
+     * @param {string} renderer
      */
-    setDefaultView(view: string): void;
+    setDefaultRenderer(renderer: string): void;
     /**
      * @param {string} transition
      */
@@ -59,7 +59,7 @@ export default class Core {
      * @param {string|false|HTMLElement} [trigger]
      * @return {Promise<void|Error>}
      */
-    navigate(url: string, transition?: string | false, trigger?: string | false | HTMLElement): Promise<void | Error>;
+    navigateTo(url: string, transition?: string | false, trigger?: string | false | HTMLElement): Promise<void | Error>;
     targetLocation: {
         raw: string;
         href: string;
@@ -136,11 +136,11 @@ export default class Core {
     private createCacheEntry;
 }
 export type CacheEntry = {
-    view: View;
+    renderer: Renderer;
     page: Document | Node;
     scripts: any[];
     title: string;
     content: HTMLElement | Element;
 };
 import RouteStore from "./RouteStore";
-import { View } from "./taxi";
+import { Renderer } from "./taxi";

@@ -1,6 +1,6 @@
-import { View } from '../../src/taxi'
+import { Renderer } from '../../src/taxi'
 
-export default class DefaultView extends View {
+export default class DefaultRenderer extends Renderer {
 	onEnter() {
 		console.log('view on enter', this.content)
 	}

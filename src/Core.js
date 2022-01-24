@@ -1,12 +1,12 @@
 import E from '@unseenco/e'
 import { appendScript, parseDom, processUrl, reloadScript } from './helpers'
-import { Transition, View } from './taxi'
+import { Transition, Renderer } from './taxi'
 import RouteStore from './RouteStore'
 
 /**
  * @typedef CacheEntry
  * @type {object}
- * @property {View} view
+ * @property {Renderer} renderer
  * @property {Document|Node} page
  * @property {array} scripts
  * @property {string} title
@@ -19,7 +19,7 @@ export default class Core {
 	/**
 	 * @type {CacheEntry|null}
 	 */
-	currentView = null
+	currentCacheEntry = null
 
 	/**
 	 * @type {Map<string, CacheEntry>}
@@ -28,15 +28,15 @@ export default class Core {
 
 	/**
 	 * @param {string} [parameters.links] Selector to select elements attach highway link events to
-	 * @param {Object.<string, View>} [parameters.views] All Views for the application
+	 * @param {Object.<string, Renderer>} [parameters.renderers] All Renderers for the application
 	 * @param {Object.<string, Transition>} [parameters.transitions] All Transitions for the application
 	 * @param {function(node: HTMLElement)} [parameters.reloadJsFilter]
 	 */
 	constructor(parameters = {}) {
 		const {
 			links = 'a:not([target]):not([href^=\\#]):not([data-taxi-ignore])',
-			views = {
-				default: View
+			renderers = {
+				default: Renderer
 			},
 			transitions = {
 				default: Transition
@@ -46,9 +46,9 @@ export default class Core {
 			}
 		} = parameters
 
-		this.views = views
+		this.renderers = renderers
 		this.transitions = transitions
-		this.defaultView = this.views.default || View
+		this.defaultRenderer = this.renderers.default || Renderer
 		this.defaultTransition = this.transitions.default || Transition
 		this.wrapper = document.querySelector('[data-taxi]')
 		this.reloadJsFilter = reloadJsFilter
@@ -62,16 +62,16 @@ export default class Core {
 		// as this is the initial page load, prime this page into the cache
 		this.cache.set(this.currentLocation.href, this.createCacheEntry(document.cloneNode(true)))
 
-		// fire the current view enter methods
-		this.currentView = this.cache.get(this.currentLocation.href)
-		this.currentView.view.initialLoad()
+		// fire the current Renderer enter methods
+		this.currentCacheEntry = this.cache.get(this.currentLocation.href)
+		this.currentCacheEntry.renderer.initialLoad()
 	}
 
 	/**
-	 * @param {string} view
+	 * @param {string} renderer
 	 */
-	setDefaultView(view) {
-		this.defaultView = this.views[view]
+	setDefaultRenderer(renderer) {
+		this.defaultRenderer = this.renderers[renderer]
 	}
 
 	/**
@@ -114,7 +114,7 @@ export default class Core {
 	 * @param {string|false|HTMLElement} [trigger]
 	 * @return {Promise<void|Error>}
 	 */
-	navigate(url, transition = false, trigger = false) {
+	navigateTo(url, transition = false, trigger = false) {
 		this.targetLocation = processUrl(url)
 
 		return new Promise((resolve, reject) => {
@@ -169,12 +169,12 @@ export default class Core {
 		this.isTransitioning = true
 
 		E.emit('NAVIGATE_OUT', {
-			from: this.currentView,
+			from: this.currentCacheEntry,
 			trigger
 		})
 
 		return new Promise((resolve) => {
-			this.currentView.view.leave(TransitionClass, trigger)
+			this.currentCacheEntry.renderer.leave(TransitionClass, trigger)
 				.then(() => {
 					if (trigger !== 'popstate') {
 						window.history.pushState({}, '', url.raw)
@@ -202,25 +202,25 @@ export default class Core {
 		this.currentLocation = url
 
 		E.emit('NAVIGATE_IN', {
-			from: this.currentView,
+			from: this.currentCacheEntry,
 			to: entry,
 			trigger
 		})
 
 		return new Promise((resolve) => {
-			entry.view.update()
+			entry.renderer.update()
 
 			this.loadScripts(entry.scripts)
 
-			entry.view.enter(TransitionClass, trigger)
+			entry.renderer.enter(TransitionClass, trigger)
 				.then(() => {
 					E.emit('NAVIGATE_END', {
-						from: this.currentView,
+						from: this.currentCacheEntry,
 						to: entry,
 						trigger
 					})
 
-					this.currentView = entry
+					this.currentCacheEntry = entry
 					this.isTransitioning = false
 					resolve()
 				})
@@ -274,7 +274,7 @@ export default class Core {
 			if (this.currentLocation.href !== target.href || (this.currentLocation.hasHash && !target.hasHash)) {
 				e.preventDefault()
 				// noinspection JSIgnoredPromiseFromCall
-				this.navigate(target.raw, e.currentTarget.dataset.taxiTransition || false, e.currentTarget)
+				this.navigateTo(target.raw, e.currentTarget.dataset.taxiTransition || false, e.currentTarget)
 				return
 			}
 
@@ -302,7 +302,7 @@ export default class Core {
 		}
 
 		// noinspection JSIgnoredPromiseFromCall
-		this.navigate(window.location.href, false, 'popstate')
+		this.navigateTo(window.location.href, false, 'popstate')
 	}
 
 	/**
@@ -362,14 +362,14 @@ export default class Core {
 	 */
 	createCacheEntry(page) {
 		const content = page.querySelector('[data-taxi-view]')
-		const View = content.dataset.taxiView.length ? this.views[content.dataset.taxiView] : this.defaultView
+		const Renderer = content.dataset.taxiView.length ? this.renderers[content.dataset.taxiView] : this.defaultRenderer
 
 		return {
 			page,
 			content,
 			scripts: [...page.querySelectorAll('script:not([data-no-reload])')].filter(this.reloadJsFilter),
 			title: page.title,
-			view: new View({
+			renderer: new Renderer({
 				wrapper: this.wrapper,
 				title: page.title,
 				content,
