@@ -1,6 +1,8 @@
 
 <p align="center"><strong>Taxi.js is the spiritual successor to Highway.js.</strong></p>
 
+<p align="center">Full docs on the way!</p>
+
 <p align="center">
   <code>npm i @unseenco/taxi</code> or <code>yarn add @unseenco/taxi</code>
 </p>
@@ -29,6 +31,17 @@ It was designed as a drop-in replacement for [Highway.js](https://github.com/Dog
 * `attach` and `detach` are no longer methods - link clicks are listened to via delegation so these are no longer needed.
 * `redirect` is now `navigateTo` as "redirect" felt weird as a method name!
 * The params passed to renderers, transitions, and events are now a little different
+
+
+# Table of Contents
+* [How to Use](#how-to-use)
+* [Transitions and Routing](#transitions-and-routing)
+  * [Routing 101](#routing-101)
+* [API](#api)
+* [Events](#events)
+
+
+# How to Use
 
 
 
@@ -96,6 +109,12 @@ Useful when adding/removing content via AJAX such as a search page or infinite l
 
 ### deleteCache(url?: string): void
 Remove the cached HTML for the provided URL. If no URL provided, remove cache for the current URL.
+
+### setDefaultRenderer(renderer: string): void
+If you don't like "default" as the name of your default renderer, you can change the default renderer to be anything you like here.
+
+### setDefaultTransition(renderer: string): void
+Same as `setDefaultRenderer`, but for the transitions instead.
 
 ### on(event: string, callback: function): void
 Add an [event listener](#events).
