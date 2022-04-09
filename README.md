@@ -32,7 +32,7 @@ It was designed as a drop-in replacement for [Highway.js](https://github.com/Dog
 * `redirect` is now `navigateTo` as "redirect" felt weird as a method name!
 * The params passed to renderers, transitions, and events are now a little different
 
-
+![taxi-stripe-small](https://user-images.githubusercontent.com/3481634/162580572-fc741cec-2fee-4704-87fb-a2773fd6f0eb.png)
 # Table of Contents
 * [How to Use](#how-to-use)
 * [Transitions and Routing](#transitions-and-routing)
@@ -41,11 +41,12 @@ It was designed as a drop-in replacement for [Highway.js](https://github.com/Dog
 * [Events](#events)
 
 
+![taxi-stripe-small](https://user-images.githubusercontent.com/3481634/162580572-fc741cec-2fee-4704-87fb-a2773fd6f0eb.png)
 # How to Use
 
 
 
-
+![taxi-stripe-small](https://user-images.githubusercontent.com/3481634/162580572-fc741cec-2fee-4704-87fb-a2773fd6f0eb.png)
 # Transitions and Routing
 
 Taxi has a distinct heirarchy when it comes to choosing which transition to run during a navigation:
@@ -88,7 +89,7 @@ This is because the first example registers the catch all **before** the specifi
 **Please note:** Your regex is wrapped inside `^` and `$` automatically, so a regex of `/api` will match `/api` **but not** `/v2/api`. Keep this in mind when adding routing rules!
 
 
-
+![taxi-stripe-small](https://user-images.githubusercontent.com/3481634/162580572-fc741cec-2fee-4704-87fb-a2773fd6f0eb.png)
 # API
 
 #### addRoute(fromPattern: string, toPattern: string, transition: string): void
@@ -123,4 +124,6 @@ Add an [event listener](#events).
 Remove an [event listener](#events). If no callback is supplied, then remove all listeners for the provided event.
 
 
-## Events
+![taxi-stripe-small](https://user-images.githubusercontent.com/3481634/162580572-fc741cec-2fee-4704-87fb-a2773fd6f0eb.png)
+
+# Events
