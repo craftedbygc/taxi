@@ -28,6 +28,7 @@ export default class Core {
 
 	/**
 	 * @param {string} [parameters.links] Selector to select elements attach highway link events to
+	 * @param {boolean} [parameters.removeOldContent] Whether the previous page's content should be removed just before onLeaveCompleted
 	 * @param {Object.<string, Renderer>} [parameters.renderers] All Renderers for the application
 	 * @param {Object.<string, Transition>} [parameters.transitions] All Transitions for the application
 	 * @param {function(node: HTMLElement)} [parameters.reloadJsFilter]
@@ -35,13 +36,14 @@ export default class Core {
 	constructor(parameters = {}) {
 		const {
 			links = 'a:not([target]):not([href^=\\#]):not([data-taxi-ignore])',
+			removeOldContent = true,
 			renderers = {
 				default: Renderer
 			},
 			transitions = {
 				default: Transition
 			},
-			reloadJsFilter = function(node) {
+			reloadJsFilter = function (node) {
 				return !(node?.id === '__bs_script__' || node?.src.includes('browser-sync-client.js'))
 			}
 		} = parameters
@@ -52,6 +54,7 @@ export default class Core {
 		this.defaultTransition = this.transitions.default || Transition
 		this.wrapper = document.querySelector('[data-taxi]')
 		this.reloadJsFilter = reloadJsFilter
+		this.removeOldContent = removeOldContent
 		this.cache = new Map()
 
 		// Add delegated link events
@@ -81,6 +84,13 @@ export default class Core {
 		this.defaultTransition = this.transitions[transition]
 	}
 
+	/**
+	 * Registers a route into the RouteStore
+	 *
+	 * @param {string} fromPattern
+	 * @param {string} toPattern
+	 * @param {string} transition
+	 */
 	addRoute(fromPattern, toPattern, transition) {
 		if (!this.router) {
 			this.router = new RouteStore()
@@ -93,19 +103,47 @@ export default class Core {
 	 * Prime the cache for a given URL
 	 *
 	 * @param {string} url
-	 * @return {Core}
+	 * @return {Promise}
 	 */
 	preload(url) {
 		// convert relative URLs to absolute
 		url = processUrl(url).href
 
 		if (!this.cache.has(url)) {
-			this.fetch(url).then(async (newPage) => {
-				this.cache.set(url, this.createCacheEntry(newPage))
-			})
+			return this.fetch(url)
+				.then(async (newPage) => {
+					this.cache.set(url, this.createCacheEntry(newPage))
+				})
 		}
 
-		return this
+		return Promise.resolve()
+	}
+
+	/**
+	 * Updates the HTML cache for the current URL
+	 * Useful when adding/removing content via AJAX such as a search page or infinite loader
+	 */
+	updateCache() {
+		const key = processUrl(window.location.href).href
+
+		if (this.cache.has(key)) {
+			this.cache.delete(key)
+			this.cache.set(key, this.createCacheEntry(document.cloneNode(true)))
+		}
+	}
+
+	/**
+	 * Clears the cache for a given URL.
+	 * If no URL is passed, then cache for the current page is cleared.
+	 *
+	 * @param {string} [url]
+	 */
+	clearCache(url) {
+		const key = processUrl(url || window.location.href).href
+
+		if (this.cache.has(key)) {
+			this.cache.delete(key)
+		}
 	}
 
 	/**
@@ -115,14 +153,14 @@ export default class Core {
 	 * @return {Promise<void|Error>}
 	 */
 	navigateTo(url, transition = false, trigger = false) {
-		this.targetLocation = processUrl(url)
-
 		return new Promise((resolve, reject) => {
 			// Don't allow multiple navigations to occur at once
 			if (this.isTransitioning) {
 				reject(new Error('A transition is currently in progress'))
 				return
 			}
+
+			this.targetLocation = processUrl(url)
 
 			const TransitionClass = new (this.chooseTransition(transition))({ wrapper: this.wrapper })
 
@@ -136,7 +174,9 @@ export default class Core {
 						})
 					}
 				})
-				.then(() => { resolve() })
+				.then(() => {
+					resolve()
+				})
 		})
 	}
 
@@ -152,7 +192,7 @@ export default class Core {
 	/**
 	 * Remove an event listener.
 	 * @param {string} event
-	 * @param {any} callback
+	 * @param {any} [callback]
 	 */
 	off(event, callback) {
 		E.off(event, callback)
@@ -174,7 +214,7 @@ export default class Core {
 		})
 
 		return new Promise((resolve) => {
-			this.currentCacheEntry.renderer.leave(TransitionClass, trigger)
+			this.currentCacheEntry.renderer.leave(TransitionClass, trigger, this.removeOldContent)
 				.then(() => {
 					if (trigger !== 'popstate') {
 						window.history.pushState({}, '', url.raw)
@@ -274,7 +314,7 @@ export default class Core {
 			if (this.currentLocation.href !== target.href || (this.currentLocation.hasHash && !target.hasHash)) {
 				e.preventDefault()
 				// noinspection JSIgnoredPromiseFromCall
-				this.navigateTo(target.raw, e.currentTarget.dataset.taxiTransition || false, e.currentTarget)
+				this.navigateTo(target.raw, e.currentTarget.dataset.transition || false, e.currentTarget)
 				return
 			}
 

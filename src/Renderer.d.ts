@@ -31,8 +31,9 @@ export default class Renderer {
      * Called when transitioning away from the current page.
      * @param {Transition} transition
      * @param {string|HTMLElement|false} trigger
+     * @param {boolean} removeOldContent
      * @return {Promise<null>}
      */
-    leave(transition: Transition, trigger: string | HTMLElement | false): Promise<null>;
+    leave(transition: Transition, trigger: string | HTMLElement | false, removeOldContent: boolean): Promise<null>;
 }
 import Transition from "./Transition";

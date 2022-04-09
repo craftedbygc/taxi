@@ -3,3 +3,5 @@ tests
 node_modules/
 *.mix.js
 vanilla.js
+tsconfig.json
+.gitignore

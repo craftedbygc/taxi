@@ -7,7 +7,7 @@ export default class Transition {
 	}
 
 	/**
-	 * @param {{ from: HTMLElement, trigger: string|HTMLElement|false }} props
+	 * @param {{ from: HTMLElement|Element, trigger: string|HTMLElement|false }} props
 	 * @return {Promise<void>}
 	 */
 	leave(props) {
@@ -17,7 +17,7 @@ export default class Transition {
 	}
 
 	/**
-	 * @param {{ to: HTMLElement, trigger: string|HTMLElement|false }} props
+	 * @param {{ to: HTMLElement|Element, trigger: string|HTMLElement|false }} props
 	 * @return {Promise<void>}
 	 */
 	enter(props) {
@@ -28,7 +28,7 @@ export default class Transition {
 
 	/**
 	 * Handle the transition leaving the previous page.
-	 * @param {{from: HTMLElement, trigger: string|HTMLElement|false, done: function}} props
+	 * @param {{from: HTMLElement|Element, trigger: string|HTMLElement|false, done: function}} props
 	 */
 	onLeave({ from, trigger, done }) {
 		done()
@@ -36,7 +36,7 @@ export default class Transition {
 
 	/**
 	 * Handle the transition entering the next page.
-	 * @param {{to: HTMLElement, trigger: string|HTMLElement|false, done: function}} props
+	 * @param {{to: HTMLElement|Element, trigger: string|HTMLElement|false, done: function}} props
 	 */
 	onEnter({ to, trigger, done }) {
 		done()

@@ -7,36 +7,36 @@ export default class Transition {
     });
     wrapper: HTMLElement;
     /**
-     * @param {{ from: HTMLElement, trigger: string|HTMLElement|false }} props
+     * @param {{ from: HTMLElement|Element, trigger: string|HTMLElement|false }} props
      * @return {Promise<void>}
      */
     leave(props: {
-        from: HTMLElement;
+        from: HTMLElement | Element;
         trigger: string | HTMLElement | false;
     }): Promise<void>;
     /**
-     * @param {{ to: HTMLElement, trigger: string|HTMLElement|false }} props
+     * @param {{ to: HTMLElement|Element, trigger: string|HTMLElement|false }} props
      * @return {Promise<void>}
      */
     enter(props: {
-        to: HTMLElement;
+        to: HTMLElement | Element;
         trigger: string | HTMLElement | false;
     }): Promise<void>;
     /**
      * Handle the transition leaving the previous page.
-     * @param {{from: HTMLElement, trigger: string|HTMLElement|false, done: function}} props
+     * @param {{from: HTMLElement|Element, trigger: string|HTMLElement|false, done: function}} props
      */
     onLeave({ from, trigger, done }: {
-        from: HTMLElement;
+        from: HTMLElement | Element;
         trigger: string | HTMLElement | false;
         done: Function;
     }): void;
     /**
      * Handle the transition entering the next page.
-     * @param {{to: HTMLElement, trigger: string|HTMLElement|false, done: function}} props
+     * @param {{to: HTMLElement|Element, trigger: string|HTMLElement|false, done: function}} props
      */
     onEnter({ to, trigger, done }: {
-        to: HTMLElement;
+        to: HTMLElement | Element;
         trigger: string | HTMLElement | false;
         done: Function;
     }): void;

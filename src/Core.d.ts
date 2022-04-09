@@ -10,6 +10,7 @@
 export default class Core {
     /**
      * @param {string} [parameters.links] Selector to select elements attach highway link events to
+     * @param {boolean} [parameters.removeOldContent] Whether the previous page's content should be removed just before onLeaveCompleted
      * @param {Object.<string, Renderer>} [parameters.renderers] All Renderers for the application
      * @param {Object.<string, Transition>} [parameters.transitions] All Transitions for the application
      * @param {function(node: HTMLElement)} [parameters.reloadJsFilter]
@@ -30,6 +31,7 @@ export default class Core {
     defaultTransition: any;
     wrapper: Element;
     reloadJsFilter: any;
+    removeOldContent: any;
     currentLocation: {
         raw: string;
         href: string;
@@ -44,15 +46,34 @@ export default class Core {
      * @param {string} transition
      */
     setDefaultTransition(transition: string): void;
-    addRoute(fromPattern: any, toPattern: any, transition: any): void;
+    /**
+     * Registers a route into the RouteStore
+     *
+     * @param {string} fromPattern
+     * @param {string} toPattern
+     * @param {string} transition
+     */
+    addRoute(fromPattern: string, toPattern: string, transition: string): void;
     router: RouteStore;
     /**
      * Prime the cache for a given URL
      *
      * @param {string} url
-     * @return {Core}
+     * @return {Promise}
      */
-    preload(url: string): Core;
+    preload(url: string): Promise<any>;
+    /**
+     * Updates the HTML cache for the current URL
+     * Useful when adding/removing content via AJAX such as a search page or infinite loader
+     */
+    updateCache(): void;
+    /**
+     * Clears the cache for a given URL.
+     * If no URL is passed, then cache for the current page is cleared.
+     *
+     * @param {string} [url]
+     */
+    clearCache(url?: string): void;
     /**
      * @param {string} url
      * @param {string|false} [transition]
@@ -75,9 +96,9 @@ export default class Core {
     /**
      * Remove an event listener.
      * @param {string} event
-     * @param {any} callback
+     * @param {any} [callback]
      */
-    off(event: string, callback: any): void;
+    off(event: string, callback?: any): void;
     /**
      * @private
      * @param {{ raw: string, href: string, hasHash: boolean, pathname: string }} url

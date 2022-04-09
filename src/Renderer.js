@@ -65,15 +65,19 @@ export default class Renderer {
 	 * Called when transitioning away from the current page.
 	 * @param {Transition} transition
 	 * @param {string|HTMLElement|false} trigger
+	 * @param {boolean} removeOldContent
 	 * @return {Promise<null>}
 	 */
-	leave(transition, trigger) {
+	leave(transition, trigger, removeOldContent) {
 		return new Promise((resolve) => {
 			this.onLeave()
 
 			transition.leave({ trigger, from: this.content })
 				.then(() => {
-					this.remove()
+					if (removeOldContent) {
+						this.remove()
+					}
+
 					this.onLeaveCompleted()
 					resolve()
 				})

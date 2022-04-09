@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="">
+
+<head>
+    <title>Taxi index</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com?plugins=typography" data-no-reload></script>
+</head>
+
+<body class="update-cache-test">
+    <nav>
+        <ul class="fixed top left p-4 z-10 h-screen bg-lime-300 px-8">
+            <li class="my-4"><a href="/">Home Page</a></li>
+            <li class="my-4"><a href="/inner.html">Inner Page</a></li>
+            <li class="my-4"><a href="/inner2.html" data-transition="override">Inner Page override</a></li>
+            <li class="my-4"><a href="/update-cache-test.html">Cache updating test</a></li>
+            <li class="my-4"><a href="/#page-bottom">Anchor Test</a></li>
+        </ul>
+    </nav>
+
+    <div data-taxi>
+        <div data-taxi-view="default" class="inner">
+            <div class="container mx-auto py-16 prose prose-lg">
+                <h1>Cache Update Test</h1>
+
+                <button id="add-content" class="mr-4">Add content</button>
+                <button id="update-cache"  class="mr-4">Update cache</button>
+                <button id="clear-cache">Clear cache</button>
+
+                <div id="extra-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.dist.js" data-no-reload></script>
+</body>
+</html>

@@ -17,4 +17,20 @@ E.on('DOMContentLoaded', window, function() {
 		}
 	})
 
+
+	// update cache testing
+	E.delegate('click', '#add-content', () => {
+		const target = document.getElementById('extra-content')
+		let p = document.createElement("p")
+		p.append('some text')
+		target.append(p)
+	})
+
+	E.delegate('click', '#update-cache', () => {
+		taxi.updateCache()
+	})
+
+	E.delegate('click', '#clear-cache', () => {
+		taxi.clearCache()
+	})
 })
