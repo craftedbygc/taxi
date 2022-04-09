@@ -91,35 +91,35 @@ This is because the first example registers the catch all **before** the specifi
 
 # API
 
-### addRoute(fromPattern: string, toPattern: string, transition: string): void
+#### addRoute(fromPattern: string, toPattern: string, transition: string): void
 Registers a route into the RouteStore.
 
-### navigateTo(url: string, transition?: string = false): Promise
+#### navigateTo(url: string, transition?: string = false): Promise
 Perform a manual navigation to the provided URL.
 
 If a `transition` name is not provided then Taxi will try and find a match in the RouteStore, otherwise the default transition will be used.
 
-### preload(url: string): Promise
+#### preload(url: string): Promise
 prefetch the provided URL and add it to the cache ahead of any user navigation.
 
-### updateCache(): void
+#### updateCache(): void
 Updates the HTML cache for the current URL.
 
 Useful when adding/removing content via AJAX such as a search page or infinite loader
 
-### deleteCache(url?: string): void
+#### deleteCache(url?: string): void
 Remove the cached HTML for the provided URL. If no URL provided, remove cache for the current URL.
 
-### setDefaultRenderer(renderer: string): void
+#### setDefaultRenderer(renderer: string): void
 If you don't like "default" as the name of your default renderer, you can change the default renderer to be anything you like here.
 
-### setDefaultTransition(renderer: string): void
+#### setDefaultTransition(renderer: string): void
 Same as `setDefaultRenderer`, but for the transitions instead.
 
-### on(event: string, callback: function): void
+#### on(event: string, callback: function): void
 Add an [event listener](#events).
 
-### off(event: string, callback?: function)
+#### off(event: string, callback?: function)
 Remove an [event listener](#events). If no callback is supplied, then remove all listeners for the provided event.
 
 
