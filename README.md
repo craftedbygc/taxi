@@ -22,6 +22,7 @@ It was designed as a drop-in replacement for [Highway.js](https://github.com/Dog
 * Opt-in ability to stop navigation during an active transition
 * Auto runs javascript on the new page
 * Previous page's content is automatically removed (you can opt out of this if you like)
+* No annoying messages in the console...
 
 
 ### Differences to Highway
