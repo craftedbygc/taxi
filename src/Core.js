@@ -27,11 +27,13 @@ export default class Core {
 	cache = new Map()
 
 	/**
-	 * @param {string} [parameters.links] Selector to select elements attach highway link events to
-	 * @param {boolean} [parameters.removeOldContent] Whether the previous page's content should be removed just before onLeaveCompleted
-	 * @param {Object.<string, Renderer>} [parameters.renderers] All Renderers for the application
-	 * @param {Object.<string, Transition>} [parameters.transitions] All Transitions for the application
-	 * @param {function(node: HTMLElement)} [parameters.reloadJsFilter]
+	 * @param {{
+	 * 		links?: string,
+	 * 		removeOldContent?: boolean,
+	 * 		renderers?: Object.<string, Renderer>,
+	 * 		transitions?: Object.<string, Transition>,
+	 * 		reloadJsFilter?: boolean|function(HTMLElement): boolean
+	 * }} parameters
 	 */
 	constructor(parameters = {}) {
 		const {
@@ -43,9 +45,7 @@ export default class Core {
 			transitions = {
 				default: Transition
 			},
-			reloadJsFilter = function (node) {
-				return !(node?.id === '__bs_script__' || node?.src.includes('browser-sync-client.js'))
-			}
+			reloadJsFilter = (element) => !(element?.id === '__bs_script__' || element?.src.includes('browser-sync-client.js'))
 		} = parameters
 
 		this.renderers = renderers
@@ -241,16 +241,18 @@ export default class Core {
 
 		this.currentLocation = url
 
-		E.emit('NAVIGATE_IN', {
-			from: this.currentCacheEntry,
-			to: entry,
-			trigger
-		})
-
 		return new Promise((resolve) => {
 			entry.renderer.update()
 
-			this.loadScripts(entry.scripts)
+			E.emit('NAVIGATE_IN', {
+				from: this.currentCacheEntry,
+				to: entry,
+				trigger
+			})
+
+			if (this.reloadJsFilter) {
+				this.loadScripts(entry.scripts)
+			}
 
 			entry.renderer.enter(TransitionClass, trigger)
 				.then(() => {
@@ -407,7 +409,7 @@ export default class Core {
 		return {
 			page,
 			content,
-			scripts: [...page.querySelectorAll('script:not([data-no-reload])')].filter(this.reloadJsFilter),
+			scripts: this.reloadJsFilter ? [...page.querySelectorAll('script:not([data-no-reload])')].filter(this.reloadJsFilter) : [],
 			title: page.title,
 			renderer: new Renderer({
 				wrapper: this.wrapper,

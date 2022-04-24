@@ -14,9 +14,9 @@ E.on('DOMContentLoaded', window, function() {
 		transitions: {
 			default: DefaultTransition,
 			override: OverrideTransition
-		}
+		},
+		reloadJsFilter: false
 	})
-
 
 	// update cache testing
 	E.delegate('click', '#add-content', () => {

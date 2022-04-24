@@ -420,11 +420,13 @@ var Core = /*#__PURE__*/function () {
    */
 
   /**
-   * @param {string} [parameters.links] Selector to select elements attach highway link events to
-   * @param {boolean} [parameters.removeOldContent] Whether the previous page's content should be removed just before onLeaveCompleted
-   * @param {Object.<string, Renderer>} [parameters.renderers] All Renderers for the application
-   * @param {Object.<string, Transition>} [parameters.transitions] All Transitions for the application
-   * @param {function(node: HTMLElement)} [parameters.reloadJsFilter]
+   * @param {{
+   * 		links?: string,
+   * 		removeOldContent?: boolean,
+   * 		renderers?: Object.<string, Renderer>,
+   * 		transitions?: Object.<string, Transition>,
+   * 		reloadJsFilter?: boolean|function(HTMLElement): boolean
+   * }} parameters
    */
   function Core() {
     var _this = this;
@@ -488,8 +490,8 @@ var Core = /*#__PURE__*/function () {
       "default": _taxi__WEBPACK_IMPORTED_MODULE_3__.Transition
     } : _parameters$transitio,
         _parameters$reloadJsF = parameters.reloadJsFilter,
-        reloadJsFilter = _parameters$reloadJsF === void 0 ? function (node) {
-      return !((node === null || node === void 0 ? void 0 : node.id) === '__bs_script__' || node !== null && node !== void 0 && node.src.includes('browser-sync-client.js'));
+        reloadJsFilter = _parameters$reloadJsF === void 0 ? function (element) {
+      return !((element === null || element === void 0 ? void 0 : element.id) === '__bs_script__' || element !== null && element !== void 0 && element.src.includes('browser-sync-client.js'));
     } : _parameters$reloadJsF;
     this.renderers = renderers;
     this.transitions = transitions;
@@ -764,15 +766,17 @@ var Core = /*#__PURE__*/function () {
       }
 
       this.currentLocation = url;
-      _unseenco_e__WEBPACK_IMPORTED_MODULE_1__["default"].emit('NAVIGATE_IN', {
-        from: this.currentCacheEntry,
-        to: entry,
-        trigger: trigger
-      });
       return new Promise(function (resolve) {
         entry.renderer.update();
+        _unseenco_e__WEBPACK_IMPORTED_MODULE_1__["default"].emit('NAVIGATE_IN', {
+          from: _this5.currentCacheEntry,
+          to: entry,
+          trigger: trigger
+        });
 
-        _this5.loadScripts(entry.scripts);
+        if (_this5.reloadJsFilter) {
+          _this5.loadScripts(entry.scripts);
+        }
 
         entry.renderer.enter(TransitionClass, trigger).then(function () {
           _unseenco_e__WEBPACK_IMPORTED_MODULE_1__["default"].emit('NAVIGATE_END', {
@@ -919,7 +923,7 @@ var Core = /*#__PURE__*/function () {
       return {
         page: page,
         content: content,
-        scripts: _toConsumableArray(page.querySelectorAll('script:not([data-no-reload])')).filter(this.reloadJsFilter),
+        scripts: this.reloadJsFilter ? _toConsumableArray(page.querySelectorAll('script:not([data-no-reload])')).filter(this.reloadJsFilter) : [],
         title: page.title,
         renderer: new Renderer({
           wrapper: this.wrapper,
@@ -1544,9 +1548,13 @@ var DefaultTransition = /*#__PURE__*/function (_Transition) {
           trigger = _ref.trigger,
           done = _ref.done;
       console.log('default transition leave');
-      gsap__WEBPACK_IMPORTED_MODULE_1__["default"].to(this.wrapper, {
+      var overlay = document.querySelector('.js-overlay');
+      gsap__WEBPACK_IMPORTED_MODULE_1__["default"].timeline().to(this.wrapper, {
         opacity: 0
-      }).then(function () {
+      }, 0).to(overlay, {
+        width: '100%',
+        ease: 'power2.inOut'
+      }, 0).then(function () {
         done();
       });
     }
@@ -1557,9 +1565,17 @@ var DefaultTransition = /*#__PURE__*/function (_Transition) {
           trigger = _ref2.trigger,
           done = _ref2.done;
       console.log('default transition enter');
-      gsap__WEBPACK_IMPORTED_MODULE_1__["default"].to(this.wrapper, {
+      var overlay = document.querySelector('.js-overlay');
+      gsap__WEBPACK_IMPORTED_MODULE_1__["default"].timeline().to(overlay, {
+        x: '100%',
+        ease: 'power2.inOut'
+      }, 0).to(this.wrapper, {
         opacity: 1
-      }).then(function () {
+      }, 0).then(function () {
+        gsap__WEBPACK_IMPORTED_MODULE_1__["default"].set(overlay, {
+          width: 0,
+          x: 0
+        });
         done();
       });
     }
@@ -8614,7 +8630,8 @@ _unseenco_e__WEBPACK_IMPORTED_MODULE_0__["default"].on('DOMContentLoaded', windo
     transitions: {
       "default": _transitions_DefaultTransition__WEBPACK_IMPORTED_MODULE_3__["default"],
       override: _transitions_OverrideTransition__WEBPACK_IMPORTED_MODULE_4__["default"]
-    }
+    },
+    reloadJsFilter: false
   }); // update cache testing
 
   _unseenco_e__WEBPACK_IMPORTED_MODULE_0__["default"].delegate('click', '#add-content', function () {

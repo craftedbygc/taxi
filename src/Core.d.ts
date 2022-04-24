@@ -9,13 +9,25 @@
  */
 export default class Core {
     /**
-     * @param {string} [parameters.links] Selector to select elements attach highway link events to
-     * @param {boolean} [parameters.removeOldContent] Whether the previous page's content should be removed just before onLeaveCompleted
-     * @param {Object.<string, Renderer>} [parameters.renderers] All Renderers for the application
-     * @param {Object.<string, Transition>} [parameters.transitions] All Transitions for the application
-     * @param {function(node: HTMLElement)} [parameters.reloadJsFilter]
+     * @param {{
+     * 		links?: string,
+     * 		removeOldContent?: boolean,
+     * 		renderers?: Object.<string, Renderer>,
+     * 		transitions?: Object.<string, Transition>,
+     * 		reloadJsFilter?: boolean|function(HTMLElement): boolean
+     * }} parameters
      */
-    constructor(parameters?: {});
+    constructor(parameters?: {
+        links?: string;
+        removeOldContent?: boolean;
+        renderers?: {
+            [x: string]: Renderer;
+        };
+        transitions?: {
+            [x: string]: Transition;
+        };
+        reloadJsFilter?: boolean | ((arg0: HTMLElement) => boolean);
+    });
     isTransitioning: boolean;
     /**
      * @type {CacheEntry|null}
@@ -25,13 +37,21 @@ export default class Core {
      * @type {Map<string, CacheEntry>}
      */
     cache: Map<string, CacheEntry>;
-    renderers: any;
-    transitions: any;
-    defaultRenderer: any;
-    defaultTransition: any;
+    renderers: {
+        [x: string]: Renderer;
+    } | {
+        default: typeof Renderer;
+    };
+    transitions: {
+        [x: string]: Transition;
+    } | {
+        default: typeof Transition;
+    };
+    defaultRenderer: Renderer | typeof Renderer;
+    defaultTransition: Transition | typeof Transition;
     wrapper: Element;
-    reloadJsFilter: any;
-    removeOldContent: any;
+    reloadJsFilter: boolean | ((element: HTMLElement) => boolean);
+    removeOldContent: boolean;
     currentLocation: {
         raw: string;
         href: string;
@@ -163,5 +183,6 @@ export type CacheEntry = {
     title: string;
     content: HTMLElement | Element;
 };
-import RouteStore from "./RouteStore";
 import { Renderer } from "./taxi";
+import { Transition } from "./taxi";
+import RouteStore from "./RouteStore";
