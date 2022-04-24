@@ -8,7 +8,9 @@
 </p>
 
 
-![taxi-stripe](https://user-images.githubusercontent.com/3481634/162572869-c07f1daf-4dd9-4a37-8644-a4bb070d2603.png)
+
+![taxi-stripe](https://user-images.githubusercontent.com/3481634/164977829-54b0cdbd-6b2a-4f9c-973b-4227e11015c5.png)
+
 
 Taxi is a js library for adding AJAX navigation and beautiful transitions to your website. 
 
