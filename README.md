@@ -9,8 +9,7 @@
 
 
 
-![taxi-stripe](https://user-images.githubusercontent.com/3481634/164977829-54b0cdbd-6b2a-4f9c-973b-4227e11015c5.png)
-
+![taxi-stripe](https://user-images.githubusercontent.com/3481634/164978156-352c3bf7-6dd1-4f45-9cee-039665cc3def.png)
 
 Taxi is a js library for adding AJAX navigation and beautiful transitions to your website. 
 
@@ -36,7 +35,8 @@ It was designed as a drop-in replacement for [Highway.js](https://github.com/Dog
 * `redirect` is now `navigateTo` as "redirect" felt weird as a method name!
 * The params passed to renderers, transitions, and events are now a little different
 
-![taxi-stripe-small](https://user-images.githubusercontent.com/3481634/162580572-fc741cec-2fee-4704-87fb-a2773fd6f0eb.png)
+
+![taxi-stripe-small](https://user-images.githubusercontent.com/3481634/164978141-8ec3aade-5a56-4986-93f7-05c971aeb940.png)
 # Table of Contents
 * [How to Use](#how-to-use)
   * [Parameters](#parameters)  
@@ -49,7 +49,7 @@ It was designed as a drop-in replacement for [Highway.js](https://github.com/Dog
 
 
 
-![taxi-stripe-small](https://user-images.githubusercontent.com/3481634/162580572-fc741cec-2fee-4704-87fb-a2773fd6f0eb.png)
+![taxi-stripe-small](https://user-images.githubusercontent.com/3481634/164978141-8ec3aade-5a56-4986-93f7-05c971aeb940.png)
 # How to Use
 Simply import `Taxi.Core` into your code and create a new instance:
 
@@ -87,7 +87,7 @@ When creating a new Taxi instance, you can pass an object of parameters into the
 
 
 
-![taxi-stripe-small](https://user-images.githubusercontent.com/3481634/162580572-fc741cec-2fee-4704-87fb-a2773fd6f0eb.png)
+![taxi-stripe-small](https://user-images.githubusercontent.com/3481634/164978141-8ec3aade-5a56-4986-93f7-05c971aeb940.png)
 # Renderers
 
 
@@ -105,7 +105,7 @@ export default class CustomRenderer extends Renderer {
 
 
 
-![taxi-stripe-small](https://user-images.githubusercontent.com/3481634/162580572-fc741cec-2fee-4704-87fb-a2773fd6f0eb.png)
+![taxi-stripe-small](https://user-images.githubusercontent.com/3481634/164978141-8ec3aade-5a56-4986-93f7-05c971aeb940.png)
 # Transitions and Routing
 
 Taxi has a distinct heirarchy when it comes to choosing which transition to run during a navigation:
@@ -154,7 +154,7 @@ This is because the first example registers the catch all **before** the specifi
 
 
 
-![taxi-stripe-small](https://user-images.githubusercontent.com/3481634/162580572-fc741cec-2fee-4704-87fb-a2773fd6f0eb.png)
+![taxi-stripe-small](https://user-images.githubusercontent.com/3481634/164978141-8ec3aade-5a56-4986-93f7-05c971aeb940.png)
 # Navigation Lifecycle
 Now that we have explained Renderers and Transitions, how does it all fit together? Hopefully the below diagram should help!
 ```mermaid
@@ -182,7 +182,7 @@ Let's use a **real world example**.
 
 
 
-![taxi-stripe-small](https://user-images.githubusercontent.com/3481634/162580572-fc741cec-2fee-4704-87fb-a2773fd6f0eb.png)
+![taxi-stripe-small](https://user-images.githubusercontent.com/3481634/164978141-8ec3aade-5a56-4986-93f7-05c971aeb940.png)
 # API
 
 ### `addRoute(fromPattern: string, toPattern: string, transition: string): void`
@@ -217,6 +217,6 @@ Add an [event listener](#events).
 Remove an [event listener](#events). If no callback is supplied, then remove all listeners for the provided event.
 
 
-![taxi-stripe-small](https://user-images.githubusercontent.com/3481634/162580572-fc741cec-2fee-4704-87fb-a2773fd6f0eb.png)
+![taxi-stripe-small](https://user-images.githubusercontent.com/3481634/164978141-8ec3aade-5a56-4986-93f7-05c971aeb940.png)
 
 # Events
