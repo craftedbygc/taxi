@@ -41,12 +41,13 @@ It was designed as a drop-in replacement for [Highway.js](https://github.com/Dog
 # Table of Contents
 * [How to Use](#how-to-use)
   * [Parameters](#parameters)  
+* [Navigation Lifecycle](#navigation-lifecycle)
 * [Renderers](#renderers)
   * [Running code on the initial visit to your site](#running-code-on-the-initial-visit-to-your-site) 
 * [Transitions](#transitions)
   * [How transitions are chosen](#how-transitions-are-chosen)
 * [Routing](#routing)
-* [Navigation Lifecycle](#navigation-lifecycle)
+* [Running JS on New Pages](running-js-on-new-pages)
 * [API](#api)
 * [Events](#events)
 
@@ -86,6 +87,37 @@ When creating a new Taxi instance, you can pass an object of parameters into the
 | renderers | `Object.<string, Renderer>` | `{ default: Taxi.Renderer }` | All Renderers for the project. |
 | transitions | `Object.<string, Transition>` | `{ default: Taxi.Transition }` | All Transitions for the project. |
 | reloadJsFilter | `bool\|function(element: HTMLElement)` | `function` | See [running JS on new pages](#running-js-on-new-pages) for details. |
+
+
+
+
+
+
+![taxi-stripe-small](https://user-images.githubusercontent.com/3481634/164978141-8ec3aade-5a56-4986-93f7-05c971aeb940.png)
+# Navigation Lifecycle
+Now that we have explained Renderers and Transitions, how does it all fit together? Hopefully the below diagram should help!
+```mermaid
+graph TB 
+ subgraph Entering
+ E(New Renderer enter) --> F(Transition enter) --> G(New Renderer enterCompleted)
+ end
+ D[fetch and swap content]
+ subgraph Leaving
+ A(Current Renderer leave)-->B(Transition leave)-->C(Current Renderer leaveCompleted) 
+ end
+```
+
+Let's use a **real world example**.
+
+1. A user clicks a link in your app
+2. Taxi [checks to see which Transition](#transitions-and-routing) should be used
+3. The current Renderer's `onLeave` method is called
+4. Then the chosen Transition's `onLeave`
+5. Then the Renderer's `onLeaveCompleted`
+6. Next, Taxi will go and fetch the new page the user has requessted, and swap the current page's content to this new content as soon as it's ready
+7. Taxi will look at the new page content and call the `onEnter` method of the Renderer set via the new page's `data-taxi-view` attribute, or the default if not defined
+8. Then call the Transition's `onEnter` method
+9. Then what the transition is all finished, finally the new Renderer's `onEnterComplete` is called
 
 
 
@@ -208,6 +240,7 @@ As there was no explicit transition, and no matches from the router, finally the
 
 
 
+
 ![taxi-stripe-small](https://user-images.githubusercontent.com/3481634/164978141-8ec3aade-5a56-4986-93f7-05c971aeb940.png)
 # Routing
 Routes are defined in Taxi as a regex to run against the current URL, and one to run against the new URL after the navigation.
@@ -239,6 +272,7 @@ This is because the first example registers the catch all **before** the specifi
 
 
 
+![taxi-stripe-small](https://user-images.githubusercontent.com/3481634/164978141-8ec3aade-5a56-4986-93f7-05c971aeb940.png)
 ## Running JS on New Pages
 Taxi allows automatic reload and running of js present on a fetched page during the navigation cycle. This is especially useful when working with traditional CMS's such as WordPress or Magento, or if you wanted to split your js if you have a particularly heavy page.
 
@@ -282,32 +316,6 @@ const Taxi = new Core({
 
 
 
-
-![taxi-stripe-small](https://user-images.githubusercontent.com/3481634/164978141-8ec3aade-5a56-4986-93f7-05c971aeb940.png)
-# Navigation Lifecycle
-Now that we have explained Renderers and Transitions, how does it all fit together? Hopefully the below diagram should help!
-```mermaid
-graph TB 
- subgraph Entering
- E(New Renderer enter) --> F(Transition enter) --> G(New Renderer enterCompleted)
- end
- D[fetch and swap content]
- subgraph Leaving
- A(Current Renderer leave)-->B(Transition leave)-->C(Current Renderer leaveCompleted) 
- end
-```
-
-Let's use a **real world example**.
-
-1. A user clicks a link in your app
-2. Taxi [checks to see which Transition](#transitions-and-routing) should be used
-3. The current Renderer's `onLeave` method is called
-4. Then the chosen Transition's `onLeave`
-5. Then the Renderer's `onLeaveCompleted`
-6. Next, Taxi will go and fetch the new page the user has requessted, and swap the current page's content to this new content as soon as it's ready
-7. Taxi will look at the new page content and call the `onEnter` method of the Renderer set via the new page's `data-taxi-view` attribute, or the default if not defined
-8. Then call the Transition's `onEnter` method
-9. Then what the transition is all finished, finally the new Renderer's `onEnterComplete` is called
 
 
 
@@ -374,7 +382,7 @@ Taxi.on('NAVIGATE_END', ({ to, from, trigger, location }) => {
 ```
 
 ### Removing Listeners
-Youc an call `Taxi.off(event_name)` to remove all listeners for an event, or pass the callback to remove just that listener instead:
+You can call `Taxi.off(event_name)` to remove all listeners for an event, or pass the callback to remove just that listener instead:
 
 ```js
 function foo() { // ... }
