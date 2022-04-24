@@ -11,7 +11,7 @@
 
 ![taxi-stripe](https://user-images.githubusercontent.com/3481634/164978156-352c3bf7-6dd1-4f45-9cee-039665cc3def.png)
 
-Taxi is a js library for adding AJAX navigation and beautiful transitions to your website. 
+Taxi is a js library for adding AJAX navigation and beautiful transitions to your website.
 
 It was designed as a drop-in replacement for [Highway.js](https://github.com/Dogstudio/highway) which is sadly no longer maintained.
 
@@ -23,7 +23,7 @@ It was designed as a drop-in replacement for [Highway.js](https://github.com/Dog
 * Opt-in ability to stop navigation during an active transition
 * Auto runs javascript on the new page
 * Previous page's content is automatically removed (you can opt out of this if you like)
-* Click events on links can be intercepted via `stopPropagation` without hacks 
+* Click events on links can be intercepted via `stopPropagation` without hacks
 * No annoying messages in the console...
 
 
@@ -40,10 +40,10 @@ It was designed as a drop-in replacement for [Highway.js](https://github.com/Dog
 ![taxi-stripe-small](https://user-images.githubusercontent.com/3481634/164978141-8ec3aade-5a56-4986-93f7-05c971aeb940.png)
 # Table of Contents
 * [How to Use](#how-to-use)
-  * [Parameters](#parameters)  
+  * [Parameters](#parameters)
 * [Navigation Lifecycle](#navigation-lifecycle)
 * [Renderers](#renderers)
-  * [Running code on the initial visit to your site](#running-code-on-the-initial-visit-to-your-site) 
+  * [Running code on the initial visit to your site](#running-code-on-the-initial-visit-to-your-site)
 * [Transitions](#transitions)
   * [How transitions are chosen](#how-transitions-are-chosen)
 * [Routing](#routing)
@@ -78,7 +78,7 @@ The `data-taxi-view` element **has to be the only child** of `data-taxi`.
 Now when you navigate in your app, `data-taxi-view` will be replaced with the `data-taxi-view` from the target URL instead of the whole page loading 🥳
 
 ### Parameters
-When creating a new Taxi instance, you can pass an object of parameters into the constructor: 
+When creating a new Taxi instance, you can pass an object of parameters into the constructor:
 
 | Param | Type | Default | Description |
 |---|---|---|---|
@@ -97,13 +97,13 @@ When creating a new Taxi instance, you can pass an object of parameters into the
 # Navigation Lifecycle
 Now that we have explained Renderers and Transitions, how does it all fit together? Hopefully the below diagram should help!
 ```mermaid
-graph TB 
+graph TB
  subgraph Entering
  E(New Renderer enter) --> F(Transition enter) --> G(New Renderer enterCompleted)
  end
  D[fetch and swap content]
  subgraph Leaving
- A(Current Renderer leave)-->B(Transition leave)-->C(Current Renderer leaveCompleted) 
+ A(Current Renderer leave)-->B(Transition leave)-->C(Current Renderer leaveCompleted)
  end
 ```
 
@@ -114,10 +114,10 @@ Let's use a **real world example**.
 3. The current Renderer's `onLeave` method is called
 4. Then the chosen Transition's `onLeave`
 5. Then the Renderer's `onLeaveCompleted`
-6. Next, Taxi will go and fetch the new page the user has requessted, and swap the current page's content to this new content as soon as it's ready
+6. Next, Taxi will go and fetch the new page the user has requested, and swap the current page's content to this new content as soon as it's ready
 7. Taxi will look at the new page content and call the `onEnter` method of the Renderer set via the new page's `data-taxi-view` attribute, or the default if not defined
 8. Then call the Transition's `onEnter` method
-9. Then what the transition is all finished, finally the new Renderer's `onEnterComplete` is called
+9. Finally when the transition is all finished, the new Renderer's `onEnterComplete` is called
 
 
 
@@ -136,16 +136,16 @@ export default class CustomRenderer extends Renderer {
   onEnter() {
     // run after the new content has been added to the Taxi container
   }
-  
+
   onEnterCompleted() {
      // run after the transition.onEnter has fully completed
   }
-  
+
   onLeave() {
     // run before the transition.onLeave method is called
   }
-  
-  onLeaveCompleted() { 
+
+  onLeaveCompleted() {
     // run after the transition.onleave has fully completed
   }
 }
@@ -158,9 +158,9 @@ The following props are available within Renderer methods:
 * `this.content` :  A reference to the `data-taxi-view` which is being added to the DOM
 
 ### Running code on the initial visit to your site
-Renderers are called whenever a navigation taes place, but the correct Renderer is also called when a user first visits your site.
+Renderers are called whenever a navigation takes place, but the correct Renderer is also called when a user first visits your site.
 
-There may be things you want to setup at this time such as persistant components liek navigation, or smoothscroll for example.
+There may be things you want to setup at this time such as persistent components like navigation, or smoothscroll for example.
 
 To aid with this, Renderers also have an `initialLoad` method which is only run on a user's first visit.
 
@@ -172,11 +172,11 @@ import { Renderer } from '@unseenco/taxi';
 export default class CustomRenderer extends Renderer {
   initialLoad() {
     // run code that should only happen once for your site
-    
+
     this.onEnter()
     this.onEnterCompleted()
   }
-  
+
   // rest of your methods
 }
 ```
@@ -190,7 +190,7 @@ Whenever a user navigates on your site, a Transition class is run to provide the
 
 A transition consists of an `onLeave` method called when leaving the current page, and an `onEnter` method which is called after the new content has been added to the DOM.
 
-Each method is passed an object  containing the `done()` promise resolve function to call when your animation is finished, and the `trigger` that caused the navigation (either `'popstate'` for browser navigation, the `Element` if a link click, or `false` if the navigation was caused programatically via `navigateTo`.
+Each method is passed an object  containing the `done()` promise resolve function to call when your animation is finished, and the `trigger` that caused the navigation (either `'popstate'` for browser navigation, the `Element` if a link click, or `false` if the navigation was caused programmatically via `navigateTo`.
 
 The methods are also passed a reference to the active `data-taxi-view`: When leaving the current `data-taxi-view` is passed, and when entering the new `data-taxi-view` is passed instead:
 
@@ -219,7 +219,7 @@ export default class DefaultTransition extends Transition {
 `this.wrapper` is also available, which is a reference to the main `data-taxi` container.
 
 ### How transitions are chosen
-Taxi has a distinct heirarchy when it comes to choosing which transition to run during a navigation:
+Taxi has a distinct hierarchy when it comes to choosing which transition to run during a navigation:
 
 ```mermaid
 graph LR
@@ -227,7 +227,7 @@ graph LR
 ```
 
 #### 1. Explicit Transition
-If a user clicks a link with `data-transition="something"` present, then the "something" transition will be used. 
+If a user clicks a link with `data-transition="something"` present, then the "something" transition will be used.
 
 These are for special cases really, as browser navigation (back/forward buttons) will never trigger this.
 
@@ -263,7 +263,7 @@ taxi.addRoute('/pages/.*', '/', 'somethingElse')
 
 In the above example, if the user was navigating from `/pages/specific` to the homepage, only the second example would match and run the "something" transition.
 
-This is because the first example registers the catch all **before** the specific rule, so the specific one is never reached.
+This is because the first example registers the catch-all **before** the specific rule, so the specific one is never reached.
 
 
 **Please note:** Your regex is wrapped inside `^` and `$` automatically, so a regex of `/api` will match `/api` **but not** `/v2/api`. Keep this in mind when adding routing rules!
@@ -283,7 +283,7 @@ If enabled, this feature will run just after the `NAVIGATE_IN` event, after the 
 ### Choosing which scripts are reloaded
 By default all js is parsed and reloaded/executed.
 
-To stop this behaviour for a sepcific script, just add `data-no-reload` to the script tag to make Taxi skip it.
+To stop this behaviour for a specific script, just add `data-no-reload` to the script tag to make Taxi skip it.
 
 ```html
 <!-- reloaded -->
