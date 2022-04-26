@@ -47,7 +47,7 @@ It was designed as a drop-in replacement for [Highway.js](https://github.com/Dog
 * [Transitions](#transitions)
   * [How transitions are chosen](#how-transitions-are-chosen)
 * [Routing](#routing)
-* [Running JS on New Pages](running-js-on-new-pages)
+* [Running JS on New Pages](#running-js-on-new-pages)
 * [API](#api)
 * [Events](#events)
 
