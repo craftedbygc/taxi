@@ -12,7 +12,7 @@ export function parseDom(html) {
 /**
  * Extract details from a given URL string. Assumed to be on the current TLD.
  * @param {string} url
- * @return {{raw: string, href: string, hasHash: boolean, pathname: string}}
+ * @return {{raw: string, href: string, host: string, hasHash: boolean, pathname: string}}
  */
 export function processUrl(url) {
 	const details = new URL(url, window.location.origin)
@@ -25,6 +25,7 @@ export function processUrl(url) {
 	return {
 		hasHash: details.hash.length > 0,
 		pathname: details.pathname,
+		host: details.host,
 		raw: url,
 		href: normalized || details.href
 	}

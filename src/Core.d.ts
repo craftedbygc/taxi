@@ -55,6 +55,7 @@ export default class Core {
     currentLocation: {
         raw: string;
         href: string;
+        host: string;
         hasHash: boolean;
         pathname: string;
     };
@@ -104,6 +105,7 @@ export default class Core {
     targetLocation: {
         raw: string;
         href: string;
+        host: string;
         hasHash: boolean;
         pathname: string;
     };
@@ -129,7 +131,7 @@ export default class Core {
     private beforeFetch;
     /**
      * @private
-     * @param {{ raw: string, href: string, hasHash: boolean, pathname: string }} url
+     * @param {{ raw: string, href: string, host: string, hasHash: boolean, pathname: string }} url
      * @param {Transition} TransitionClass
      * @param {CacheEntry} entry
      * @param {string|HTMLElement|false} trigger

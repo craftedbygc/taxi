@@ -45,7 +45,7 @@ export default class Core {
 			transitions = {
 				default: Transition
 			},
-			reloadJsFilter = (element) => !(element?.id === '__bs_script__' || element?.src.includes('browser-sync-client.js'))
+			reloadJsFilter = (element) => element.dataset.taxiReload !== undefined
 		} = parameters
 
 		this.renderers = renderers
@@ -227,7 +227,7 @@ export default class Core {
 
 	/**
 	 * @private
-	 * @param {{ raw: string, href: string, hasHash: boolean, pathname: string }} url
+	 * @param {{ raw: string, href: string, host: string, hasHash: boolean, pathname: string }} url
 	 * @param {Transition} TransitionClass
 	 * @param {CacheEntry} entry
 	 * @param {string|HTMLElement|false} trigger
@@ -276,7 +276,7 @@ export default class Core {
 	 */
 	loadScripts(cachedScripts) {
 		const newScripts = [...cachedScripts]
-		const currentScripts = [...document.querySelectorAll('script:not([data-no-reload])')].filter(this.reloadJsFilter)
+		const currentScripts = [...document.querySelectorAll('script')].filter(this.reloadJsFilter)
 
 		// loop through all new scripts
 		for (let i = 0; i < currentScripts.length; i++) {
@@ -311,6 +311,10 @@ export default class Core {
 		if (!(e.metaKey || e.ctrlKey)) {
 			const target = processUrl(e.currentTarget.href)
 			this.currentLocation = processUrl(window.location.href)
+
+			if (this.currentLocation.host !== target.host) {
+				return
+			}
 
 			// the target is a new URL, or is removing the hash from the current URL
 			if (this.currentLocation.href !== target.href || (this.currentLocation.hasHash && !target.hasHash)) {
@@ -409,7 +413,7 @@ export default class Core {
 		return {
 			page,
 			content,
-			scripts: this.reloadJsFilter ? [...page.querySelectorAll('script:not([data-no-reload])')].filter(this.reloadJsFilter) : [],
+			scripts: this.reloadJsFilter ? [...page.querySelectorAll('script')].filter(this.reloadJsFilter) : [],
 			title: page.title,
 			renderer: new Renderer({
 				wrapper: this.wrapper,

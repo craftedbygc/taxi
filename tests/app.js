@@ -15,7 +15,6 @@ E.on('DOMContentLoaded', window, function() {
 			default: DefaultTransition,
 			override: OverrideTransition
 		},
-		reloadJsFilter: false
 	})
 
 	// update cache testing

@@ -281,26 +281,33 @@ It will also parse and execute inline js, allowing you to add data to the `windo
 If enabled, this feature will run just after the `NAVIGATE_IN` event, after the new content has been appended to the DOM, but before the `Renderer.onEnter` method is called.
 
 ### Choosing which scripts are reloaded
-By default all js is parsed and reloaded/executed.
-
-To stop this behaviour for a specific script, just add `data-no-reload` to the script tag to make Taxi skip it.
+By default, only scripts with the `data-taxi-reload` attribute are reloaded after a navigation.
 
 ```html
 <!-- reloaded -->
-<script src="/foo.js" />
+<script src="/foo.js" data-taxi-reload />
 
 <!-- this is not reloaded -->
-<script src="/bar.js" data-no-reload />
+<script src="/bar.js" />
 ```
-This isn't always possible however as you might not have control over the `<script />` tags. In these instances, `reloadJsFilter` accepts a callback function to filter  each `script` tag and return a `boolean` to indicate if it should be reloaded or not.
+In certain situations, you may not have control over the `<script />` tags directly. Luckily `reloadJsFilter` accepts a callback function to filter scripts on the new page and decide which to load. 
 
-Here is the default `reloadJsFilter` as an example which ensures browserSync is not reloaded by default:
+Your callback is passed the `script` element, and must return a boolean indicating whether the script should be reloaded or not (you could check the src or id attributes for example).
+
+Here is the default callback for `reloadJsFilter`:
 
 ```js
-reloadJsFilter = (element) => !(element?.id === '__bs_script__' || element?.src.includes('browser-sync-client.js'))
+ (element) => element.dataset.taxiReload !== undefined
 ```
 
-Providing a callback as the one above provides you with fine control over which scripts are reloaded.
+and here is a custom example:
+```js
+import { Core } from '@unseenco/taxi'
+
+const Taxi = new Core({
+  reloadJsFilter: (element) => element.dataset.taxiReload !== undefined || element.src?.match('bar.js')
+})
+```
 
 
 ### Disabling this feature

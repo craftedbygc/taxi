@@ -444,7 +444,12 @@ var Core = /*#__PURE__*/function () {
     _defineProperty(this, "onClick", function (e) {
       if (!(e.metaKey || e.ctrlKey)) {
         var target = (0,_helpers__WEBPACK_IMPORTED_MODULE_2__.processUrl)(e.currentTarget.href);
-        _this.currentLocation = (0,_helpers__WEBPACK_IMPORTED_MODULE_2__.processUrl)(window.location.href); // the target is a new URL, or is removing the hash from the current URL
+        _this.currentLocation = (0,_helpers__WEBPACK_IMPORTED_MODULE_2__.processUrl)(window.location.href);
+
+        if (_this.currentLocation.host !== target.host) {
+          return;
+        } // the target is a new URL, or is removing the hash from the current URL
+
 
         if (_this.currentLocation.href !== target.href || _this.currentLocation.hasHash && !target.hasHash) {
           e.preventDefault(); // noinspection JSIgnoredPromiseFromCall
@@ -491,7 +496,7 @@ var Core = /*#__PURE__*/function () {
     } : _parameters$transitio,
         _parameters$reloadJsF = parameters.reloadJsFilter,
         reloadJsFilter = _parameters$reloadJsF === void 0 ? function (element) {
-      return !((element === null || element === void 0 ? void 0 : element.id) === '__bs_script__' || element !== null && element !== void 0 && element.src.includes('browser-sync-client.js'));
+      return element.dataset.taxiReload !== undefined;
     } : _parameters$reloadJsF;
     this.renderers = renderers;
     this.transitions = transitions;
@@ -748,7 +753,7 @@ var Core = /*#__PURE__*/function () {
     }
     /**
      * @private
-     * @param {{ raw: string, href: string, hasHash: boolean, pathname: string }} url
+     * @param {{ raw: string, href: string, host: string, hasHash: boolean, pathname: string }} url
      * @param {Transition} TransitionClass
      * @param {CacheEntry} entry
      * @param {string|HTMLElement|false} trigger
@@ -801,7 +806,7 @@ var Core = /*#__PURE__*/function () {
     value: function loadScripts(cachedScripts) {
       var newScripts = _toConsumableArray(cachedScripts);
 
-      var currentScripts = _toConsumableArray(document.querySelectorAll('script:not([data-no-reload])')).filter(this.reloadJsFilter); // loop through all new scripts
+      var currentScripts = _toConsumableArray(document.querySelectorAll('script')).filter(this.reloadJsFilter); // loop through all new scripts
 
 
       for (var i = 0; i < currentScripts.length; i++) {
@@ -923,7 +928,7 @@ var Core = /*#__PURE__*/function () {
       return {
         page: page,
         content: content,
-        scripts: this.reloadJsFilter ? _toConsumableArray(page.querySelectorAll('script:not([data-no-reload])')).filter(this.reloadJsFilter) : [],
+        scripts: this.reloadJsFilter ? _toConsumableArray(page.querySelectorAll('script')).filter(this.reloadJsFilter) : [],
         title: page.title,
         renderer: new Renderer({
           wrapper: this.wrapper,
@@ -1328,7 +1333,7 @@ function parseDom(html) {
 /**
  * Extract details from a given URL string. Assumed to be on the current TLD.
  * @param {string} url
- * @return {{raw: string, href: string, hasHash: boolean, pathname: string}}
+ * @return {{raw: string, href: string, host: string, hasHash: boolean, pathname: string}}
  */
 
 function processUrl(url) {
@@ -1342,6 +1347,7 @@ function processUrl(url) {
   return {
     hasHash: details.hash.length > 0,
     pathname: details.pathname,
+    host: details.host,
     raw: url,
     href: normalized || details.href
   };
@@ -8630,8 +8636,7 @@ _unseenco_e__WEBPACK_IMPORTED_MODULE_0__["default"].on('DOMContentLoaded', windo
     transitions: {
       "default": _transitions_DefaultTransition__WEBPACK_IMPORTED_MODULE_3__["default"],
       override: _transitions_OverrideTransition__WEBPACK_IMPORTED_MODULE_4__["default"]
-    },
-    reloadJsFilter: false
+    }
   }); // update cache testing
 
   _unseenco_e__WEBPACK_IMPORTED_MODULE_0__["default"].delegate('click', '#add-content', function () {

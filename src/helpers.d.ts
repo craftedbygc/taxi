@@ -7,11 +7,12 @@ export function parseDom(html: string | Document): Document | any;
 /**
  * Extract details from a given URL string. Assumed to be on the current TLD.
  * @param {string} url
- * @return {{raw: string, href: string, hasHash: boolean, pathname: string}}
+ * @return {{raw: string, href: string, host: string, hasHash: boolean, pathname: string}}
  */
 export function processUrl(url: string): {
     raw: string;
     href: string;
+    host: string;
     hasHash: boolean;
     pathname: string;
 };
