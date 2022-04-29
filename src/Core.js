@@ -1,6 +1,7 @@
 import E from '@unseenco/e'
 import { appendScript, parseDom, processUrl, reloadScript } from './helpers'
-import { Transition, Renderer } from './taxi'
+import Transition from './Transition'
+import Renderer from './Renderer'
 import RouteStore from './RouteStore'
 
 /**

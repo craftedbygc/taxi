@@ -185,6 +185,6 @@ export type CacheEntry = {
     title: string;
     content: HTMLElement | Element;
 };
-import { Renderer } from "./taxi";
-import { Transition } from "./taxi";
+import Renderer from "./Renderer";
+import Transition from "./Transition";
 import RouteStore from "./RouteStore";
