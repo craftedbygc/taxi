@@ -1,4 +1,4 @@
-import { Transition } from '../../src/taxi'
+import { Transition } from '../../../../src/taxi'
 import gsap from 'gsap'
 
 export default class DefaultTransition extends Transition {

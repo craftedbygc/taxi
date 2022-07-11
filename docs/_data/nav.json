@@ -1,0 +1,28 @@
+{
+  "pages": [
+    {
+      "name": "How To use",
+      "title": ""
+    },
+    {
+      "name": "Renderers",
+      "title": ""
+    },
+    {
+      "name": "Transitions",
+      "title": ""
+    },
+    {
+      "name": "Routing",
+      "title": ""
+    },
+    {
+      "name": "Reloading JS",
+      "title": ""
+    },
+    {
+      "name": "API",
+      "title": ""
+    }
+  ]
+}

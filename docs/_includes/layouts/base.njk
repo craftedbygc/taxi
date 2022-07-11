@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+
+	<title>{{ title }} - Taxi.js</title>
+	<meta name="description" content="{{ description }}">
+	<meta name="author" content="unseen.co">
+	<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=1">
+
+	<link rel="stylesheet" href="{% asset '/assets/css/index.css' %}">
+</head>
+
+<body class="inner">
+	<div class="h-screen fixed top left z-10 bg-yellow-300 js-overlay"></div>
+
+	<nav class="fixed top left h-screen bg-amber-500 p-4 z-10 px-8 w-80">
+		<div>Taxi.js</div>
+		<ul class="  text-lg font-medium">
+			{% for page in nav.pages %}
+				<li class="my-4"><a href="/{{ page.name | slugify }}/">{{ loop.index }}. {{ page.name }}</a></li>
+			{% endfor %}
+		</ul>
+	</nav>
+
+	<div data-taxi>
+		<div data-taxi-view class="index">
+			<main class="ml-80 py-16 px-8 ">
+				<div class="prose prose-lg max-w-screen-lg prose-stone">
+					{% block content %}{% endblock %}
+					{{ content | safe }}
+				</div>
+			</main>
+		</div>
+	</div>
+
+	<div class="h-screen fixed top left z-5 bg-yellow-300 js-overlay w-72"></div>
+
+	<script src="{% asset '/assets/js/index.js' %}"></script>
+</body>
+</html>

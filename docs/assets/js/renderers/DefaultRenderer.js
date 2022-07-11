@@ -1,8 +1,12 @@
-import { Renderer } from '../../src/taxi'
+import { Renderer } from '../../../../src/taxi'
+import Prism from 'prismjs';
 
 export default class DefaultRenderer extends Renderer {
 	onEnter() {
 		console.log('view on enter', this.content)
+
+		Prism.manual = true;
+		Prism.highlightAll()
 	}
 
 	onEnterCompleted() {
@@ -17,5 +21,3 @@ export default class DefaultRenderer extends Renderer {
 		console.log('view on leave completed', this.content)
 	}
 }
-
-// todo promisify?
