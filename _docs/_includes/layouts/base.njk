@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en font-inter">
+<head>
+	<meta charset="utf-8">
+
+	<title>Taxi.js - {{ title }}</title>
+	<meta name="description" content="{{ global.metaDesc }}">
+	<meta name="author" content="unseen.co">
+	<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=1">
+
+	<link rel="preload" href="/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+	<link rel="preload" href="/fonts/NeueMontreal-Regular.woff2" as="font" type="font/woff2" crossorigin>
+
+	<link rel="stylesheet" href="{% asset '/assets/css/index.css' %}">
+</head>
+
+<body class="inner dark:bg-neutral-900">
+	<div class="h-screen fixed top left z-10 bg-neutral-200 dark:bg-neutral-700 js-overlay"></div>
+
+	{% include "nav.njk" %}
+
+	<div data-taxi class="dark:bg-neutral-900 selection:bg-taxi selection:text-black outline-black dark:outline-white">
+		<div data-taxi-view class="index">
+			<main class="lg:ml-64 2xl:ml-80 pb-16 pt-36 px-4 sm:px-8 relative z-10">
+				<div class="prose-sm md:prose 2xl:prose-lg prose-neutral md:max-w-full lg:prose 2xl:max-w-screen-lg prose-stone dark:prose-invert">
+					{% block content %}{% endblock %}
+					{{ content | safe }}
+				</div>
+			</main>
+
+			<div class="fixed right-4 bottom-4 md:right-12 md:bottom-12 2xl:right-20 2xl:bottom-20 w-full h-full max-w-[20vh] max-h-[20vh] md:max-w-[35vh] md:max-h-[35vh] 2xl:max-w-[40vh] 2xl:max-h-[40vh] bg-contain z-0">
+				<svg class="fill-zinc-100 dark:fill-[#1f1f1f] w-full h-full" width="478" height="478" viewBox="0 0 478 478" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<path d="M152.694 0H6.63889C2.97233 0 0 2.97233 0 6.63889V152.694C0 156.361 2.97233 159.333 6.63889 159.333H152.694C156.361 159.333 159.333 156.361 159.333 152.694V6.63889C159.333 2.97233 156.361 0 152.694 0Z" />
+					<path d="M179.25 159.267L159.333 179.184C159.333 173.901 157.235 168.836 153.5 165.101C149.765 161.365 144.699 159.267 139.417 159.267L159.333 139.35C159.213 144.501 161.092 149.498 164.578 153.292C166.485 155.239 168.771 156.773 171.294 157.801C173.818 158.829 176.526 159.328 179.25 159.267Z" />
+					<path d="M338.583 318.6L318.667 338.517C318.667 333.235 316.568 328.169 312.833 324.434C309.098 320.699 304.032 318.6 298.75 318.6L318.667 298.684C318.546 303.834 320.426 308.831 323.911 312.625C325.818 314.572 328.104 316.106 330.628 317.134C333.151 318.162 335.859 318.661 338.583 318.6Z" />
+					<path d="M318.667 179.184L298.75 159.267C304.032 159.267 309.098 157.169 312.833 153.433C316.568 149.698 318.667 144.633 318.667 139.35L338.583 159.267C335.94 159.164 333.305 159.609 330.842 160.574C328.379 161.538 326.142 163.002 324.272 164.872C322.402 166.742 320.938 168.979 319.973 171.442C319.009 173.905 318.564 176.541 318.667 179.184Z" />
+					<path d="M312.028 159.333H165.972C162.306 159.333 159.333 162.306 159.333 165.972V312.028C159.333 315.694 162.306 318.667 165.972 318.667H312.028C315.694 318.667 318.667 315.694 318.667 312.028V165.972C318.667 162.306 315.694 159.333 312.028 159.333Z" />
+					<path d="M471.361 0H325.306C321.639 0 318.667 2.97233 318.667 6.63889V152.694C318.667 156.361 321.639 159.333 325.306 159.333H471.361C475.028 159.333 478 156.361 478 152.694V6.63889C478 2.97233 475.028 0 471.361 0Z" />
+					<path d="M471.361 318.667H325.306C321.639 318.667 318.667 321.639 318.667 325.306V471.361C318.667 475.028 321.639 478 325.306 478H471.361C475.028 478 478 475.028 478 471.361V325.306C478 321.639 475.028 318.667 471.361 318.667Z" />
+				</svg>
+
+			</div>
+		</div>
+	</div>
+
+	<script src="{% asset '/assets/js/index.js' %}"></script>
+</body>
+</html>

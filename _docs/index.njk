@@ -1,0 +1,80 @@
+---
+title: Vanilla Javascript Page Transitions Manager
+---
+{% extends 'layouts/base.njk' %}
+
+{% block content %}
+	<h1>Taxi.js</h1>
+
+	<h2>Taxi is a 🤏 small and 🐊 snappy js library for adding <i>slick</i> PJAX navigation and <span class="whitespace-nowrap bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 px-2">beautiful transitions</span> to
+		your website.</h2>
+
+	<p>It was designed as a drop-in replacement (with enhancements) for <a href="https://highway.js.org/" rel="nofollow noopener" target="_blank">Highway.js</a>, which is sadly no longer maintained.</p>
+
+	<h2>Improvements over Highway:</h2>
+	<ul>
+		<li>
+			<span>URL-based routing</span>
+			<div class="text-sm">Perfect for working with WebGL websites, you can now specify unique transitions for every possible navigation.</div>
+		</li>
+		<li>
+			<span>Page cache management</span>
+			<div class="text-sm">Perfect for archives and search result pages, you can now preserve changes made to the DOM by user interaction.</div>
+		</li>
+		<li>
+			<span>Ability to preload URLs</span>
+			<div class="text-sm">First-class support for adding pages to the cache ahead of schedule.</div>
+		</li>
+		<li>
+			<span>Blocks navigation during an active transition</span>
+			<div class="text-sm">Stop users from performing state-breaking navigation by default.</div>
+		</li>
+		<li>
+			<span>Auto-run javascript on the new page</span>
+			<div class="text-sm">If you are using a CMS or splitting your JS into page-specific modules, we have you covered.</div>
+		</li>
+		<li>
+			<span>Previous page's content is automatically removed (you can opt out of this if you like)</span>
+			<div class="text-sm">Clean code, clean mind.</div>
+		</li>
+		<li>
+			<span>Click events on links can be intercepted via <code>stopPropagation</code> without hacks</span>
+			<div class="text-sm">This finally works as you expect.</div>
+		</li>
+	</ul>
+
+
+	<h2>Differences to Highway</h2>
+	<ul>
+		<li>
+			<span>Different public API</span>
+			<div class="text-sm">Check it out on the <a href="/api-events/">API & events reference</a>.</div>
+		</li>
+		<li>
+			<span>Different data attributes</span>
+			<div class="text-sm"><code>data-taxi</code> and <code>data-taxi-view</code> are to be used instead of <code>data-router-wrapper</code> and <code>data-router-view</code> respectively. See <a href="/how-to-use/">how to use</a> for more.</div>
+		</li>
+		<li>
+			<span><code>attach</code> and <code>detach</code> are no longer methods</span>
+			<div class="text-sm">Link clicks are listened to via delegation so these are no longer needed.</div>
+		</li>
+		<li>
+			<span><code>redirect</code> is now <code>navigateTo</code></span>
+			<div class="text-sm">It always felt weird as a method name, and now it doesn't.</div>
+		</li>
+		<li>
+			<span>Renderers now have an <code>initialLoad</code> method</span>
+			<div class="text-sm">Nice and simple.</div>
+		</li>
+	</ul>
+
+	<h2>Contributors</h2>
+	<p>Made with ❤️ by <a href="https://twitter.com/jakewhiteleydev" target="_blank">Jake Whiteley</a>, and feedback from the <a href="https://twitter.com/okaydevs" target="_blank">Okay Dev community</a>.</p>
+
+	<div class="border rounded-sm p-4 mt-16">
+		<div class="text-sm mb-2 font-bold">What's next:</div>
+		<div>
+			<a href="/how-to-use/">How To Use</a>
+		</div>
+	</div>
+{%  endblock %}

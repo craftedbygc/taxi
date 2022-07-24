@@ -1,8 +1,8 @@
-docs
 .idea/
 node_modules/
 *.mix.js
 tsconfig.json
 .gitignore
 .eleventy.js
-_site
+_docs
+tests

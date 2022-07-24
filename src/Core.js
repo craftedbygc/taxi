@@ -31,6 +31,7 @@ export default class Core {
 	 * @param {{
 	 * 		links?: string,
 	 * 		removeOldContent?: boolean,
+	 * 		allowInterruption?: boolean,
 	 * 		renderers?: Object.<string, Renderer>,
 	 * 		transitions?: Object.<string, Transition>,
 	 * 		reloadJsFilter?: boolean|function(HTMLElement): boolean
@@ -40,6 +41,7 @@ export default class Core {
 		const {
 			links = 'a:not([target]):not([href^=\\#]):not([data-taxi-ignore])',
 			removeOldContent = true,
+			allowInterruption = false,
 			renderers = {
 				default: Renderer
 			},
@@ -56,6 +58,7 @@ export default class Core {
 		this.wrapper = document.querySelector('[data-taxi]')
 		this.reloadJsFilter = reloadJsFilter
 		this.removeOldContent = removeOldContent
+		this.allowInterruption = allowInterruption
 		this.cache = new Map()
 
 		// Add delegated link events
@@ -156,7 +159,7 @@ export default class Core {
 	navigateTo(url, transition = false, trigger = false) {
 		return new Promise((resolve, reject) => {
 			// Don't allow multiple navigations to occur at once
-			if (this.isTransitioning) {
+			if (!this.allowInterruption && this.isTransitioning) {
 				reject(new Error('A transition is currently in progress'))
 				return
 			}
@@ -342,7 +345,7 @@ export default class Core {
 			return false
 		}
 
-		if (this.isTransitioning) {
+		if (!this.allowInterruption && this.isTransitioning) {
 			// overwrite history state with current page if currently navigating
 			window.history.pushState({}, '', this.currentLocation.href)
 			return false

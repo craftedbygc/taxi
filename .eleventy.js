@@ -1,9 +1,11 @@
-const htmlmin = require("html-minifier");
+const htmlmin = require("html-minifier")
+const markdownIt = require("markdown-it")
+const anchors = require('markdown-it-anchor')
 const date = Date.now()
 
 function getFromManifest(name) {
 	try {
-		const assets = require("./_site/mix-manifest.json")
+		const assets = require("./documentation/mix-manifest.json")
 
 		if (name[0] !== '/') {
 			name = '/' + name
@@ -16,7 +18,7 @@ function getFromManifest(name) {
 }
 
 module.exports = function (eleventyConfig) {
-	eleventyConfig.addPassthroughCopy({ "docs/_public": '/' })
+	eleventyConfig.addPassthroughCopy({ "_docs/_public": '/' })
 
 	/**
 	 * Add the asset shortcode to fetch an asset name from mix-manifest.json
@@ -28,7 +30,7 @@ module.exports = function (eleventyConfig) {
 	});
 
 	eleventyConfig.addTransform("htmlmin", function(content, outputPath) {
-		if( outputPath && outputPath.endsWith(".html") ) {
+		if (outputPath && outputPath.endsWith(".html")) {
 			return htmlmin.minify(content, {
 				useShortDoctype: true,
 				removeComments: true,
@@ -40,8 +42,22 @@ module.exports = function (eleventyConfig) {
 		return content;
 	});
 
+	eleventyConfig.addFilter('stringify', (value) => {
+		return JSON.stringify(value)
+	})
+
+
+	let markdownLibrary = markdownIt({
+		html: true
+	})
+		.use(anchors, {
+			tabIndex: false
+		});
+
+	eleventyConfig.setLibrary("md", markdownLibrary);
+
 	return {
-		dir: { input: 'docs', data: '_data' },
+		dir: { input: '_docs', output: 'documentation', data: '_data' },
 		passthroughFileCopy: true,
 		templateFormats: ['njk', 'md', 'html'],
 		htmlTemplateEngine: 'njk'

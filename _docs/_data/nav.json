@@ -1,0 +1,32 @@
+{
+  "pages": [
+    {
+      "name": "How To use",
+      "slug": "how-to-use"
+    },
+    {
+      "name": "Renderers",
+      "slug": "renderers"
+    },
+    {
+      "name": "Transitions",
+      "slug": "transitions"
+    },
+    {
+      "name": "Routing",
+      "slug": "routing"
+    },
+    {
+      "name": "Navigation Lifecycle",
+      "slug": "navigation-lifecycle"
+    },
+    {
+      "name": "Reloading JS",
+      "slug": "reloading-js"
+    },
+    {
+      "name": "API & Events",
+      "slug": "api-events"
+    }
+  ]
+}

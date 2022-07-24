@@ -12,6 +12,7 @@ export default class Core {
      * @param {{
      * 		links?: string,
      * 		removeOldContent?: boolean,
+     * 		allowInterruption?: boolean,
      * 		renderers?: Object.<string, Renderer>,
      * 		transitions?: Object.<string, Transition>,
      * 		reloadJsFilter?: boolean|function(HTMLElement): boolean
@@ -20,6 +21,7 @@ export default class Core {
     constructor(parameters?: {
         links?: string;
         removeOldContent?: boolean;
+        allowInterruption?: boolean;
         renderers?: {
             [x: string]: Renderer;
         };
@@ -52,6 +54,7 @@ export default class Core {
     wrapper: Element;
     reloadJsFilter: boolean | ((element: HTMLElement) => boolean);
     removeOldContent: boolean;
+    allowInterruption: boolean;
     currentLocation: {
         raw: string;
         href: string;
