@@ -5,6 +5,7 @@
 
 	<title>Taxi.js - {{ title }}</title>
 	<meta name="description" content="{{ global.metaDesc }}">
+
 	<meta name="author" content="unseen.co">
 	<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=1">
 	<link rel="apple-touch-icon" sizes="180x180" href="{{ global.url }}/apple-touch-icon.png">
@@ -13,6 +14,20 @@
 	<link rel="manifest" href="{{ global.url }}/site.webmanifest">
 	<meta name="msapplication-TileColor" content="#F4BA00">
 	<meta name="theme-color" content="#ffffff">
+
+	<!-- Facebook -->
+	<meta property="og:url" content="{{ global.url }}" />
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content="Taxi.js - {{ title }}" />
+	<meta property="og:description" content="{{ global.metaDesc }}" />
+	<meta property="og:image" content="{{ global.url }}/social.jpg" />
+
+	<!-- Twitter -->
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:site" content="@Anthodpnt" />
+	<meta name="twitter:title" content="Taxi.js - {{ title }}" />
+	<meta name="twitter:description" content="{{ global.metaDesc }}" />
+	<meta name="twitter:image" content="{{ global.url }}/social.jpg" />
 
 	<link rel="preload" href="{{ global.url }}/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
 	<link rel="preload" href="{{ global.url }}/fonts/NeueMontreal-Regular.woff2" as="font" type="font/woff2" crossorigin>
