@@ -5,7 +5,7 @@ const date = Date.now()
 
 function getFromManifest(name) {
 	try {
-		const assets = require("./documentation/mix-manifest.json")
+		const assets = require("./docs/mix-manifest.json")
 
 		if (name[0] !== '/') {
 			name = '/' + name
@@ -57,7 +57,7 @@ module.exports = function (eleventyConfig) {
 	eleventyConfig.setLibrary("md", markdownLibrary);
 
 	return {
-		dir: { input: '_docs', output: 'documentation', data: '_data' },
+		dir: { input: '_docs', output: 'docs', data: '_data' },
 		passthroughFileCopy: true,
 		templateFormats: ['njk', 'md', 'html'],
 		htmlTemplateEngine: 'njk'
