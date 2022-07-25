@@ -5,4 +5,5 @@ tsconfig.json
 .gitignore
 .eleventy.js
 _docs
+documentation
 tests
