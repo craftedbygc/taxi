@@ -95,7 +95,7 @@ These are for special cases really, as browser navigation (back/forward buttons)
 ### 2. Route Transition
 The navigation had no explicit Transition associated with it, so Taxi will next check the defined routes to see if a contextual transition can be matched.
 
-Learn more about [routing and transitions](#routing).
+Learn more about [routing]({{ global.url }}/routing/).
 
 ### 3. Default Transition
 If there was no explicit transition, and no matches from the router, finally the default transition will be used.
