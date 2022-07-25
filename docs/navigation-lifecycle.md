@@ -4,12 +4,12 @@ title: Navigation Lifecycle
 ---
 
 # Navigation Lifecycle
-Now that you understand [Renderers](/renderers) and [Transitions](/transitions/), how does it all fit together?
+Now that you understand [Renderers]({{ global.url }}/renderers) and [Transitions]({{ global.url }}/transitions/), how does it all fit together?
 
 Let's use a **real world example** to find out:
 
 1. A user clicks a link in your app
-2. Taxi [checks to see which Transition](/transitions/#how-transitions-are-chosen) should be used
+2. Taxi [checks to see which Transition]({{ global.url }}/transitions/#how-transitions-are-chosen) should be used
 3. The current Renderer's `onLeave` method is called
 4. Then the chosen Transition's `onLeave`
 5. Then the Renderer's `onLeaveCompleted`
@@ -22,6 +22,6 @@ Let's use a **real world example** to find out:
 <div class="border rounded-sm p-4 mt-16">
     <div class="text-sm mb-2 font-bold">What's next:</div>
     <div>
-        <a href="/reloading-js/">Reloading JS</a>
+        <a href="{{ global.url }}/reloading-js/">Reloading JS</a>
     </div>
 </div>

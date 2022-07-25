@@ -7,7 +7,7 @@
 	</div>
 
 	<div>
-		<a href="/" aria-label="back to homepage">
+		<a href="{{ global.url }}/" aria-label="back to homepage">
 			<svg class="fill-black dark:fill-white" width="151" height="48" viewBox="0 0 151 48" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
 				<path d="M9.22534 0H0.401102C0.179579 0 0 0.179086 0 0.4V9.2C0 9.42091 0.179579 9.6 0.401102 9.6H9.22534C9.44686 9.6 9.62644 9.42091 9.62644 9.2V0.4C9.62644 0.179086 9.44686 0 9.22534 0Z" />
 				<path d="M10.8297 9.60002L9.6264 10.8C9.6264 10.4818 9.49963 10.1765 9.27397 9.95149C9.0483 9.72645 8.74223 9.60002 8.4231 9.60002L9.6264 8.40002C9.6202 8.55927 9.64705 8.71809 9.70533 8.86648C9.76361 9.01487 9.85203 9.14964 9.96503 9.26233C10.078 9.37502 10.2132 9.46315 10.362 9.52126C10.5108 9.57938 10.67 9.60621 10.8297 9.60002Z" />
@@ -47,7 +47,7 @@
 		<ul class="text-lg font-medium font-mono pt-28 px-4 sm:px-8 js-nav">
 			{% for nav in nav.pages %}
 				<li class="my-3 sm:my-4 overflow-hidden {% if page.fileSlug == nav.slug %} active {% endif %}">
-					<a href="/{{ nav.slug }}/" class="inline-flex items-center translate-x-[-8px] transition-transform transform-gpu hover:text-neutral-800"><span class="inline-block  h-4 w-[6px] mr-2 bg-neutral-900"></span>{{ nav.name }}</a>
+					<a href="{{ global.url }}/{{ nav.slug }}/" class="inline-flex items-center translate-x-[-8px] transition-transform transform-gpu hover:text-neutral-800"><span class="inline-block  h-4 w-[6px] mr-2 bg-neutral-900"></span>{{ nav.name }}</a>
 				</li>
 			{% endfor %}
 		</ul>

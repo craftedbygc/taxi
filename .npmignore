@@ -4,6 +4,6 @@ node_modules/
 tsconfig.json
 .gitignore
 .eleventy.js
-_docs
 docs
+_site
 tests

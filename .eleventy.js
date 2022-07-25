@@ -5,7 +5,7 @@ const date = Date.now()
 
 function getFromManifest(name) {
 	try {
-		const assets = require("./docs/mix-manifest.json")
+		const assets = require("./_site/mix-manifest.json")
 
 		if (name[0] !== '/') {
 			name = '/' + name
@@ -18,7 +18,7 @@ function getFromManifest(name) {
 }
 
 module.exports = function (eleventyConfig) {
-	eleventyConfig.addPassthroughCopy({ "_docs/_public": '/' })
+	eleventyConfig.addPassthroughCopy({ "docs/_public": '/' })
 
 	/**
 	 * Add the asset shortcode to fetch an asset name from mix-manifest.json
@@ -57,7 +57,7 @@ module.exports = function (eleventyConfig) {
 	eleventyConfig.setLibrary("md", markdownLibrary);
 
 	return {
-		dir: { input: '_docs', output: 'docs', data: '_data' },
+		dir: { input: 'docs', data: '_data' },
 		passthroughFileCopy: true,
 		templateFormats: ['njk', 'md', 'html'],
 		htmlTemplateEngine: 'njk'

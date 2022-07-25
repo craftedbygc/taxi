@@ -4,7 +4,7 @@ title: Routing
 ---
 
 # Routing
-Routing in Taxi is used to choose which [Transition](/transitions/) to choose when a user performs a navigation.
+Routing in Taxi is used to choose which [Transition]({{ global.url }}/transitions/) to choose when a user performs a navigation.
 
 They are defined via the `addRoute` method, and consist of a regex to run against the current URL, a regex to run against the new URL after the navigation, and the transition to use if matched.
 
@@ -53,6 +53,6 @@ This is because the first example registers the catch-all **before** the specifi
 <div class="border rounded-sm p-4 mt-16">
     <div class="text-sm mb-2 font-bold">What's next:</div>
     <div>
-        <a href="/navigation-lifecycle/">Navigation Lifecycle</a>
+        <a href="{{ global.url }}/navigation-lifecycle/">Navigation Lifecycle</a>
     </div>
 </div>

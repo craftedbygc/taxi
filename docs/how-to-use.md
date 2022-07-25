@@ -59,11 +59,11 @@ const Taxi = new Core({ ... })
 Let's look at these in more detail.
 
 ### renderers `Object.<string, Renderer>`
-Please see [Renderers](/renderers/) for more information.
+Please see [Renderers]({{ global.url }}/renderers/) for more information.
 
 
 ### transitions `Object.<string, Transition>`
-Please see [Transitions](/transitions/) for more information.
+Please see [Transitions]({{ global.url }}/transitions/) for more information.
 
 ### links `string`
 Links is a CSS selector which Taxi uses to decide if a clicked link should be transitioned or not.
@@ -88,12 +88,12 @@ Taxi block any further navigation while a transition is in progress. Set this to
 
 
 ### reloadJsFilter `bool|function(element: HTMLElement)`
-Please see [Reloading JS](/reloading-js/) for more information.
+Please see [Reloading JS]({{ global.url }}/reloading-js/) for more information.
 
 
 <div class="border rounded-sm p-4 mt-16">
     <div class="text-sm mb-2 font-bold">What's next:</div>
     <div>
-        <a href="/renderers/">Renderers</a>
+        <a href="{{ global.url }}/renderers/">Renderers</a>
     </div>
 </div>

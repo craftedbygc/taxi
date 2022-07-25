@@ -122,6 +122,6 @@ export default class CustomRenderer extends Renderer {
 <div class="border rounded-sm p-4 mt-16">
     <div class="text-sm mb-2 font-bold">What's next:</div>
     <div>
-        <a href="/transitions/">Transitions</a>
+        <a href="{{ global.url }}/transitions/">Transitions</a>
     </div>
 </div>

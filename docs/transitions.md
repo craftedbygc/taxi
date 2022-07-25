@@ -39,7 +39,7 @@ export default class MyTransition extends Transition {
 `this.wrapper` is also available, which is a reference to the main `data-taxi` container.
 
 ## Registering a transition
-As with [renderers](/renderers/), when initializing Taxi you should pass through an object of Transitions to register:
+As with [renderers]({{ global.url }}/renderers/), when initializing Taxi you should pass through an object of Transitions to register:
 
 ```js
 import MyTransition from './transitions/MyTransition'
@@ -103,6 +103,6 @@ If there was no explicit transition, and no matches from the router, finally the
 <div class="border rounded-sm p-4 mt-16">
     <div class="text-sm mb-2 font-bold">What's next:</div>
     <div>
-        <a href="/routing/">Routing</a>
+        <a href="{{ global.url }}/routing/">Routing</a>
     </div>
 </div>

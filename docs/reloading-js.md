@@ -54,6 +54,6 @@ const Taxi = new Core({
 <div class="border rounded-sm p-4 mt-16">
     <div class="text-sm mb-2 font-bold">What's next:</div>
     <div>
-        <a href="/api-events/">API & Events</a>
+        <a href="{{ global.url }}/api-events/">API & Events</a>
     </div>
 </div>

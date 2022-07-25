@@ -7,17 +7,17 @@
 	<meta name="description" content="{{ global.metaDesc }}">
 	<meta name="author" content="unseen.co">
 	<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=1">
-	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-	<link rel="manifest" href="/site.webmanifest">
+	<link rel="apple-touch-icon" sizes="180x180" href="{{ global.url }}/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="{{ global.url }}/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="{{ global.url }}/favicon-16x16.png">
+	<link rel="manifest" href="{{ global.url }}/site.webmanifest">
 	<meta name="msapplication-TileColor" content="#F4BA00">
 	<meta name="theme-color" content="#ffffff">
 
-	<link rel="preload" href="/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
-	<link rel="preload" href="/fonts/NeueMontreal-Regular.woff2" as="font" type="font/woff2" crossorigin>
+	<link rel="preload" href="{{ global.url }}/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+	<link rel="preload" href="{{ global.url }}/fonts/NeueMontreal-Regular.woff2" as="font" type="font/woff2" crossorigin>
 
-	<link rel="stylesheet" href="{% asset '/assets/css/index.css' %}">
+	<link rel="stylesheet" href="{{ global.url }}{% asset '/assets/css/index.css' %}">
 </head>
 
 <body class="inner dark:bg-neutral-900">
@@ -49,6 +49,6 @@
 		</div>
 	</div>
 
-	<script src="{% asset '/assets/js/index.js' %}"></script>
+	<script src="{{ global.url }}{% asset '/assets/js/index.js' %}"></script>
 </body>
 </html>
