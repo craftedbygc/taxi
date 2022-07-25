@@ -7,3 +7,5 @@ tsconfig.json
 docs
 _site
 tests
+.nojekyll
+.github
