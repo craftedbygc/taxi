@@ -16,4 +16,12 @@ Let's use a **real world example** to find out:
 6. Next, Taxi will go and fetch the new page the user has requested, and swap the current page's content to this new content as soon as it's ready
 7. Taxi will look at the new page content and call the `onEnter` method of the Renderer set via the new page's `data-taxi-view` attribute, or the default if not defined
 8. Then call the Transition's `onEnter` method
-9. Finally when the transition is all finished, the new Renderer's `onEnterComplete` is called
+9. Finally, when the transition is all finished, the new Renderer's `onEnterComplete` is called
+
+
+<div class="border rounded-sm p-4 mt-16">
+    <div class="text-sm mb-2 font-bold">What's next:</div>
+    <div>
+        <a href="/reloading-js/">Reloading JS</a>
+    </div>
+</div>

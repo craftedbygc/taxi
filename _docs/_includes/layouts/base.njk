@@ -7,6 +7,12 @@
 	<meta name="description" content="{{ global.metaDesc }}">
 	<meta name="author" content="unseen.co">
 	<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=1">
+	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+	<link rel="manifest" href="/site.webmanifest">
+	<meta name="msapplication-TileColor" content="#F4BA00">
+	<meta name="theme-color" content="#ffffff">
 
 	<link rel="preload" href="/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
 	<link rel="preload" href="/fonts/NeueMontreal-Regular.woff2" as="font" type="font/woff2" crossorigin>
@@ -21,7 +27,7 @@
 
 	<div data-taxi class="dark:bg-neutral-900 selection:bg-taxi selection:text-black outline-black dark:outline-white">
 		<div data-taxi-view class="index">
-			<main class="lg:ml-64 2xl:ml-80 pb-16 pt-36 px-4 sm:px-8 relative z-10">
+			<main class="dark:text-white lg:ml-72 2xl:ml-80 pb-16 pt-36 px-4 sm:px-8 relative z-10">
 				<div class="prose-sm md:prose 2xl:prose-lg prose-neutral md:max-w-full lg:prose 2xl:max-w-screen-lg prose-stone dark:prose-invert">
 					{% block content %}{% endblock %}
 					{{ content | safe }}

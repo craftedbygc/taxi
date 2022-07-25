@@ -4,7 +4,7 @@ title: Reloading JS
 ---
 
 # Running JS on New Pages
-Taxi allows automatic reload and running of js present on a fetched page during the navigation cycle. This is especially useful when working with traditional CMS's such as WordPress or Magento, or if you wanted to split your js if you have a particularly heavy page.
+Taxi can reload and run js present on a fetched page during the navigation cycle. This is especially useful when working with traditional CMSs such as WordPress or Magento, or if you wanted to split your js if you have a particularly heavy page.
 
 It will also parse and execute inline js, allowing you to add data to the `window` object for example.
 
@@ -35,7 +35,7 @@ and here is a custom example:
 import { Core } from '@unseenco/taxi'
 
 const Taxi = new Core({
-  reloadJsFilter: (element) => element.dataset.taxiReload !== undefined || element.src?.match('bar.js')
+  reloadJsFilter: (element) => element.dataset.taxiReload !== undefined || element.src?.match('myscript.js')
 })
 ```
 
@@ -50,3 +50,10 @@ const Taxi = new Core({
   reloadJsFilter: false
 })
 ```
+
+<div class="border rounded-sm p-4 mt-16">
+    <div class="text-sm mb-2 font-bold">What's next:</div>
+    <div>
+        <a href="/api-events/">API & Events</a>
+    </div>
+</div>
