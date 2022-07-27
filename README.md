@@ -8,6 +8,8 @@
 
 <p align="center">
   <code>npm i @unseenco/taxi</code> or <code>yarn add @unseenco/taxi</code>
+  <br><br>
+  <a href="https://www.npmjs.com/package/@unseenco/taxi" target="_blank"><img src="https://img.shields.io/npm/v/@unseenco/taxi?color=F4BA00&style=flat-square"></a>
 </p>
 
 ----
