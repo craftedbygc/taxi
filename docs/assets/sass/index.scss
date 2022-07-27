@@ -13,6 +13,10 @@
 		}
 	}
 
+	pre:not([class]) {
+		@apply bg-code border rounded block text-gray-200 text-base;
+	}
+
 	h1, h2, h3 {
 		@apply font-neue;
 	}

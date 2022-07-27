@@ -24,9 +24,12 @@ E.on('DOMContentLoaded', window, function () {
 		})
 
 		// close menu if open
-		// TODO need to set this via gsap, so on close I can add hidden
-		menu.classList.remove('translate-x-0')
 		menuToggle.setAttribute('aria-expanded', 'false')
+
+		gsap.to(menu, { x: () => -menu.clientWidth })
+			.then(() => {
+				menu.classList.add('invisible')
+			})
 	})
 
 	taxi.on('NAVIGATE_IN', ({ to }) => {
