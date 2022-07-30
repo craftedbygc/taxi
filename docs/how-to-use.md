@@ -28,7 +28,13 @@ Next, you need to import `Taxi.Core` into your code and create a new instance:
 ```js
 import { Core } from '@unseenco/taxi'
 
-const Taxi = new Core()
+const taxi = new Core()
+
+// or if you prefer
+
+import * as Taxi from '@unseenco/taxi'
+
+const taxi = new Taxi.Core()
 ```
 
 Then amend your HTML so that `data-taxi` is added  to the parent of the content you want to replace during a transition, and `data-taxi-view` is added to the element you are replacing:
@@ -48,12 +54,22 @@ Then amend your HTML so that `data-taxi` is added  to the parent of the content 
 Now when you navigate in your app, `data-taxi-view` will be replaced with the `data-taxi-view` from the target URL instead of the whole page loading 🥳
 
 
+## Which links are handled by Taxi?
+Taxi will only transition links to a domain which is the same as the current URL (for obvious reasons).
+
+By default, Taxi will not transition links which:
+
+* Have `data-taxi-ignore` present on the link element
+* Are anchor links for the current page
+* Have a `target` attribute present on the link element
+
+You can change this behaviour using the [links option](#links-string).
 
 ## Options
 When creating a new Taxi instance, you can pass an object of options into the constructor:
 
 ```js
-const Taxi = new Core({ ... })
+const taxi = new Core({ ... })
 ```
 
 Let's look at these in more detail.
@@ -70,7 +86,7 @@ Links is a CSS selector which Taxi uses to decide if a clicked link should be tr
 
 Here is the default value:
 ```js
-const Taxi = new Core({ 
+const taxi = new Core({ 
     links: 'a:not([target]):not([href^=\\#]):not([data-taxi-ignore])'
 })
 ```

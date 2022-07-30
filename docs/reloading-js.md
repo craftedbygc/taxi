@@ -34,7 +34,7 @@ and here is a custom example:
 ```js
 import { Core } from '@unseenco/taxi'
 
-const Taxi = new Core({
+const taxi = new Core({
   reloadJsFilter: (element) => element.dataset.taxiReload !== undefined || element.src?.match('myscript.js')
 })
 ```
@@ -46,7 +46,7 @@ Just set `reloadJsFilter` to false when initing Taxi:
 ```js
 import { Core } from '@unseenco/taxi'
 
-const Taxi = new Core({
+const taxi = new Core({
   reloadJsFilter: false
 })
 ```

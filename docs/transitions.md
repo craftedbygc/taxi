@@ -46,7 +46,7 @@ import MyTransition from './transitions/MyTransition'
 import SomeOtherTransition from './transitions/SomeOtherTransition'
 
 const taxi = new Core({
-	renderers: {
+	transitions: {
 		mine: MyTransition,
 		someOther: SomeOtherTransition,
 	}
@@ -58,7 +58,7 @@ Taxi will look for a transition with a key of `default`:
 
 ```js
 const taxi = new Core({
-	renderers: {
+	transitions: {
 		default: MyTransition
 	}
 })
@@ -68,7 +68,7 @@ But of course this can be changed by using the `setDefaultTransition` method:
 
 ```js
 const taxi = new Core({
-	renderers: {
+	transitions: {
 		mine: MyTransition
 	}
 })
