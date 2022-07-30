@@ -4,6 +4,8 @@ import Transition from './Transition'
 import Renderer from './Renderer'
 import RouteStore from './RouteStore'
 
+const IN_PROGRESS = 'A transition is currently in progress'
+
 /**
  * @typedef CacheEntry
  * @type {object}
@@ -60,6 +62,7 @@ export default class Core {
 		this.removeOldContent = removeOldContent
 		this.allowInterruption = allowInterruption
 		this.cache = new Map()
+		this.isPopping = false
 
 		// Add delegated link events
 		this.attachEvents(links)
@@ -160,9 +163,11 @@ export default class Core {
 		return new Promise((resolve, reject) => {
 			// Don't allow multiple navigations to occur at once
 			if (!this.allowInterruption && this.isTransitioning) {
-				reject(new Error('A transition is currently in progress'))
+				reject(new Error(IN_PROGRESS))
 				return
 			}
+
+			this.isTransitioning = true
 
 			this.targetLocation = processUrl(url)
 
@@ -210,8 +215,6 @@ export default class Core {
 	 * @return {Promise<void>}
 	 */
 	beforeFetch(url, TransitionClass, trigger) {
-		this.isTransitioning = true
-
 		E.emit('NAVIGATE_OUT', {
 			from: this.currentCacheEntry,
 			trigger
@@ -268,6 +271,7 @@ export default class Core {
 
 					this.currentCacheEntry = entry
 					this.isTransitioning = false
+					this.isPopping = false
 					resolve()
 				})
 		})
@@ -324,7 +328,7 @@ export default class Core {
 			if (this.currentLocation.href !== target.href || (this.currentLocation.hasHash && !target.hasHash)) {
 				e.preventDefault()
 				// noinspection JSIgnoredPromiseFromCall
-				this.navigateTo(target.raw, e.currentTarget.dataset.transition || false, e.currentTarget)
+				this.navigateTo(target.raw, e.currentTarget.dataset.transition || false, e.currentTarget).catch(err => console.warn(err))
 				return
 			}
 
@@ -337,19 +341,26 @@ export default class Core {
 
 	/**
 	 * @private
-	 * @return {boolean}
+	 * @return {void|boolean}
 	 */
 	onPopstate = () => {
 		// don't trigger for on-page anchors
-		if (window.location.pathname === this.currentLocation.pathname) {
+		if (window.location.pathname === this.currentLocation.pathname && !this.isPopping) {
 			return false
 		}
 
-		if (!this.allowInterruption && this.isTransitioning) {
+		if (!this.allowInterruption && (this.isTransitioning || this.isPopping)) {
 			// overwrite history state with current page if currently navigating
-			window.history.pushState({}, '', this.currentLocation.href)
+			window.history.pushState({}, '', this.popTarget)
+			console.warn(IN_PROGRESS)
 			return false
 		}
+
+		if (!this.isPopping) {
+			this.popTarget = window.location.href
+		}
+
+		this.isPopping = true
 
 		// noinspection JSIgnoredPromiseFromCall
 		this.navigateTo(window.location.href, false, 'popstate')

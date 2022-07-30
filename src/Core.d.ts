@@ -55,6 +55,7 @@ export default class Core {
     reloadJsFilter: boolean | ((element: HTMLElement) => boolean);
     removeOldContent: boolean;
     allowInterruption: boolean;
+    isPopping: boolean;
     currentLocation: {
         raw: string;
         href: string;
@@ -159,9 +160,10 @@ export default class Core {
     private onClick;
     /**
      * @private
-     * @return {boolean}
+     * @return {void|boolean}
      */
     private onPopstate;
+    popTarget: string;
     /**
      * @private
      * @param {string} url
