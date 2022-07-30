@@ -168,8 +168,9 @@ export default class Core {
 			}
 
 			this.isTransitioning = true
-
+			this.isPopping = true
 			this.targetLocation = processUrl(url)
+			this.popTarget = window.location.href
 
 			const TransitionClass = new (this.chooseTransition(transition))({ wrapper: this.wrapper })
 
@@ -247,6 +248,7 @@ export default class Core {
 		}
 
 		this.currentLocation = url
+		this.popTarget = this.currentLocation.href
 
 		return new Promise((resolve) => {
 			entry.renderer.update()

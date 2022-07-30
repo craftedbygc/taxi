@@ -113,6 +113,7 @@ export default class Core {
         hasHash: boolean;
         pathname: string;
     };
+    popTarget: string;
     /**
      * Add an event listener.
      * @param {string} event
@@ -163,7 +164,6 @@ export default class Core {
      * @return {void|boolean}
      */
     private onPopstate;
-    popTarget: string;
     /**
      * @private
      * @param {string} url
