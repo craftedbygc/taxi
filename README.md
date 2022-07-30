@@ -32,7 +32,7 @@ It was designed as a drop-in replacement for [Highway.js](https://github.com/Dog
 ### Differences to Highway
 * Different public API
 * New methods and functionality
-* `data-taxi` and `data-taxi-view` are to be used instead of `data-router-wrapper` and `data-router-view` respectively.
+* `data-taxi`, `data-taxi-view`, `data-taxi-ignore` are to be used instead of `data-router-wrapper`, `data-router-view`, `data-router-disabled` respectively.
 * `attach` and `detach` are no longer methods - link clicks are listened to via delegation so these are no longer needed.
 * `redirect` is now `navigateTo` as "redirect" felt weird as a method name!
 * Renderers now have an `initialLoad` method
