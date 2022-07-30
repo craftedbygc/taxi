@@ -25,4 +25,18 @@
 	.active a {
 		@apply translate-x-[7px];
 	}
+
+	.code-toolbar {
+		@apply relative;
+
+		.toolbar {
+			@apply absolute top-2 right-2 text-sm bg-slate-700 text-white opacity-0 transition-opacity py-0.5 px-1 rounded shadow;
+		}
+
+		&:hover {
+			.toolbar {
+				@apply opacity-100;
+			}
+		}
+	}
 }

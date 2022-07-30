@@ -9,3 +9,4 @@ _site
 tests
 .nojekyll
 .github
+.babelrc

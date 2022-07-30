@@ -1,5 +1,6 @@
 module.exports = {
 	content: ['./docs/**/*.{html,js,njk,md}'],
+	safelist: ['toolbar', 'code-toolbar'],
 	darkMode: 'class',
 	plugins: [
 		require('@tailwindcss/typography')

@@ -97,10 +97,10 @@ You can use this option to extend this behaviour and fine tune which links are c
 
 
 ### removeOldContent `boolean`
-Taxi will remove the previous page's content after the Transition's `onLeave` method has finished. Set this to false to disable this behaviour.
+Taxi will remove the previous page's content after the Transition's `onLeave` method has finished. Set this to `false` to disable this behaviour.
 
 ### allowInterruption `boolean`
-Taxi block any further navigation while a transition is in progress. Set this to true to disable this behaviour.
+Taxi blocks further navigation while a transition is in progress. Set this to `true` to disable this behaviour.
 
 
 ### reloadJsFilter `bool|function(element: HTMLElement)`

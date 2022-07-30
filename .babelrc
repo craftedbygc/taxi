@@ -1,0 +1,9 @@
+{
+  "plugins": [
+    ["prismjs", {
+      "languages": ["javascript", "html"],
+      "plugins": ["toolbar", "copy-to-clipboard"],
+      "css": false
+    }]
+  ]
+}
