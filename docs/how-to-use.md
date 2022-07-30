@@ -59,11 +59,11 @@ Taxi will only transition links to a domain which is the same as the current URL
 
 By default, Taxi will not transition links which:
 
-* Have `data-taxi-ignore` present on the link element
-* Are anchor links for the current page
-* Have a `target` attribute present on the link element
+* have `data-taxi-ignore` present on the link element;
+* are anchor links for the current page;
+* have a `target` attribute present on the link element;
 
-You can change this behaviour using the [links option](#links-string).
+Of course, you can always change this behaviour using the [links option](#links-string).
 
 ## Options
 When creating a new Taxi instance, you can pass an object of options into the constructor:
