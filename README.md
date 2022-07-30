@@ -37,6 +37,7 @@ It was designed as a drop-in replacement for [Highway.js](https://github.com/Dog
 * `redirect` is now `navigateTo` as "redirect" felt weird as a method name!
 * Renderers now have an `initialLoad` method
 * The params passed to renderers, transitions, and events are now a little different
+* Old content is automatically removed during a transition - so no need to manually call `from.remove()` in your transitions.
 
 ----
 
