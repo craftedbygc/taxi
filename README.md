@@ -18,7 +18,7 @@ Taxi is a js library for adding AJAX navigation and beautiful transitions to you
 
 It was designed as a drop-in replacement for [Highway.js](https://github.com/Dogstudio/highway) which is sadly no longer maintained.
 
-### Improvements over Highway:
+### Enhancements over Highway:
 
 * URL-based routing
 * Better cache management
