@@ -54,6 +54,24 @@ Then amend your HTML so that `data-taxi` is added  to the parent of the content 
 Now when you navigate in your app, `data-taxi-view` will be replaced with the `data-taxi-view` from the target URL instead of the whole page loading 🥳
 
 
+## Via CDN
+You can use Taxi via a CDN thanks to the kind folks at unpkg.com. Just be sure to note that the main export is `taxi` with a lowercase t:
+
+```html
+<script src="https://unpkg.com/@unseenco/e@2.2.2/dist/e.umd.js" crossorigin></script>
+<script src="https://unpkg.com/@unseenco/taxi@1.0.3/dist/taxi.umd.js" crossorigin></script>
+
+<main data-taxi>
+    <article data-taxi-view>
+        ...
+    </article>
+</main>
+
+<script>
+    const t = new taxi.Core()
+</script>
+```
+
 ## Which links are handled by Taxi?
 Taxi will only transition links to a domain which is the same as the current URL (for obvious reasons).
 

@@ -286,7 +286,7 @@ export default class Core {
 	 */
 	loadScripts(cachedScripts) {
 		const newScripts = [...cachedScripts]
-		const currentScripts = [...document.querySelectorAll('script')].filter(this.reloadJsFilter)
+		const currentScripts = Array.from(document.querySelectorAll('script')).filter(this.reloadJsFilter)
 
 		// loop through all new scripts
 		for (let i = 0; i < currentScripts.length; i++) {
@@ -430,7 +430,7 @@ export default class Core {
 		return {
 			page,
 			content,
-			scripts: this.reloadJsFilter ? [...page.querySelectorAll('script')].filter(this.reloadJsFilter) : [],
+			scripts: this.reloadJsFilter ? Array.from(page.querySelectorAll('script')).filter(this.reloadJsFilter) : [],
 			title: page.title,
 			renderer: new Renderer({
 				wrapper: this.wrapper,
