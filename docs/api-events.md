@@ -93,17 +93,17 @@ import { Core } from '@unseenco/taxi'
 const taxi = new Core({ ... })
 
 // This event is sent everytime a `data-taxi-view` is added to the DOM
-taxi.on('NAVIGATE_IN', ({ to, trigger, location }) => {
+taxi.on('NAVIGATE_IN', ({ to, trigger }) => {
   // ...
 })
 
 // This event is sent before the `onLeave()` method of a transition is run to hide a `data-router-view`
-taxi.on('NAVIGATE_OUT', ({ from, trigger, location }) => {
+taxi.on('NAVIGATE_OUT', ({ from, trigger }) => {
   // ...
 })
 
 // This event is sent everytime the `done()` method is called in the `onEnter()` method of a transition
-taxi.on('NAVIGATE_END', ({ to, from, trigger, location }) => {
+taxi.on('NAVIGATE_END', ({ to, from, trigger }) => {
   // ...
 })
 ```
