@@ -39,6 +39,14 @@ Prefetch the provided URL and add it to the cache ahead of any user navigation.
 taxi.preload('/path/to/preload')
 ```
 
+As `preload` returns a promise, you can also run code based on whether the fetch was a success or not:
+
+```js
+taxi.preload('/path/to/404')
+    .then(() => console.log('success!'))
+    .catch(err => console.warn(err))
+```
+
 ## updateCache()
 Updates the HTML cache for the current URL.
 

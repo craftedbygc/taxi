@@ -117,7 +117,7 @@ export default class Core {
 		url = processUrl(url).href
 
 		if (!this.cache.has(url)) {
-			return this.fetch(url)
+			return this.fetch(url, false)
 				.then(async (newPage) => {
 					this.cache.set(url, this.createCacheEntry(newPage))
 				})
@@ -371,10 +371,11 @@ export default class Core {
 	/**
 	 * @private
 	 * @param {string} url
+	 * @param {boolean} [runFallback]
 	 * @return {Promise<Document>}
 	 */
-	fetch(url) {
-		return new Promise((resolve) => {
+	fetch(url, runFallback = true) {
+		return new Promise((resolve, reject) => {
 			fetch(url, {
 				mode: 'same-origin',
 				method: 'GET',
@@ -383,8 +384,11 @@ export default class Core {
 			})
 				.then((response) => {
 					if (!response.ok) {
-						console.warn('Taxi encountered a non 2xx HTTP status code')
-						window.location.href = url
+						reject('Taxi encountered a non 2xx HTTP status code')
+
+						if (runFallback) {
+							window.location.href = url
+						}
 					}
 
 					return response.text()
@@ -393,8 +397,11 @@ export default class Core {
 					resolve(parseDom(htmlString))
 				})
 				.catch((err) => {
-					console.warn(err)
-					window.location.href = url
+					reject(err)
+
+					if (runFallback) {
+						window.location.href = url
+					}
 				})
 		})
 	}

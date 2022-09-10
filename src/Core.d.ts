@@ -167,6 +167,7 @@ export default class Core {
     /**
      * @private
      * @param {string} url
+     * @param {boolean} [runFallback]
      * @return {Promise<Document>}
      */
     private fetch;
