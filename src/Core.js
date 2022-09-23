@@ -110,9 +110,10 @@ export default class Core {
 	 * Prime the cache for a given URL
 	 *
 	 * @param {string} url
+	 * @param {boolean} [preloadAssets]
 	 * @return {Promise}
 	 */
-	preload(url) {
+	preload(url, preloadAssets = false) {
 		// convert relative URLs to absolute
 		url = processUrl(url).href
 
@@ -120,6 +121,10 @@ export default class Core {
 			return this.fetch(url, false)
 				.then(async (newPage) => {
 					this.cache.set(url, this.createCacheEntry(newPage))
+
+					if (preloadAssets) {
+						this.cache.get(url).renderer.createDom()
+					}
 				})
 		}
 
@@ -174,19 +179,33 @@ export default class Core {
 
 			const TransitionClass = new (this.chooseTransition(transition))({ wrapper: this.wrapper })
 
-			this.beforeFetch(this.targetLocation, TransitionClass, trigger)
-				.then(async () => {
-					if (this.cache.has(this.targetLocation.href)) {
-						return await this.afterFetch(this.targetLocation, TransitionClass, this.cache.get(this.targetLocation.href), trigger)
-					} else {
-						return this.fetch(this.targetLocation.raw).then(async (newPage) => {
-							return await this.afterFetch(this.targetLocation, TransitionClass, this.createCacheEntry(newPage), trigger)
+			let navigationPromise
+
+			if (!this.cache.has(this.targetLocation.href)) {
+				const fetched = this.fetch(this.targetLocation.raw)
+					.then((newPage) => {
+						this.cache.set(this.targetLocation.href, this.createCacheEntry(newPage))
+						this.cache.get(this.targetLocation.href).renderer.createDom()
+					})
+
+				navigationPromise = this.beforeFetch(this.targetLocation, TransitionClass, trigger)
+					.then(async () => {
+						return fetched.then(async (newPage) => {
+							return await this.afterFetch(this.targetLocation, TransitionClass, this.cache.get(this.targetLocation.href), trigger)
 						})
-					}
-				})
-				.then(() => {
-					resolve()
-				})
+					})
+			} else {
+				this.cache.get(this.targetLocation.href).renderer.createDom()
+
+				navigationPromise = this.beforeFetch(this.targetLocation, TransitionClass, trigger)
+					.then(async () => {
+						return await this.afterFetch(this.targetLocation, TransitionClass, this.cache.get(this.targetLocation.href), trigger)
+					})
+			}
+
+			navigationPromise.then(() => {
+				resolve()
+			})
 		})
 	}
 
@@ -310,6 +329,7 @@ export default class Core {
 	 */
 	attachEvents(links) {
 		E.delegate('click', links, this.onClick)
+		E.delegate('mouseenter focus', links, this.onPreload)
 		E.on('popstate', window, this.onPopstate)
 	}
 
@@ -339,6 +359,16 @@ export default class Core {
 				e.preventDefault()
 			}
 		}
+	}
+
+	onPreload = (e) => {
+		const target = processUrl(e.currentTarget.href)
+
+		if (this.currentLocation.host !== target.host) {
+			return
+		}
+
+		this.preload(e.currentTarget.href)
 	}
 
 	/**

@@ -34,10 +34,16 @@ Prefetch the provided URL and add it to the cache ahead of any user navigation.
 
 ```js
 /**
- * preload(url: string): Promise
+ * preload( url: string, preloadAssets?: boolean = false): Promise
  */
 taxi.preload('/path/to/preload')
 ```
+
+You can pass a second argument to indicate you want to preload the assets on the target URL as well (images, media, etc):
+```js
+taxi.preload('/path/to/preload', true)
+```
+
 
 As `preload` returns a promise, you can also run code based on whether the fetch was a success or not:
 

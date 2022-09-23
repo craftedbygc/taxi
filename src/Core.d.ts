@@ -84,9 +84,10 @@ export default class Core {
      * Prime the cache for a given URL
      *
      * @param {string} url
+     * @param {boolean} [preloadAssets]
      * @return {Promise}
      */
-    preload(url: string): Promise<any>;
+    preload(url: string, preloadAssets?: boolean): Promise<any>;
     /**
      * Updates the HTML cache for the current URL
      * Useful when adding/removing content via AJAX such as a search page or infinite loader
@@ -159,6 +160,7 @@ export default class Core {
      * @param {MouseEvent} e
      */
     private onClick;
+    onPreload: (e: any) => void;
     /**
      * @private
      * @return {void|boolean}

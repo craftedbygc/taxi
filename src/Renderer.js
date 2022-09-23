@@ -6,6 +6,7 @@ export default class Renderer {
 	 */
 	constructor({ content, page, title, wrapper }) {
 		this._contentString = content.outerHTML
+		this._DOM = null
 		this.page = page
 		this.title = title
 		this.wrapper = wrapper
@@ -35,8 +36,16 @@ export default class Renderer {
 
 	update() {
 		document.title = this.title
-		this.wrapper.insertAdjacentHTML('beforeend', this._contentString)
+		this.wrapper.appendChild(this._DOM.firstElementChild)
 		this.content = this.wrapper.lastElementChild
+		this._DOM = null
+	}
+
+	createDom() {
+		if (!this._DOM) {
+			this._DOM = document.createElement('div')
+			this._DOM.innerHTML = this._contentString
+		}
 	}
 
 	remove() {

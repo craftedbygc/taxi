@@ -9,6 +9,7 @@ export default class Renderer {
         wrapper: Element;
     });
     _contentString: string;
+    _DOM: HTMLDivElement;
     page: Node | Document;
     title: string;
     wrapper: Element;
@@ -19,6 +20,7 @@ export default class Renderer {
     onLeaveCompleted(): void;
     initialLoad(): void;
     update(): void;
+    createDom(): void;
     remove(): void;
     /**
      * Called when transitioning into the current page.
