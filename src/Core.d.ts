@@ -4,6 +4,7 @@
  * @property {Renderer} renderer
  * @property {Document|Node} page
  * @property {array} scripts
+ * @property {boolean} skipCache
  * @property {string} title
  * @property {HTMLElement|Element} content
  */
@@ -13,6 +14,7 @@ export default class Core {
      * 		links?: string,
      * 		removeOldContent?: boolean,
      * 		allowInterruption?: boolean,
+     * 		bypassCache?: boolean,
      * 		renderers?: Object.<string, Renderer>,
      * 		transitions?: Object.<string, Transition>,
      * 		reloadJsFilter?: boolean|function(HTMLElement): boolean
@@ -22,6 +24,7 @@ export default class Core {
         links?: string;
         removeOldContent?: boolean;
         allowInterruption?: boolean;
+        bypassCache?: boolean;
         renderers?: {
             [x: string]: Renderer;
         };
@@ -55,6 +58,7 @@ export default class Core {
     reloadJsFilter: boolean | ((element: HTMLElement) => boolean);
     removeOldContent: boolean;
     allowInterruption: boolean;
+    bypassCache: boolean;
     isPopping: boolean;
     currentLocation: {
         raw: string;
@@ -160,7 +164,6 @@ export default class Core {
      * @param {MouseEvent} e
      */
     private onClick;
-    onPreload: (e: any) => void;
     /**
      * @private
      * @return {void|boolean}
@@ -190,6 +193,7 @@ export type CacheEntry = {
     renderer: Renderer;
     page: Document | Node;
     scripts: any[];
+    skipCache: boolean;
     title: string;
     content: HTMLElement | Element;
 };
