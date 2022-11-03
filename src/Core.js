@@ -12,6 +12,7 @@ const IN_PROGRESS = 'A transition is currently in progress'
  * @property {Renderer} renderer
  * @property {Document|Node} page
  * @property {array} scripts
+ * @property {boolean} skipCache
  * @property {string} title
  * @property {HTMLElement|Element} content
  */
@@ -34,6 +35,7 @@ export default class Core {
 	 * 		links?: string,
 	 * 		removeOldContent?: boolean,
 	 * 		allowInterruption?: boolean,
+	 * 		bypassCache?: boolean,
 	 * 		renderers?: Object.<string, Renderer>,
 	 * 		transitions?: Object.<string, Transition>,
 	 * 		reloadJsFilter?: boolean|function(HTMLElement): boolean
@@ -44,6 +46,7 @@ export default class Core {
 			links = 'a:not([target]):not([href^=\\#]):not([data-taxi-ignore])',
 			removeOldContent = true,
 			allowInterruption = false,
+			bypassCache = false,
 			renderers = {
 				default: Renderer
 			},
@@ -61,6 +64,7 @@ export default class Core {
 		this.reloadJsFilter = reloadJsFilter
 		this.removeOldContent = removeOldContent
 		this.allowInterruption = allowInterruption
+		this.bypassCache = bypassCache
 		this.cache = new Map()
 		this.isPopping = false
 
@@ -181,7 +185,7 @@ export default class Core {
 
 			let navigationPromise
 
-			if (!this.cache.has(this.targetLocation.href)) {
+			if (this.bypassCache || !this.cache.has(this.targetLocation.href) || this.cache.get(this.targetLocation.href).skipCache) {
 				const fetched = this.fetch(this.targetLocation.raw)
 					.then((newPage) => {
 						this.cache.set(this.targetLocation.href, this.createCacheEntry(newPage))
@@ -451,6 +455,7 @@ export default class Core {
 		return {
 			page,
 			content,
+			skipCache: content.hasAttribute('data-taxi-nocache'),
 			scripts: this.reloadJsFilter ? Array.from(page.querySelectorAll('script')).filter(this.reloadJsFilter) : [],
 			title: page.title,
 			renderer: new Renderer({

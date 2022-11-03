@@ -121,6 +121,12 @@ Taxi will remove the previous page's content after the Transition's `onLeave` me
 Taxi blocks further navigation while a transition is in progress. Set this to `true` to disable this behaviour.
 
 
+### bypassCache `boolean`
+Default behaviour is to cache the contents of a URL after fetching it to make repeated visits faster. Set this to `true` to disable the cache completely.
+
+If you want default behaviour, but wish to force certain pages to always be fetched (and never loaded from cache), you can add the `data-taxi-nocache` attribute to the `data-taxi-view` element on that page. 
+
+
 ### reloadJsFilter `bool|function(element: HTMLElement)`
 Please see [Reloading JS]({{ global.url }}/reloading-js/) for more information.
 
