@@ -261,11 +261,6 @@ export default class Core {
 	 * @return {Promise<void>}
 	 */
 	afterFetch(url, TransitionClass, entry, trigger) {
-		// add this page to cache
-		if (!this.cache.has(url.href)) {
-			this.cache.set(url.href, entry)
-		}
-
 		this.currentLocation = url
 		this.popTarget = this.currentLocation.href
 
@@ -329,7 +324,6 @@ export default class Core {
 	 */
 	attachEvents(links) {
 		E.delegate('click', links, this.onClick)
-		E.delegate('mouseenter focus', links, this.onPreload)
 		E.on('popstate', window, this.onPopstate)
 	}
 
@@ -359,16 +353,6 @@ export default class Core {
 				e.preventDefault()
 			}
 		}
-	}
-
-	onPreload = (e) => {
-		const target = processUrl(e.currentTarget.href)
-
-		if (this.currentLocation.host !== target.host) {
-			return
-		}
-
-		this.preload(e.currentTarget.href)
 	}
 
 	/**
