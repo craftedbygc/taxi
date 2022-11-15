@@ -66,14 +66,14 @@ taxi.updateCache()
 ```
 
 
-## deleteCache()
+## clearCache()
 Remove the cached HTML for the provided URL. If no URL is provided, remove cache for the current URL.
 
 ```js
 /**
- * deleteCache(url?: string): void
+ * clearCache(url?: string): void
  */
-taxi.deleteCache('/path/to/delete')
+taxi.clearCache('/path/to/delete')
 ```
 
 ## setDefaultRenderer()
