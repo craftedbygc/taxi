@@ -452,6 +452,10 @@ export default class Core {
 		const content = page.querySelector('[data-taxi-view]')
 		const Renderer = content.dataset.taxiView.length ? this.renderers[content.dataset.taxiView] : this.defaultRenderer
 
+		if (!Renderer) {
+			console.warn(`The Renderer "${content.dataset.taxiView}" was set in the data-taxi-view of the requested page, but not registered in Taxi.`)
+		}
+
 		return {
 			page,
 			content,
