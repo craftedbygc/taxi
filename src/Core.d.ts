@@ -93,10 +93,13 @@ export default class Core {
      */
     preload(url: string, preloadAssets?: boolean): Promise<any>;
     /**
-     * Updates the HTML cache for the current URL
-     * Useful when adding/removing content via AJAX such as a search page or infinite loader
+     * Updates the HTML cache for a given URL.
+     * If no URL is passed, then cache for the current page is updated.
+     * Useful when adding/removing content via AJAX such as a search page or infinite loader.
+     *
+     * @param {string} [url]
      */
-    updateCache(): void;
+    updateCache(url?: string): void;
     /**
      * Clears the cache for a given URL.
      * If no URL is passed, then cache for the current page is cleared.

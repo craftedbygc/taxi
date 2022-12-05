@@ -54,13 +54,13 @@ taxi.preload('/path/to/404')
 ```
 
 ## updateCache()
-Updates the HTML cache for the current URL.
+Updates the cached HTML for the provided URL. If no URL is provided, update cache for the current URL.
 
 Useful when adding/removing content via AJAX such as a search page or infinite scroll.
 
 ```js
 /**
- * updateCache(): void
+ * updateCache(url?: string): void
  */
 taxi.updateCache()
 ```

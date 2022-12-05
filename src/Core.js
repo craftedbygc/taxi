@@ -136,16 +136,20 @@ export default class Core {
 	}
 
 	/**
-	 * Updates the HTML cache for the current URL
-	 * Useful when adding/removing content via AJAX such as a search page or infinite loader
+	 * Updates the HTML cache for a given URL.
+	 * If no URL is passed, then cache for the current page is updated.
+	 * Useful when adding/removing content via AJAX such as a search page or infinite loader.
+	 *
+	 * @param {string} [url]
 	 */
-	updateCache() {
-		const key = processUrl(window.location.href).href
+	updateCache(url) {
+		const key = processUrl(url || window.location.href).href
 
 		if (this.cache.has(key)) {
 			this.cache.delete(key)
-			this.cache.set(key, this.createCacheEntry(document.cloneNode(true)))
 		}
+
+		this.cache.set(key, this.createCacheEntry(document.cloneNode(true)))
 	}
 
 	/**
