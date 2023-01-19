@@ -79,4 +79,22 @@ E.on('DOMContentLoaded', window, function () {
 				})
 		}
 	})
+
+	//star count
+	const starcount = document.querySelector('.js-stars')
+
+	fetch('https://api.github.com/repos/craftedbygc/taxi')
+		.then((response) => response.json())
+		.then((data) => {
+			starcount.innerHTML = convertStars(data.stargazers_count)
+		})
+		.catch((error) => {
+			console.error('Error:', error);
+		})
 })
+
+function convertStars(amount) {
+	return Math.abs(amount) > 999
+		? Math.sign(amount) * (Math.abs(amount) / 1000).toFixed(1) + "k"
+		: Math.sign(amount) * Math.abs(amount);
+}
