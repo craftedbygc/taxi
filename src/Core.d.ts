@@ -26,10 +26,10 @@ export default class Core {
         allowInterruption?: boolean;
         bypassCache?: boolean;
         renderers?: {
-            [x: string]: Renderer;
+            [x: string]: typeof Renderer;
         };
         transitions?: {
-            [x: string]: Transition;
+            [x: string]: typeof Transition;
         };
         reloadJsFilter?: boolean | ((arg0: HTMLElement) => boolean);
     });
@@ -43,12 +43,12 @@ export default class Core {
      */
     cache: Map<string, CacheEntry>;
     renderers: {
-        [x: string]: Renderer;
+        [x: string]: typeof Renderer;
     } | {
         default: typeof Renderer;
     };
     transitions: {
-        [x: string]: Transition;
+        [x: string]: typeof Transition;
     } | {
         default: typeof Transition;
     };
