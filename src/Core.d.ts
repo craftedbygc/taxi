@@ -1,7 +1,7 @@
 /**
  * @typedef CacheEntry
  * @type {object}
- * @property {Renderer} renderer
+ * @property {typeof Renderer} renderer
  * @property {Document|Node} page
  * @property {array} scripts
  * @property {boolean} skipCache
@@ -15,8 +15,8 @@ export default class Core {
      * 		removeOldContent?: boolean,
      * 		allowInterruption?: boolean,
      * 		bypassCache?: boolean,
-     * 		renderers?: Object.<string, Renderer>,
-     * 		transitions?: Object.<string, Transition>,
+     * 		renderers?: Object.<string, typeof Renderer>,
+     * 		transitions?: Object.<string, typeof Transition>,
      * 		reloadJsFilter?: boolean|function(HTMLElement): boolean
      * }} parameters
      */
@@ -37,23 +37,19 @@ export default class Core {
     /**
      * @type {CacheEntry|null}
      */
-    currentCacheEntry: CacheEntry | null;
+    currentCacheEntry: CacheEntry;
     /**
      * @type {Map<string, CacheEntry>}
      */
     cache: Map<string, CacheEntry>;
     renderers: {
         [x: string]: typeof Renderer;
-    } | {
-        default: typeof Renderer;
     };
     transitions: {
         [x: string]: typeof Transition;
-    } | {
-        default: typeof Transition;
     };
-    defaultRenderer: Renderer | typeof Renderer;
-    defaultTransition: Transition | typeof Transition;
+    defaultRenderer: typeof Renderer;
+    defaultTransition: typeof Transition;
     wrapper: Element;
     reloadJsFilter: boolean | ((element: HTMLElement) => boolean);
     removeOldContent: boolean;
@@ -193,7 +189,7 @@ export default class Core {
     private createCacheEntry;
 }
 export type CacheEntry = {
-    renderer: Renderer;
+    renderer: typeof Renderer;
     page: Document | Node;
     scripts: any[];
     skipCache: boolean;
