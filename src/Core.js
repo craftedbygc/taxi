@@ -9,7 +9,7 @@ const IN_PROGRESS = 'A transition is currently in progress'
 /**
  * @typedef CacheEntry
  * @type {object}
- * @property {typeof Renderer} renderer
+ * @property {typeof Renderer|Renderer} renderer
  * @property {Document|Node} page
  * @property {array} scripts
  * @property {boolean} skipCache
@@ -31,11 +31,18 @@ export default class Core {
 	cache = new Map()
 
 	/**
+	 * @private
+	 * @type {Map<string, Promise>}
+	 */
+	activePromises = new Map()
+
+	/**
 	 * @param {{
 	 * 		links?: string,
 	 * 		removeOldContent?: boolean,
 	 * 		allowInterruption?: boolean,
 	 * 		bypassCache?: boolean,
+	 * 		enablePrefetch?: boolean,
 	 * 		renderers?: Object.<string, typeof Renderer>,
 	 * 		transitions?: Object.<string, typeof Transition>,
 	 * 		reloadJsFilter?: boolean|function(HTMLElement): boolean
@@ -47,6 +54,7 @@ export default class Core {
 			removeOldContent = true,
 			allowInterruption = false,
 			bypassCache = false,
+			enablePrefetch = true,
 			renderers = {
 				default: Renderer
 			},
@@ -65,6 +73,7 @@ export default class Core {
 		this.removeOldContent = removeOldContent
 		this.allowInterruption = allowInterruption
 		this.bypassCache = bypassCache
+		this.enablePrefetch = enablePrefetch
 		this.cache = new Map()
 		this.isPopping = false
 
@@ -190,7 +199,7 @@ export default class Core {
 			let navigationPromise
 
 			if (this.bypassCache || !this.cache.has(this.targetLocation.href) || this.cache.get(this.targetLocation.href).skipCache) {
-				const fetched = this.fetch(this.targetLocation.raw)
+				const fetched = this.fetch(this.targetLocation.href)
 					.then((newPage) => {
 						this.cache.set(this.targetLocation.href, this.createCacheEntry(newPage))
 						this.cache.get(this.targetLocation.href).renderer.createDom()
@@ -198,7 +207,7 @@ export default class Core {
 
 				navigationPromise = this.beforeFetch(this.targetLocation, TransitionClass, trigger)
 					.then(async () => {
-						return fetched.then(async (newPage) => {
+						return fetched.then(async () => {
 							return await this.afterFetch(this.targetLocation, TransitionClass, this.cache.get(this.targetLocation.href), trigger)
 						})
 					})
@@ -333,6 +342,10 @@ export default class Core {
 	attachEvents(links) {
 		E.delegate('click', links, this.onClick)
 		E.on('popstate', window, this.onPopstate)
+
+		if (this.enablePrefetch) {
+			E.delegate('mouseenter focus', links, this.onPrefetch)
+		}
 	}
 
 	/**
@@ -392,12 +405,31 @@ export default class Core {
 
 	/**
 	 * @private
+	 * @param {MouseEvent} e
+	 */
+	onPrefetch = (e) => {
+		const target = processUrl(e.currentTarget.href)
+
+		if (this.currentLocation.host !== target.host) {
+			return
+		}
+
+		this.preload(e.currentTarget.href, false)
+	}
+
+	/**
+	 * @private
 	 * @param {string} url
 	 * @param {boolean} [runFallback]
 	 * @return {Promise<Document>}
 	 */
 	fetch(url, runFallback = true) {
-		return new Promise((resolve, reject) => {
+		// If Taxi is currently performing a fetch for the given URL, return that instead of starting a new request
+		if (this.activePromises.has(url)) {
+			return this.activePromises.get(url)
+		}
+
+		const request = new Promise((resolve, reject) => {
 			fetch(url, {
 				mode: 'same-origin',
 				method: 'GET',
@@ -425,7 +457,14 @@ export default class Core {
 						window.location.href = url
 					}
 				})
+				.finally(() => {
+					this.activePromises.delete(url)
+				})
 		})
+
+		this.activePromises.set(url, request)
+
+		return request
 	}
 
 	/**
