@@ -1,7 +1,7 @@
 /**
  * @typedef CacheEntry
  * @type {object}
- * @property {typeof Renderer} renderer
+ * @property {typeof Renderer|Renderer} renderer
  * @property {Document|Node} page
  * @property {array} scripts
  * @property {boolean} skipCache
@@ -15,6 +15,7 @@ export default class Core {
      * 		removeOldContent?: boolean,
      * 		allowInterruption?: boolean,
      * 		bypassCache?: boolean,
+     * 		enablePrefetch?: boolean,
      * 		renderers?: Object.<string, typeof Renderer>,
      * 		transitions?: Object.<string, typeof Transition>,
      * 		reloadJsFilter?: boolean|function(HTMLElement): boolean
@@ -25,6 +26,7 @@ export default class Core {
         removeOldContent?: boolean;
         allowInterruption?: boolean;
         bypassCache?: boolean;
+        enablePrefetch?: boolean;
         renderers?: {
             [x: string]: typeof Renderer;
         };
@@ -42,6 +44,11 @@ export default class Core {
      * @type {Map<string, CacheEntry>}
      */
     cache: Map<string, CacheEntry>;
+    /**
+     * @private
+     * @type {Map<string, Promise>}
+     */
+    private activePromises;
     renderers: {
         [x: string]: typeof Renderer;
     };
@@ -55,6 +62,7 @@ export default class Core {
     removeOldContent: boolean;
     allowInterruption: boolean;
     bypassCache: boolean;
+    enablePrefetch: boolean;
     isPopping: boolean;
     currentLocation: {
         raw: string;
@@ -170,6 +178,11 @@ export default class Core {
     private onPopstate;
     /**
      * @private
+     * @param {MouseEvent} e
+     */
+    private onPrefetch;
+    /**
+     * @private
      * @param {string} url
      * @param {boolean} [runFallback]
      * @return {Promise<Document>}
@@ -189,7 +202,7 @@ export default class Core {
     private createCacheEntry;
 }
 export type CacheEntry = {
-    renderer: typeof Renderer;
+    renderer: typeof Renderer | Renderer;
     page: Document | Node;
     scripts: any[];
     skipCache: boolean;

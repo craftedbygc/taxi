@@ -127,6 +127,11 @@ Default behaviour is to cache the contents of a URL after fetching it to make re
 If you want default behaviour, but wish to force certain pages to always be fetched (and never loaded from cache), you can add the `data-taxi-nocache` attribute to the `data-taxi-view` element on that page. 
 
 
+### enablePrefetch `boolean`
+Default behaviour is to preload links on your website whenever the `mouseenter` or `focus` event is triggered.
+
+If you want to disable this or want to implement your own preloading strategy, set this to `false`.
+
 ### reloadJsFilter `bool|function(element: HTMLElement)`
 Please see [Reloading JS]({{ global.url }}/reloading-js/) for more information.
 

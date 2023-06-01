@@ -86,7 +86,9 @@ E.on('DOMContentLoaded', window, function () {
 	fetch('https://api.github.com/repos/craftedbygc/taxi')
 		.then((response) => response.json())
 		.then((data) => {
-			starcount.innerHTML = convertStars(data.stargazers_count)
+			if (!data.message) {
+				starcount.innerHTML = convertStars(data.stargazers_count)
+			}
 		})
 		.catch((error) => {
 			console.error('Error:', error);
