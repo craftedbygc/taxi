@@ -9,7 +9,7 @@ const IN_PROGRESS = 'A transition is currently in progress'
 /**
  * @typedef CacheEntry
  * @type {object}
- * @property {Renderer} renderer
+ * @property {typeof Renderer} renderer
  * @property {Document|Node} page
  * @property {array} scripts
  * @property {boolean} skipCache
@@ -36,8 +36,8 @@ export default class Core {
 	 * 		removeOldContent?: boolean,
 	 * 		allowInterruption?: boolean,
 	 * 		bypassCache?: boolean,
-	 * 		renderers?: Object.<string, Renderer>,
-	 * 		transitions?: Object.<string, Transition>,
+	 * 		renderers?: Object.<string, typeof Renderer>,
+	 * 		transitions?: Object.<string, typeof Transition>,
 	 * 		reloadJsFilter?: boolean|function(HTMLElement): boolean
 	 * }} parameters
 	 */
