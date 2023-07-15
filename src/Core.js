@@ -12,6 +12,7 @@ const IN_PROGRESS = 'A transition is currently in progress'
  * @property {typeof Renderer|Renderer} renderer
  * @property {Document|Node} page
  * @property {array} scripts
+ * @property {string} finalUrl
  * @property {boolean} skipCache
  * @property {string} title
  * @property {HTMLElement|Element} content
@@ -83,7 +84,7 @@ export default class Core {
 		this.currentLocation = processUrl(window.location.href)
 
 		// as this is the initial page load, prime this page into the cache
-		this.cache.set(this.currentLocation.href, this.createCacheEntry(document.cloneNode(true)))
+		this.cache.set(this.currentLocation.href, this.createCacheEntry(document.cloneNode(true), window.location.href))
 
 		// fire the current Renderer enter methods
 		this.currentCacheEntry = this.cache.get(this.currentLocation.href)
@@ -132,8 +133,8 @@ export default class Core {
 
 		if (!this.cache.has(url)) {
 			return this.fetch(url, false)
-				.then(async (newPage) => {
-					this.cache.set(url, this.createCacheEntry(newPage))
+				.then(async (response) => {
+					this.cache.set(url, this.createCacheEntry(response.html, response.url))
 
 					if (preloadAssets) {
 						this.cache.get(url).renderer.createDom()
@@ -158,7 +159,7 @@ export default class Core {
 			this.cache.delete(key)
 		}
 
-		this.cache.set(key, this.createCacheEntry(document.cloneNode(true)))
+		this.cache.set(key, this.createCacheEntry(document.cloneNode(true), key))
 	}
 
 	/**
@@ -200,8 +201,8 @@ export default class Core {
 
 			if (this.bypassCache || !this.cache.has(this.targetLocation.href) || this.cache.get(this.targetLocation.href).skipCache) {
 				const fetched = this.fetch(this.targetLocation.href)
-					.then((newPage) => {
-						this.cache.set(this.targetLocation.href, this.createCacheEntry(newPage))
+					.then((response) => {
+						this.cache.set(this.targetLocation.href, this.createCacheEntry(response.html, response.url))
 						this.cache.get(this.targetLocation.href).renderer.createDom()
 					})
 
@@ -292,6 +293,11 @@ export default class Core {
 
 			if (this.reloadJsFilter) {
 				this.loadScripts(entry.scripts)
+			}
+
+			// If the fetched url had a redirect chain, then replace the history to reflect the final resolved URL
+			if (trigger !== 'popstate' && url.raw !== entry.finalUrl) {
+				window.history.replaceState({}, '', entry.finalUrl)
 			}
 
 			entry.renderer.enter(TransitionClass, trigger)
@@ -421,7 +427,7 @@ export default class Core {
 	 * @private
 	 * @param {string} url
 	 * @param {boolean} [runFallback]
-	 * @return {Promise<Document>}
+	 * @return {Promise<{html: Document, url: string}>}
 	 */
 	fetch(url, runFallback = true) {
 		// If Taxi is currently performing a fetch for the given URL, return that instead of starting a new request
@@ -430,6 +436,8 @@ export default class Core {
 		}
 
 		const request = new Promise((resolve, reject) => {
+			let resolvedUrl
+
 			fetch(url, {
 				mode: 'same-origin',
 				method: 'GET',
@@ -445,10 +453,12 @@ export default class Core {
 						}
 					}
 
+					resolvedUrl = response.url
+
 					return response.text()
 				})
 				.then((htmlString) => {
-					resolve(parseDom(htmlString))
+					resolve({ html: parseDom(htmlString), url: resolvedUrl })
 				})
 				.catch((err) => {
 					reject(err)
@@ -489,9 +499,10 @@ export default class Core {
 	/**
 	 * @private
 	 * @param {Document|Node} page
+	 * @param {string} url
 	 * @return {CacheEntry}
 	 */
-	createCacheEntry(page) {
+	createCacheEntry(page, url) {
 		const content = page.querySelector('[data-taxi-view]')
 		const Renderer = content.dataset.taxiView.length ? this.renderers[content.dataset.taxiView] : this.defaultRenderer
 
@@ -502,6 +513,7 @@ export default class Core {
 		return {
 			page,
 			content,
+			finalUrl: url,
 			skipCache: content.hasAttribute('data-taxi-nocache'),
 			scripts: this.reloadJsFilter ? Array.from(page.querySelectorAll('script')).filter(this.reloadJsFilter) : [],
 			title: page.title,

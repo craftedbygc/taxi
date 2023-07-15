@@ -4,6 +4,7 @@
  * @property {typeof Renderer|Renderer} renderer
  * @property {Document|Node} page
  * @property {array} scripts
+ * @property {string} finalUrl
  * @property {boolean} skipCache
  * @property {string} title
  * @property {HTMLElement|Element} content
@@ -185,7 +186,7 @@ export default class Core {
      * @private
      * @param {string} url
      * @param {boolean} [runFallback]
-     * @return {Promise<Document>}
+     * @return {Promise<{html: Document, url: string}>}
      */
     private fetch;
     /**
@@ -197,6 +198,7 @@ export default class Core {
     /**
      * @private
      * @param {Document|Node} page
+     * @param {string} url
      * @return {CacheEntry}
      */
     private createCacheEntry;
@@ -205,6 +207,7 @@ export type CacheEntry = {
     renderer: typeof Renderer | Renderer;
     page: Document | Node;
     scripts: any[];
+    finalUrl: string;
     skipCache: boolean;
     title: string;
     content: HTMLElement | Element;

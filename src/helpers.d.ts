@@ -18,9 +18,9 @@ export function processUrl(url: string): {
 };
 /**
  * Reloads a provided script/stylesheet by replacing with itself.
- * @param {HTMLElement} node
+ * @param {HTMLElement|HTMLScriptElement} node
  */
-export function reloadScript(node: HTMLElement): void;
+export function reloadScript(node: HTMLElement | HTMLScriptElement): void;
 /**
  * Loads a provided script/stylesheet by appending a clone to the current document.
  * @param {HTMLElement} node

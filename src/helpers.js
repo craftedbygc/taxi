@@ -33,7 +33,7 @@ export function processUrl(url) {
 
 /**
  * Reloads a provided script/stylesheet by replacing with itself.
- * @param {HTMLElement} node
+ * @param {HTMLElement|HTMLScriptElement} node
  */
 export function reloadScript(node) {
 	node.parentNode.replaceChild(duplicateScript(node), node)
