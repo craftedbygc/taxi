@@ -25,6 +25,10 @@
       "slug": "reloading-js"
     },
     {
+      "name": "Reloading CSS",
+      "slug": "reloading-css"
+    },
+    {
       "name": "API & Events",
       "slug": "api-events"
     }

@@ -4,6 +4,7 @@
  * @property {typeof Renderer|Renderer} renderer
  * @property {Document|Node} page
  * @property {array} scripts
+ * @property {HTMLLinkElement[]} styles
  * @property {string} finalUrl
  * @property {boolean} skipCache
  * @property {string} title
@@ -19,7 +20,8 @@ export default class Core {
      * 		enablePrefetch?: boolean,
      * 		renderers?: Object.<string, typeof Renderer>,
      * 		transitions?: Object.<string, typeof Transition>,
-     * 		reloadJsFilter?: boolean|function(HTMLElement): boolean
+     * 		reloadJsFilter?: boolean|function(HTMLElement): boolean,
+     * 		reloadCssFilter?: boolean|function(HTMLLinkElement): boolean
      * }} parameters
      */
     constructor(parameters?: {
@@ -35,6 +37,7 @@ export default class Core {
             [x: string]: typeof Transition;
         };
         reloadJsFilter?: boolean | ((arg0: HTMLElement) => boolean);
+        reloadCssFilter?: boolean | ((arg0: HTMLLinkElement) => boolean);
     });
     isTransitioning: boolean;
     /**
@@ -60,6 +63,7 @@ export default class Core {
     defaultTransition: typeof Transition;
     wrapper: Element;
     reloadJsFilter: boolean | ((element: HTMLElement) => boolean);
+    reloadCssFilter: boolean | ((arg0: HTMLLinkElement) => boolean) | ((element: HTMLLinkElement) => true);
     removeOldContent: boolean;
     allowInterruption: boolean;
     bypassCache: boolean;
@@ -163,6 +167,12 @@ export default class Core {
      */
     loadScripts(cachedScripts: HTMLElement[]): void;
     /**
+     * Load up styles from the target page if needed
+     *
+     * @param {HTMLLinkElement[]} cachedStyles
+     */
+    loadStyles(cachedStyles: HTMLLinkElement[]): void;
+    /**
      * @private
      * @param {string} links
      */
@@ -207,6 +217,7 @@ export type CacheEntry = {
     renderer: typeof Renderer | Renderer;
     page: Document | Node;
     scripts: any[];
+    styles: HTMLLinkElement[];
     finalUrl: string;
     skipCache: boolean;
     title: string;

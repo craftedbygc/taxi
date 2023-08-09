@@ -12,6 +12,7 @@ const IN_PROGRESS = 'A transition is currently in progress'
  * @property {typeof Renderer|Renderer} renderer
  * @property {Document|Node} page
  * @property {array} scripts
+ * @property {HTMLLinkElement[]} styles
  * @property {string} finalUrl
  * @property {boolean} skipCache
  * @property {string} title
@@ -46,7 +47,8 @@ export default class Core {
 	 * 		enablePrefetch?: boolean,
 	 * 		renderers?: Object.<string, typeof Renderer>,
 	 * 		transitions?: Object.<string, typeof Transition>,
-	 * 		reloadJsFilter?: boolean|function(HTMLElement): boolean
+	 * 		reloadJsFilter?: boolean|function(HTMLElement): boolean,
+	 * 		reloadCssFilter?: boolean|function(HTMLLinkElement): boolean
 	 * }} parameters
 	 */
 	constructor(parameters = {}) {
@@ -62,7 +64,8 @@ export default class Core {
 			transitions = {
 				default: Transition
 			},
-			reloadJsFilter = (element) => element.dataset.taxiReload !== undefined
+			reloadJsFilter = (element) => element.dataset.taxiReload !== undefined,
+			reloadCssFilter = (element) => true //element.dataset.taxiReload !== undefined
 		} = parameters
 
 		this.renderers = renderers
@@ -71,6 +74,7 @@ export default class Core {
 		this.defaultTransition = this.transitions.default || Transition
 		this.wrapper = document.querySelector('[data-taxi]')
 		this.reloadJsFilter = reloadJsFilter
+		this.reloadCssFilter = reloadCssFilter
 		this.removeOldContent = removeOldContent
 		this.allowInterruption = allowInterruption
 		this.bypassCache = bypassCache
@@ -295,6 +299,10 @@ export default class Core {
 				this.loadScripts(entry.scripts)
 			}
 
+			if (this.reloadCssFilter) {
+				this.loadStyles(entry.styles)
+			}
+
 			// If the fetched url had a redirect chain, then replace the history to reflect the final resolved URL
 			if (trigger !== 'popstate' && url.raw !== entry.finalUrl) {
 				window.history.replaceState({}, '', entry.finalUrl)
@@ -339,6 +347,21 @@ export default class Core {
 		for (const script of newScripts) {
 			appendScript(script)
 		}
+	}
+
+	/**
+	 * Load up styles from the target page if needed
+	 *
+	 * @param {HTMLLinkElement[]} cachedStyles
+	 */
+	loadStyles(cachedStyles) {
+		const currentStyles = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).filter(this.reloadCssFilter)
+
+		cachedStyles.forEach(el => {
+			if (el.href && !currentStyles.find((link) => link.href === el.href)) {
+				document.body.append(el)
+			}
+		})
 	}
 
 	/**
@@ -516,6 +539,7 @@ export default class Core {
 			finalUrl: url,
 			skipCache: content.hasAttribute('data-taxi-nocache'),
 			scripts: this.reloadJsFilter ? Array.from(page.querySelectorAll('script')).filter(this.reloadJsFilter) : [],
+			styles: this.reloadCssFilter ? Array.from(page.querySelectorAll('link[rel="stylesheet"]')).filter(this.reloadCssFilter) : [],
 			title: page.title,
 			renderer: new Renderer({
 				wrapper: this.wrapper,

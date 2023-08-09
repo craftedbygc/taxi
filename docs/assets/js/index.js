@@ -82,12 +82,27 @@ E.on('DOMContentLoaded', window, function () {
 
 	//star count
 	const starcount = document.querySelector('.js-stars')
+	const version = document.querySelector('.js-version')
 
 	fetch('https://api.github.com/repos/craftedbygc/taxi')
 		.then((response) => response.json())
 		.then((data) => {
 			if (!data.message) {
 				starcount.innerHTML = convertStars(data.stargazers_count)
+			} else {
+				throw new Error('GitHub API hates me')
+			}
+		})
+		.catch((error) => {
+			console.error('Error:', error);
+			starcount.parentElement.remove()
+		})
+
+	fetch('https://registry.npmjs.org/@unseenco/taxi/latest')
+		.then((response) => response.json())
+		.then((data) => {
+			if (data.version) {
+				version.innerHTML = `v${data.version}`
 			}
 		})
 		.catch((error) => {
