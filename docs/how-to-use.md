@@ -135,14 +135,6 @@ If you want to disable this or want to implement your own preloading strategy, s
 ### reloadJsFilter `bool|function(element: HTMLElement)`
 Please see [Reloading JS]({{ global.url }}/reloading-js/) for more information.
 
-
-<div class="border rounded-sm p-4 mt-16">
-    <div class="text-sm mb-2 font-bold">What's next:</div>
-    <div>
-        <a href="{{ global.url }}/renderers/">Renderers</a>
-    </div>
-</div>
-
 ### reloadCssFilter `bool|function(element: HTMLLinkElement)`
 Please see [Reloading CSS]({{ global.url }}/reloading-css/) for more information.
 
