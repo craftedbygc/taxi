@@ -144,6 +144,7 @@ export default class Core {
 						this.cache.get(url).renderer.createDom()
 					}
 				})
+				.catch(err => console.warn(err))
 		}
 
 		return Promise.resolve()
@@ -208,6 +209,10 @@ export default class Core {
 					.then((response) => {
 						this.cache.set(this.targetLocation.href, this.createCacheEntry(response.html, response.url))
 						this.cache.get(this.targetLocation.href).renderer.createDom()
+					})
+					.catch(err => {
+						// we encountered a 4** or 5** error, redirect to the requested URL
+						window.location.href = url
 					})
 
 				navigationPromise = this.beforeFetch(this.targetLocation, TransitionClass, trigger)
