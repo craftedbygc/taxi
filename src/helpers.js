@@ -40,6 +40,14 @@ export function reloadScript(node) {
 }
 
 /**
+ * Reloads a provided inline-stylesheet by replacing with itself.
+ * @param {HTMLStyleElement} node
+ */
+export function reloadInlineStyle(node) {
+	node.parentNode.replaceChild(duplicateInlineStyle(node), node)
+}
+
+/**
  * Loads a provided script/stylesheet by appending a clone to the current document.
  * @param {HTMLElement} node
  */
@@ -52,12 +60,49 @@ export function appendScript(node) {
 }
 
 /**
+ * Loads a provided inline-stylesheet by appending a clone to the current document.
+ * @param {HTMLStyleElement} node
+ */
+export function appendInlineStyle(node) {
+	if (node.parentNode.tagName === 'HEAD') {
+		document.head.appendChild(duplicateInlineStyle(node))
+	} else {
+		document.body.appendChild(duplicateInlineStyle(node))
+	}
+}
+
+/**
  * Creates a clone of a given HTMLElement
  * @param {HTMLElement} node
  * @return {HTMLElement}
  */
 export function duplicateScript(node) {
 	const replacement = document.createElement('SCRIPT')
+
+	// Loop Over Attributes
+	for (let k = 0; k < node.attributes.length; k++) {
+		// Get Attribute
+		const attr = node.attributes[k]
+
+		// Set Attribute
+		replacement.setAttribute(attr.nodeName, attr.nodeValue)
+	}
+
+	// Inline Script
+	if (node.innerHTML) {
+		replacement.innerHTML = node.innerHTML
+	}
+
+	return replacement
+}
+
+/**
+ * Creates a clone of a given HTMLStyleElement
+ * @param {HTMLStyleElement} node
+ * @return {HTMLStyleElement}
+ */
+export function duplicateInlineStyle(node) {
+	const replacement = document.createElement('STYLE')
 
 	// Loop Over Attributes
 	for (let k = 0; k < node.attributes.length; k++) {

@@ -22,13 +22,29 @@ export function processUrl(url: string): {
  */
 export function reloadScript(node: HTMLElement | HTMLScriptElement): void;
 /**
+ * Reloads a provided inline-stylesheet by replacing with itself.
+ * @param {HTMLStyleElement} node
+ */
+export function reloadInlineStyle(node: HTMLStyleElement): void;
+/**
  * Loads a provided script/stylesheet by appending a clone to the current document.
  * @param {HTMLElement} node
  */
 export function appendScript(node: HTMLElement): void;
+/**
+ * Loads a provided inline-stylesheet by appending a clone to the current document.
+ * @param {HTMLStyleElement} node
+ */
+export function appendInlineStyle(node: HTMLStyleElement): void;
 /**
  * Creates a clone of a given HTMLElement
  * @param {HTMLElement} node
  * @return {HTMLElement}
  */
 export function duplicateScript(node: HTMLElement): HTMLElement;
+/**
+ * Creates a clone of a given HTMLStyleElement
+ * @param {HTMLStyleElement} node
+ * @return {HTMLStyleElement}
+ */
+export function duplicateInlineStyle(node: HTMLStyleElement): HTMLStyleElement;

@@ -1,5 +1,5 @@
 import E from '@unseenco/e'
-import { appendScript, parseDom, processUrl, reloadScript } from './helpers'
+import { appendScript, parseDom, processUrl, reloadScript, reloadInlineStyle, appendInlineStyle } from './helpers'
 import Transition from './Transition'
 import Renderer from './Renderer'
 import RouteStore from './RouteStore'
@@ -357,16 +357,36 @@ export default class Core {
 	/**
 	 * Load up styles from the target page if needed
 	 *
-	 * @param {HTMLLinkElement[]} cachedStyles
+   * @param {Array<HTMLLinkElement|HTMLStyleElement>} cachedStyles
 	 */
 	loadStyles(cachedStyles) {
 		const currentStyles = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).filter(this.reloadCssFilter)
+		const currentInlineStyles = Array.from(document.querySelectorAll('style')).filter(this.reloadCssFilter)
 
-		cachedStyles.forEach(el => {
-			if (el.href && !currentStyles.find((link) => link.href === el.href)) {
+		const newInlineStyles = cachedStyles.filter(el => {
+      // no el.href, assume it's an inline style
+      if(!el.href){
+        return true
+      } else if(!currentStyles.find((link) => link.href === el.href)) {
 				document.body.append(el)
-			}
+        return false
+			} 
 		})
+
+    // loop through all new inline styles
+    for (let i = 0; i < currentInlineStyles.length; i++) {
+      for (let n = 0; n < newInlineStyles.length; n++) {
+        if (currentInlineStyles[i].outerHTML === newInlineStyles[n].outerHTML) {
+          reloadInlineStyle(currentInlineStyles[i])
+          newInlineStyles.splice(n, 1)
+          break
+        }
+      }
+    }
+    
+    for (const style of newInlineStyles) {
+      appendInlineStyle(style)
+    }
 	}
 
 	/**
@@ -544,7 +564,7 @@ export default class Core {
 			finalUrl: url,
 			skipCache: content.hasAttribute('data-taxi-nocache'),
 			scripts: this.reloadJsFilter ? Array.from(page.querySelectorAll('script')).filter(this.reloadJsFilter) : [],
-			styles: this.reloadCssFilter ? Array.from(page.querySelectorAll('link[rel="stylesheet"]')).filter(this.reloadCssFilter) : [],
+			styles: this.reloadCssFilter ? Array.from(page.querySelectorAll('link[rel="stylesheet"], style')).filter(this.reloadCssFilter) : [],
 			title: page.title,
 			renderer: new Renderer({
 				wrapper: this.wrapper,
