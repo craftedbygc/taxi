@@ -1,5 +1,5 @@
 import E from '@unseenco/e'
-import { appendScript, parseDom, processUrl, reloadScript, reloadInlineStyle, appendInlineStyle } from './helpers'
+import { appendElement, parseDom, processUrl, reloadElement } from './helpers'
 import Transition from './Transition'
 import Renderer from './Renderer'
 import RouteStore from './RouteStore'
@@ -342,7 +342,7 @@ export default class Core {
 		for (let i = 0; i < currentScripts.length; i++) {
 			for (let n = 0; n < newScripts.length; n++) {
 				if (currentScripts[i].outerHTML === newScripts[n].outerHTML) {
-					reloadScript(currentScripts[i])
+					reloadElement(currentScripts[i], 'SCRIPT')
 					newScripts.splice(n, 1)
 					break
 				}
@@ -350,7 +350,7 @@ export default class Core {
 		}
 
 		for (const script of newScripts) {
-			appendScript(script)
+			appendElement(script, 'SCRIPT')
 		}
 	}
 
@@ -377,7 +377,7 @@ export default class Core {
 		for (let i = 0; i < currentInlineStyles.length; i++) {
 			for (let n = 0; n < newInlineStyles.length; n++) {
 				if (currentInlineStyles[i].outerHTML === newInlineStyles[n].outerHTML) {
-					reloadInlineStyle(currentInlineStyles[i])
+					reloadElement(currentInlineStyles[i], 'STYLE')
 					newInlineStyles.splice(n, 1)
 					break
 				}
@@ -385,7 +385,7 @@ export default class Core {
 		}
 
 		for (const style of newInlineStyles) {
-			appendInlineStyle(style)
+			appendElement(style, 'STYLE')
 		}
 	}
 

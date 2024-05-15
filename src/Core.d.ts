@@ -169,7 +169,7 @@ export default class Core {
     /**
      * Load up styles from the target page if needed
      *
-   * @param {Array<HTMLLinkElement|HTMLStyleElement>} cachedStyles
+     * @param {Array<HTMLLinkElement|HTMLStyleElement>} cachedStyles
      */
     loadStyles(cachedStyles: Array<HTMLLinkElement | HTMLStyleElement>): void;
     /**
