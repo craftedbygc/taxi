@@ -357,36 +357,36 @@ export default class Core {
 	/**
 	 * Load up styles from the target page if needed
 	 *
-   * @param {Array<HTMLLinkElement|HTMLStyleElement>} cachedStyles
+	 * @param {Array<HTMLLinkElement|HTMLStyleElement>} cachedStyles
 	 */
 	loadStyles(cachedStyles) {
 		const currentStyles = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).filter(this.reloadCssFilter)
 		const currentInlineStyles = Array.from(document.querySelectorAll('style')).filter(this.reloadCssFilter)
 
 		const newInlineStyles = cachedStyles.filter(el => {
-      // no el.href, assume it's an inline style
-      if(!el.href){
-        return true
-      } else if(!currentStyles.find((link) => link.href === el.href)) {
+			// no el.href, assume it's an inline style
+			if (!el.href) {
+				return true
+			} else if (!currentStyles.find((link) => link.href === el.href)) {
 				document.body.append(el)
-        return false
-			} 
+				return false
+			}
 		})
 
-    // loop through all new inline styles
-    for (let i = 0; i < currentInlineStyles.length; i++) {
-      for (let n = 0; n < newInlineStyles.length; n++) {
-        if (currentInlineStyles[i].outerHTML === newInlineStyles[n].outerHTML) {
-          reloadInlineStyle(currentInlineStyles[i])
-          newInlineStyles.splice(n, 1)
-          break
-        }
-      }
-    }
-    
-    for (const style of newInlineStyles) {
-      appendInlineStyle(style)
-    }
+		// loop through all new inline styles
+		for (let i = 0; i < currentInlineStyles.length; i++) {
+			for (let n = 0; n < newInlineStyles.length; n++) {
+				if (currentInlineStyles[i].outerHTML === newInlineStyles[n].outerHTML) {
+					reloadInlineStyle(currentInlineStyles[i])
+					newInlineStyles.splice(n, 1)
+					break
+				}
+			}
+		}
+
+		for (const style of newInlineStyles) {
+			appendInlineStyle(style)
+		}
 	}
 
 	/**
