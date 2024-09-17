@@ -73,6 +73,7 @@ export default class Core {
         raw: string;
         href: string;
         host: string;
+        search: string;
         hasHash: boolean;
         pathname: string;
     };
@@ -127,6 +128,7 @@ export default class Core {
         raw: string;
         href: string;
         host: string;
+        search: string;
         hasHash: boolean;
         pathname: string;
     };
