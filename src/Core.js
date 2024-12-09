@@ -437,11 +437,14 @@ export default class Core {
 	onPopstate = () => {
 		// don't trigger for on-page anchors
 		if (
-			window.location.pathname === this.currentLocation.pathname
-			&& window.location.search === this.currentLocation.search
-			&& !this.isPopping
+			window.location.hash !== this.currentLocation.hash ||
+			(
+				window.location.pathname === this.currentLocation.pathname &&
+				window.location.search === this.currentLocation.search &&
+				!this.isPopping
+			)
 		) {
-			return false
+			return false;
 		}
 
 		if (!this.allowInterruption && (this.isTransitioning || this.isPopping)) {
