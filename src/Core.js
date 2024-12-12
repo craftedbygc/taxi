@@ -436,13 +436,16 @@ export default class Core {
 	 */
 	onPopstate = () => {
 		// don't trigger for on-page anchors
+		let windowLocationPathname = window.location.pathname;
+
+		if (window.location.pathname.slice(-1) === '/') {
+			windowLocationPathname = window.location.pathname.slice(0, -1);
+		}
 		if (
-			window.location.hash !== this.currentLocation.hash ||
-			(
-				window.location.pathname === this.currentLocation.pathname &&
-				window.location.search === this.currentLocation.search &&
-				!this.isPopping
-			)
+			(window.location.pathname === this.currentLocation.pathname &&
+			 window.location.search === this.currentLocation.search &&
+			 !this.isPopping) ||
+			(this.currentLocation.pathname === windowLocationPathname)
 		) {
 			return false;
 		}
