@@ -53,7 +53,7 @@ export default class Core {
 	 */
 	constructor(parameters = {}) {
 		const {
-			links = 'a:not([target]):not([href^=\\#]):not([data-taxi-ignore])',
+			links = 'a[href]:not([target]):not([href^=\\#]):not([data-taxi-ignore])',
 			removeOldContent = true,
 			allowInterruption = false,
 			bypassCache = false,
