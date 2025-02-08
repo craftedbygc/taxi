@@ -435,10 +435,12 @@ export default class Core {
 	 * @return {void|boolean}
 	 */
 	onPopstate = () => {
+		const target = processUrl(window.location.href)
+
 		// don't trigger for on-page anchors
 		if (
-			window.location.pathname === this.currentLocation.pathname
-			&& window.location.search === this.currentLocation.search
+			target.pathname === this.currentLocation.pathname
+			&& target.search === this.currentLocation.search
 			&& !this.isPopping
 		) {
 			return false

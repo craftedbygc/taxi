@@ -12,16 +12,18 @@ Here are a few examples:
 
 ```js
 // Transition from a blog page to the homepage
-taxi.addRoute('/blog/.*', '/', 'blogToHome')
+taxi.addRoute('/blog/.*', '', 'blogToHome')
 
 // Transition the homepage to any other page
-taxi.addRoute('/', '.*', 'fromHome')
+taxi.addRoute('', '.*', 'fromHome')
 
 // Transition from the about page, to the contact page
 taxi.addRoute('/about', '/contact', 'aboutToContact')
 ```
 
 **Please note:** Your regex is wrapped inside `^` and `$` automatically, so a regex of `/api` will match `/api` **but not** `/v2/api`. Keep this in mind when adding routing rules!
+
+**Also please note:** All trailing slashes are stripped from all URLs before they are matched. This means that `/` will not match your homepage, but `''` or `/?` will.
 
 They are also run as `RegExp` so there's no need to escape slashes. 👊
 
@@ -37,12 +39,12 @@ Lost? Well consider the following:
 
 ```js
 // bad
-taxi.addRoute('/pages/.*', '/', 'somethingElse')
-taxi.addRoute('/pages/specific', '/', 'something')
+taxi.addRoute('/pages/.*', '', 'somethingElse')
+taxi.addRoute('/pages/specific', '', 'something')
 
 // good
-taxi.addRoute('/pages/specific', '/', 'something')
-taxi.addRoute('/pages/.*', '/', 'somethingElse')
+taxi.addRoute('/pages/specific', '', 'something')
+taxi.addRoute('/pages/.*', '', 'somethingElse')
 ```
 
 In the above example, if the user was navigating from `/pages/specific` to the homepage, only the second example would match and run the "something" transition.
