@@ -1,8 +1,13 @@
 {
 	"name": "@unseenco/taxi",
 	"description": "A modern page transition library which supports routing, preloading, and additional script reloading.",
-	"version": "1.8.0",
-	"license": "GPL-3.0-or-later",
+	"version": "1.9.0",
+	"author": {
+		"name": "Jake Whiteley / Unseen Studio Ltd",
+		"email": "jake@unseen.co",
+		"url": "https://unseen.co"
+	},
+	"license": "BSD-3-Clause",
 	"source": "src/taxi.js",
 	"main": "src/taxi.js",
 	"umd:main": "./dist/taxi.umd.js",
