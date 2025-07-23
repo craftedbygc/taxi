@@ -111,7 +111,7 @@ taxi.on('NAVIGATE_IN', ({ to, trigger }) => {
   // ...
 })
 
-// This event is sent before the `onLeave()` method of a transition is run to hide a `data-router-view`
+// This event is sent before the `onLeave()` method of a transition is run to hide a `data-taxi-view`
 taxi.on('NAVIGATE_OUT', ({ from, trigger }) => {
   // ...
 })
