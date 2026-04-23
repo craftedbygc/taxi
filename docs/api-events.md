@@ -29,12 +29,34 @@ taxi.navigateTo('/contact')
 taxi.navigateTo('/contact', 'explcitTransition').then(() => { ... })
 ```
 
-## preload()
-Prefetch the provided URL and add it to the cache ahead of any user navigation.
+## navigateBack()
+Navigate back in the browser history. Respects the `allowInterruption` setting — if a transition is in progress and `allowInterruption` is `false`, the call is ignored with a console warning.
 
 ```js
 /**
- * preload( url: string, preloadAssets?: boolean = false): Promise
+ * navigateBack(): void
+ */
+taxi.navigateBack()
+```
+
+## navigateForward()
+Navigate forward in the browser history. Respects the `allowInterruption` setting.
+
+```js
+/**
+ * navigateForward(): void
+ */
+taxi.navigateForward()
+```
+
+## preload()
+Prefetch the provided URL and add it to the cache ahead of any user navigation.
+
+Returns a Promise that resolves to the `CacheEntry` so you can inspect the preloaded data.
+
+```js
+/**
+ * preload(url: string, preloadAssets?: boolean = false): Promise<CacheEntry>
  */
 taxi.preload('/path/to/preload')
 ```
@@ -45,12 +67,16 @@ taxi.preload('/path/to/preload', true)
 ```
 
 
-As `preload` returns a promise, you can also run code based on whether the fetch was a success or not:
+As `preload` returns a Promise that resolves to the `CacheEntry`, you can inspect the preloaded page or handle failures:
 
 ```js
-taxi.preload('/path/to/404')
-    .then(() => console.log('success!'))
-    .catch(err => console.warn(err))
+taxi.preload('/path/to/page')
+    .then((entry) => console.log('preloaded:', entry.title))
+    .catch(err => {
+        // Rejects on non-2xx responses (e.g. 404 with no error page),
+        // network errors, or if the fetched page has no [data-taxi-view].
+        console.warn('preload failed', err)
+    })
 ```
 
 ## updateCache()
@@ -106,17 +132,21 @@ import { Core } from '@unseenco/taxi'
 
 const taxi = new Core({ ... })
 
-// This event is sent everytime a `data-taxi-view` is added to the DOM
-taxi.on('NAVIGATE_IN', ({ to, trigger }) => {
+// Sent before the current page's leave transition begins.
+// Includes both the page being left (from) and the destination URL (to).
+taxi.on('NAVIGATE_OUT', ({ from, to, trigger }) => {
+  // from: the current CacheEntry
+  // to:   a CacheEntry if the page was preloaded/cached; otherwise a stub with the
+  //       same keys but null values (except finalUrl which holds the target URL string)
   // ...
 })
 
-// This event is sent before the `onLeave()` method of a transition is run to hide a `data-taxi-view`
-taxi.on('NAVIGATE_OUT', ({ from, trigger }) => {
+// Sent once the new data-taxi-view has been added to the DOM
+taxi.on('NAVIGATE_IN', ({ to, from, trigger }) => {
   // ...
 })
 
-// This event is sent everytime the `done()` method is called in the `onEnter()` method of a transition
+// Sent after the enter transition has fully completed
 taxi.on('NAVIGATE_END', ({ to, from, trigger }) => {
   // ...
 })

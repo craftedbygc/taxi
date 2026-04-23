@@ -132,6 +132,29 @@ Default behaviour is to preload links on your website whenever the `mouseenter` 
 
 If you want to disable this or want to implement your own preloading strategy, set this to `false`.
 
+### maxCacheSize `number`
+By default Taxi caches every page it visits indefinitely. Set `maxCacheSize` to a positive integer to limit how many pages are kept in the cache at once.
+
+When the limit is reached, the oldest cached page (that isn't the current page) is evicted to make room. Set to `0` (default) for unlimited caching.
+
+```js
+const taxi = new Core({
+    maxCacheSize: 10
+})
+```
+
+### fetchOptions `RequestInit`
+An object of options merged into every `fetch()` request Taxi makes. Use this to add custom headers, change credentials mode, etc.
+
+```js
+const taxi = new Core({
+    fetchOptions: {
+        headers: { 'X-My-Header': 'value' },
+        credentials: 'include',
+    }
+})
+```
+
 ### reloadJsFilter `bool|function(element: HTMLElement)`
 Please see [Reloading JS]({{ global.url }}/reloading-js/) for more information.
 
