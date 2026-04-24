@@ -35,6 +35,7 @@ The following props are available within Renderer methods:
 * `this.title` : The document.title of the page being rendered
 * `this.wrapper` : A reference to the `data-taxi` element
 * `this.content` :  A reference to the `data-taxi-view` element which is being added to the DOM
+* `this.trigger` : What initiated the navigation — the clicked `<a>` element, `'popstate'`, `'initialLoad'`, or `false` for programmatic navigation
 
 ## Registering a Renderer
 When initializing Taxi, you can pass through an object of renderers to register:
@@ -102,17 +103,17 @@ There may be things you want to setup at this time such as persistent components
 
 To aid with this, Renderers also have an `initialLoad` method which is only run on a user's first visit.
 
-As no navigation has taken place, Taxi won't fire your Renderer's `onEnter` or `onEnterCompleted` methods, so we suggest running them here is a good idea:
+As no navigation has taken place, Taxi won't fire your Renderer's `onEnter` or `onEnterCompleted` methods automatically, so we suggest running them here if needed:
 
 ```js
 import { Renderer } from '@unseenco/taxi';
 
 export default class CustomRenderer extends Renderer {
   initialLoad() {
-    // run code that should only happen once for your site
+	  // run code that should only happen once for your site
 
-    this.onEnter()
-    this.onEnterCompleted()
+	  this.onEnter()
+	  this.onEnterCompleted()
   }
 
   // rest of your methods
