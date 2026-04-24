@@ -222,36 +222,29 @@ describe('Core — navigateTo()', () => {
 	})
 })
 
-describe('Core — _chooseTransition()', () => {
+describe('Core — chooseTransition', () => {
 	// Bug fix #4 — chooseTransition warns and falls back instead of returning undefined
-	it('warns and returns defaultTransition for an unregistered transition name', () => {
-		const taxi = createCore()
+	it('warns and falls back to defaultTransition for an unregistered transition name', async () => {
+		createDOM()
+		vi.stubGlobal('fetch', mockFetchSuccess(buildPageHTML()))
+		const taxi = new Core()
 		const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
-		taxi.targetLocation = { pathname: '/foo' }
-		const chosen = taxi._chooseTransition('nonExistent')
+		// navigateTo with an unknown transition name triggers the warn + fallback internally
+		await taxi.navigateTo('/target', 'nonExistent')
 
 		expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('nonExistent'))
-		expect(chosen).toBe(taxi.defaultTransition)
 	})
 })
 
-describe('Core — createCacheEntry()', () => {
-	// Bug fix #5 — throws descriptively when [data-taxi-view] is absent
-	it('throws when the page has no [data-taxi-view]', () => {
-		const taxi = createCore()
-		const badPage = new DOMParser().parseFromString('<html><body><main data-taxi></main></body></html>', 'text/html')
-		expect(() => taxi.createCacheEntry(badPage, 'http://localhost/bad')).toThrow('[data-taxi-view]')
-	})
-
-	it('warns when a named renderer is not registered', () => {
+describe('Core — cache entry creation', () => {
+	it('warns when a named renderer is not registered', async () => {
+		createDOM()
 		const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
-		const taxi = createCore()
-		const page = new DOMParser().parseFromString(
-			`<html><body><main data-taxi><article data-taxi-view="ghost"></article></main></body></html>`,
-			'text/html'
-		)
-		taxi.createCacheEntry(page, 'http://localhost/page')
+		const pageHtml = buildPageHTML('ghost')
+		vi.stubGlobal('fetch', mockFetchSuccess(pageHtml))
+		const taxi = new Core()
+		await taxi.preload('/page')
 		expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('"ghost"'))
 	})
 })

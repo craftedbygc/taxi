@@ -44,10 +44,10 @@ export default class Core {
         reloadCssFilter?: boolean | ((arg0: HTMLLinkElement) => boolean);
     });
     isTransitioning: boolean;
-    /** @type {CacheEntry|null} */
-    currentCacheEntry: CacheEntry;
     /** @type {Map<string, CacheEntry>} */
     cache: Map<string, CacheEntry>;
+    /** The CacheEntry for the currently active page. Updated after every navigation. */
+    readonly currentCacheEntry: CacheEntry;
     renderers: { [x: string]: typeof Renderer };
     transitions: { [x: string]: typeof Transition };
     defaultRenderer: typeof Renderer;
