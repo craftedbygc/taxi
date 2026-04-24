@@ -14,7 +14,7 @@ describe('Core — constructor', () => {
 		expect(taxi.isTransitioning).toBe(false)
 		expect(taxi.isPopping).toBe(false)
 		expect(taxi.bypassCache).toBe(false)
-		expect(taxi.enablePrefetch).toBe(true)
+		expect(taxi.enablePrefetch).toBe('hover')
 		expect(taxi.removeOldContent).toBe(true)
 		expect(taxi.maxCacheSize).toBe(0)
 	})
@@ -318,5 +318,74 @@ describe('Core — NAVIGATE_OUT event includes `to`', () => {
 		expect(capturedTo).not.toBeNull()
 		expect(capturedTo.title).toBe('Preloaded Title')
 		expect(capturedTo.page).not.toBeNull()
+	})
+})
+
+describe('Core — enablePrefetch strategies', () => {
+	it('normalises enablePrefetch: true to "hover"', () => {
+		const taxi = createCore({ enablePrefetch: true })
+		expect(taxi.enablePrefetch).toBe('hover')
+	})
+
+	it('accepts enablePrefetch: false', () => {
+		const taxi = createCore({ enablePrefetch: false })
+		expect(taxi.enablePrefetch).toBe(false)
+	})
+
+	it('accepts enablePrefetch: "hover"', () => {
+		const taxi = createCore({ enablePrefetch: 'hover' })
+		expect(taxi.enablePrefetch).toBe('hover')
+	})
+
+	it('accepts enablePrefetch: "visible"', () => {
+		const taxi = createCore({ enablePrefetch: 'visible' })
+		expect(taxi.enablePrefetch).toBe('visible')
+	})
+
+	it('"visible" strategy observes matching links via IntersectionObserver', () => {
+		createDOM()
+		// Add a link to the page
+		document.body.querySelector('[data-taxi]').insertAdjacentHTML('beforebegin', '<a href="/about">About</a>')
+
+		const observeSpy = vi.fn()
+		class MockIntersectionObserver {
+			constructor() { this.observe = observeSpy; this.unobserve = vi.fn(); this.disconnect = vi.fn() }
+		}
+		vi.stubGlobal('IntersectionObserver', MockIntersectionObserver)
+
+		new Core({ enablePrefetch: 'visible' })
+
+		expect(observeSpy).toHaveBeenCalledWith(expect.objectContaining({ href: 'http://localhost/about' }))
+	})
+
+	it('"visible" strategy preloads a link when it intersects', async () => {
+		createDOM()
+		document.body.querySelector('[data-taxi]').insertAdjacentHTML('beforebegin', '<a href="/about">About</a>')
+
+		let intersectionCallback
+		class MockIntersectionObserver {
+			constructor(cb) {
+				intersectionCallback = cb
+				this.observe = vi.fn()
+				this.unobserve = vi.fn()
+				this.disconnect = vi.fn()
+			}
+		}
+		vi.stubGlobal('IntersectionObserver', MockIntersectionObserver)
+
+		const fetchMock = mockFetchSuccess(buildPageHTML())
+		vi.stubGlobal('fetch', fetchMock)
+
+		const taxi = new Core({ enablePrefetch: 'visible' })
+
+		// Simulate the link entering the viewport
+		const link = document.querySelector('a[href="/about"]')
+		intersectionCallback([{ isIntersecting: true, target: link }])
+
+		// Allow the preload microtask to settle
+		await new Promise((r) => setTimeout(r, 0))
+
+		expect(fetchMock).toHaveBeenCalledWith('http://localhost/about', expect.any(Object))
+		expect(taxi.cache.has('http://localhost/about')).toBe(true)
 	})
 })

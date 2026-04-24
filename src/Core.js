@@ -50,7 +50,7 @@ export default class Core {
 	 * 		removeOldContent?: boolean,
 	 * 		allowInterruption?: boolean,
 	 * 		bypassCache?: boolean,
-	 * 		enablePrefetch?: boolean,
+	 * 		enablePrefetch?: false|'hover'|'visible',
 	 * 		maxCacheSize?: number,
 	 * 		fetchOptions?: RequestInit,
 	 * 		renderers?: Object.<string, typeof Renderer>,
@@ -65,7 +65,7 @@ export default class Core {
 			removeOldContent = true,
 			allowInterruption = false,
 			bypassCache = false,
-			enablePrefetch = true,
+			enablePrefetch = 'hover',
 			maxCacheSize = 0,
 			fetchOptions = {},
 			renderers = {
@@ -88,7 +88,8 @@ export default class Core {
 		this.removeOldContent = removeOldContent
 		this.allowInterruption = allowInterruption
 		this.bypassCache = bypassCache
-		this.enablePrefetch = enablePrefetch
+		// normalise legacy boolean
+		this.enablePrefetch = enablePrefetch === true ? 'hover' : enablePrefetch
 		this.maxCacheSize = maxCacheSize
 		this.fetchOptions = fetchOptions
 		this.cache = new Map()
@@ -382,6 +383,11 @@ export default class Core {
 					this.currentCacheEntry = entry
 					this.isTransitioning = false
 					this.isPopping = false
+
+					if (this.enablePrefetch === 'visible') {
+						this._observeLinks()
+					}
+
 					resolve()
 				})
 		})
@@ -460,12 +466,41 @@ export default class Core {
 	 * @param {string} links
 	 */
 	_attachEvents(links) {
+		this._linksSelector = links
 		E.delegate('click', links, this.onClick)
 		E.on('popstate', window, this.onPopstate)
 
-		if (this.enablePrefetch) {
+		if (this.enablePrefetch === 'hover') {
 			E.delegate('mouseenter focus', links, this.onPrefetch)
+		} else if (this.enablePrefetch === 'visible') {
+			this._observeLinks()
 		}
+	}
+
+	/**
+	 * @private
+	 * Observe all matching links with IntersectionObserver and preload them as they enter the viewport.
+	 * Already-preloaded links are unobserved immediately to avoid redundant fetches.
+	 */
+	_observeLinks() {
+		if (!('IntersectionObserver' in window)) return
+
+		if (!this._prefetchObserver) {
+			this._prefetchObserver = new IntersectionObserver((entries) => {
+				entries.forEach((entry) => {
+					if (entry.isIntersecting) {
+						this._prefetchObserver.unobserve(entry.target)
+						this.preload(entry.target.href).catch(() => {})
+					}
+				})
+			})
+		}
+
+		document.querySelectorAll(this._linksSelector).forEach((el) => {
+			if (!this.cache.has(processUrl(el.href).href)) {
+				this._prefetchObserver.observe(el)
+			}
+		})
 	}
 
 	/**

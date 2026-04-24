@@ -127,10 +127,28 @@ Default behaviour is to cache the contents of a URL after fetching it to make re
 If you want default behaviour, but wish to force certain pages to always be fetched (and never loaded from cache), you can add the `data-taxi-nocache` attribute to the `data-taxi-view` element on that page. 
 
 
-### enablePrefetch `boolean`
-Default behaviour is to preload links on your website whenever the `mouseenter` or `focus` event is triggered.
+### enablePrefetch `false | 'hover' | 'visible'`
+Controls the automatic prefetch strategy. Defaults to `'hover'`.
 
-If you want to disable this or want to implement your own preloading strategy, set this to `false`.
+| Value | Behaviour |
+|---|---|
+| `'hover'` | Preloads a link when the user hovers over or focuses it (`mouseenter`/`focus`) |
+| `'visible'` | Uses `IntersectionObserver` to preload links as they scroll into the viewport |
+| `false` | Disables automatic prefetching entirely |
+
+```js
+// Preload links as they scroll into view
+const taxi = new Core({
+    enablePrefetch: 'visible'
+})
+
+// Disable prefetching
+const taxi = new Core({
+    enablePrefetch: false
+})
+```
+
+> **Note:** `enablePrefetch: true` is still accepted and maps to `'hover'` for backwards compatibility.
 
 ### maxCacheSize `number`
 By default Taxi caches every page it visits indefinitely. Set `maxCacheSize` to a positive integer to limit how many pages are kept in the cache at once.

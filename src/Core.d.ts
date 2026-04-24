@@ -17,7 +17,7 @@ export default class Core {
      * 		removeOldContent?: boolean,
      * 		allowInterruption?: boolean,
      * 		bypassCache?: boolean,
-     * 		enablePrefetch?: boolean,
+     * 		enablePrefetch?: false | 'hover' | 'visible',
      * 		maxCacheSize?: number,
      * 		fetchOptions?: RequestInit,
      * 		renderers?: Object.<string, typeof Renderer>,
@@ -31,7 +31,7 @@ export default class Core {
         removeOldContent?: boolean;
         allowInterruption?: boolean;
         bypassCache?: boolean;
-        enablePrefetch?: boolean;
+        enablePrefetch?: false | 'hover' | 'visible';
         maxCacheSize?: number;
         fetchOptions?: RequestInit;
         renderers?: {
@@ -58,7 +58,7 @@ export default class Core {
     removeOldContent: boolean;
     allowInterruption: boolean;
     bypassCache: boolean;
-    enablePrefetch: boolean;
+    enablePrefetch: false | 'hover' | 'visible';
     maxCacheSize: number;
     fetchOptions: RequestInit;
     isPopping: boolean;

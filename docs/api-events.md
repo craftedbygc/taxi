@@ -79,6 +79,17 @@ taxi.preload('/path/to/page')
     })
 ```
 
+## currentCacheEntry
+A read-only property that returns the `CacheEntry` for the currently active page.
+
+```js
+console.log(taxi.currentCacheEntry.title)     // page <title>
+console.log(taxi.currentCacheEntry.finalUrl)  // resolved URL after redirects
+console.log(taxi.currentCacheEntry.renderer)  // active Renderer instance
+```
+
+This is updated at the end of every navigation (after `NAVIGATE_END` fires). On first load it reflects the initial page.
+
 ## updateCache()
 Updates the cached HTML for the provided URL. If no URL is provided, update cache for the current URL.
 
