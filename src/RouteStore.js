@@ -43,8 +43,8 @@ export default class RouteStore {
 						return transition
 					}
 				}
-
-				break
+				// No toPattern matched for this fromPattern — continue to check other fromPatterns
+				// (allows wildcard catch-all routes defined after specific ones)
 			}
 		}
 

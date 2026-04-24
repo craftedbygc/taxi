@@ -1,5 +1,3 @@
-import Transition from "./Transition"
-
 export default class Renderer {
 	/**
 	 * @param {{content: HTMLElement|Element, page: Document|Node, title: string, wrapper: Element}} props
@@ -11,6 +9,8 @@ export default class Renderer {
 		this.title = title
 		this.wrapper = wrapper
 		this.content = this.wrapper.lastElementChild
+		/** @type {string|HTMLElement|false} */
+		this.trigger = false
 	}
 
 	onEnter() {
@@ -30,11 +30,14 @@ export default class Renderer {
 	}
 
 	initialLoad() {
-		this.onEnter()
-		this.onEnterCompleted()
+		this.trigger = 'initialLoad'
 	}
 
 	update() {
+		if (!this._DOM) {
+			throw new Error('Taxi Renderer: update() was called before createDom(). Ensure createDom() runs first.')
+		}
+
 		document.title = this.title
 		this.wrapper.appendChild(this._DOM.firstElementChild)
 		this.content = this.wrapper.lastElementChild
@@ -49,7 +52,7 @@ export default class Renderer {
 	}
 
 	remove() {
-		this.wrapper.firstElementChild.remove()
+		this.content.remove()
 	}
 
 	/**
@@ -60,6 +63,7 @@ export default class Renderer {
 	 */
 	enter(transition, trigger) {
 		return new Promise((resolve) => {
+			this.trigger = trigger
 			this.onEnter()
 
 			transition.enter({ trigger, to: this.content })
@@ -79,6 +83,7 @@ export default class Renderer {
 	 */
 	leave(transition, trigger, removeOldContent) {
 		return new Promise((resolve) => {
+			this.trigger = trigger
 			this.onLeave()
 
 			transition.leave({ trigger, from: this.content })

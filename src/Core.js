@@ -39,16 +39,24 @@ export default class Core {
 	activePromises = new Map()
 
 	/**
+	 * @private
+	 * @type {AbortController|null}
+	 */
+	_fetchController = null
+
+	/**
 	 * @param {{
 	 * 		links?: string,
 	 * 		removeOldContent?: boolean,
 	 * 		allowInterruption?: boolean,
 	 * 		bypassCache?: boolean,
 	 * 		enablePrefetch?: boolean,
+	 * 		maxCacheSize?: number,
+	 * 		fetchOptions?: RequestInit,
 	 * 		renderers?: Object.<string, typeof Renderer>,
 	 * 		transitions?: Object.<string, typeof Transition>,
 	 * 		reloadJsFilter?: boolean|function(HTMLElement): boolean,
-	 * 		reloadCssFilter?: boolean|function(HTMLLinkElement): boolean
+	 * 		reloadCssFilter?: boolean|function(HTMLLinkElement): boolean,
 	 * }} parameters
 	 */
 	constructor(parameters = {}) {
@@ -58,6 +66,8 @@ export default class Core {
 			allowInterruption = false,
 			bypassCache = false,
 			enablePrefetch = true,
+			maxCacheSize = 0,
+			fetchOptions = {},
 			renderers = {
 				default: Renderer
 			},
@@ -65,7 +75,7 @@ export default class Core {
 				default: Transition
 			},
 			reloadJsFilter = (element) => element.dataset.taxiReload !== undefined,
-			reloadCssFilter = (element) => true //element.dataset.taxiReload !== undefined
+			reloadCssFilter = (element) => element.dataset.taxiReload !== undefined
 		} = parameters
 
 		this.renderers = renderers
@@ -79,11 +89,13 @@ export default class Core {
 		this.allowInterruption = allowInterruption
 		this.bypassCache = bypassCache
 		this.enablePrefetch = enablePrefetch
+		this.maxCacheSize = maxCacheSize
+		this.fetchOptions = fetchOptions
 		this.cache = new Map()
 		this.isPopping = false
 
 		// Add delegated link events
-		this.attachEvents(links)
+		this._attachEvents(links)
 
 		this.currentLocation = processUrl(window.location.href)
 
@@ -125,11 +137,15 @@ export default class Core {
 	}
 
 	/**
-	 * Prime the cache for a given URL
+	 * Prime the cache for a given URL.
+	 *
+	 * Rejects if the server returns a non-2xx response (after redirects) or if the
+	 * fetched page contains no [data-taxi-view] element, so callers can distinguish
+	 * a successful preload from a missing/broken page.
 	 *
 	 * @param {string} url
 	 * @param {boolean} [preloadAssets]
-	 * @return {Promise}
+	 * @return {Promise<CacheEntry>}
 	 */
 	preload(url, preloadAssets = false) {
 		// convert relative URLs to absolute
@@ -138,16 +154,17 @@ export default class Core {
 		if (!this.cache.has(url)) {
 			return this.fetch(url, false)
 				.then(async (response) => {
-					this.cache.set(url, this.createCacheEntry(response.html, response.url))
+					this._setCacheEntry(url, this.createCacheEntry(response.html, response.url))
 
 					if (preloadAssets) {
 						this.cache.get(url).renderer.createDom()
 					}
+
+					return this.cache.get(url)
 				})
-				.catch(err => console.warn(err))
 		}
 
-		return Promise.resolve()
+		return Promise.resolve(this.cache.get(url))
 	}
 
 	/**
@@ -164,7 +181,7 @@ export default class Core {
 			this.cache.delete(key)
 		}
 
-		this.cache.set(key, this.createCacheEntry(document.cloneNode(true), key))
+		this._setCacheEntry(key, this.createCacheEntry(document.cloneNode(true), key))
 	}
 
 	/**
@@ -182,6 +199,30 @@ export default class Core {
 	}
 
 	/**
+	 * Navigate back in browser history, respecting the isTransitioning guard.
+	 */
+	navigateBack() {
+		if (!this.allowInterruption && this.isTransitioning) {
+			console.warn(IN_PROGRESS)
+			return
+		}
+
+		window.history.back()
+	}
+
+	/**
+	 * Navigate forward in browser history, respecting the isTransitioning guard.
+	 */
+	navigateForward() {
+		if (!this.allowInterruption && this.isTransitioning) {
+			console.warn(IN_PROGRESS)
+			return
+		}
+
+		window.history.forward()
+	}
+
+	/**
 	 * @param {string} url
 	 * @param {string|false} [transition]
 	 * @param {string|false|HTMLElement} [trigger]
@@ -195,44 +236,51 @@ export default class Core {
 				return
 			}
 
+			// Abort any in-flight fetch when interruption is allowed
+			if (this.allowInterruption && this._fetchController) {
+				this._fetchController.abort()
+				this._fetchController = null
+			}
+
 			this.isTransitioning = true
 			this.isPopping = true
 			this.targetLocation = processUrl(url)
 			this.popTarget = window.location.href
 
-			const TransitionClass = new (this.chooseTransition(transition))({ wrapper: this.wrapper })
+			const TransitionClass = new (this._chooseTransition(transition))({ wrapper: this.wrapper })
 
 			let navigationPromise
 
 			if (this.bypassCache || !this.cache.has(this.targetLocation.href) || this.cache.get(this.targetLocation.href).skipCache) {
 				const fetched = this.fetch(this.targetLocation.href)
 					.then((response) => {
-						this.cache.set(this.targetLocation.href, this.createCacheEntry(response.html, response.url))
+						this._setCacheEntry(this.targetLocation.href, this.createCacheEntry(response.html, response.url))
 						this.cache.get(this.targetLocation.href).renderer.createDom()
 					})
-					.catch(err => {
-						// we encountered a 4** or 5** error, redirect to the requested URL
-						window.location.href = url
-					})
 
-				navigationPromise = this.beforeFetch(this.targetLocation, TransitionClass, trigger)
+				navigationPromise = this._beforeFetch(this.targetLocation, TransitionClass, trigger)
 					.then(async () => {
 						return fetched.then(async () => {
-							return await this.afterFetch(this.targetLocation, TransitionClass, this.cache.get(this.targetLocation.href), trigger)
+							return await this._afterFetch(this.targetLocation, TransitionClass, this.cache.get(this.targetLocation.href), trigger)
 						})
 					})
 			} else {
 				this.cache.get(this.targetLocation.href).renderer.createDom()
 
-				navigationPromise = this.beforeFetch(this.targetLocation, TransitionClass, trigger)
+				navigationPromise = this._beforeFetch(this.targetLocation, TransitionClass, trigger)
 					.then(async () => {
-						return await this.afterFetch(this.targetLocation, TransitionClass, this.cache.get(this.targetLocation.href), trigger)
+						return await this._afterFetch(this.targetLocation, TransitionClass, this.cache.get(this.targetLocation.href), trigger)
 					})
 			}
 
-			navigationPromise.then(() => {
-				resolve()
-			})
+			navigationPromise
+				.then(() => resolve())
+				.catch((err) => {
+					// Reset transitioning state so navigation isn't permanently blocked
+					this.isTransitioning = false
+					this.isPopping = false
+					reject(err)
+				})
 		})
 	}
 
@@ -261,9 +309,19 @@ export default class Core {
 	 * @param {string|HTMLElement|false} trigger
 	 * @return {Promise<void>}
 	 */
-	beforeFetch(url, TransitionClass, trigger) {
+	_beforeFetch(url, TransitionClass, trigger) {
 		E.emit('NAVIGATE_OUT', {
 			from: this.currentCacheEntry,
+			to: this.cache.get(url.href) || {
+				page: null,
+				content: null,
+				finalUrl: url.href,
+				skipCache: null,
+				scripts: null,
+				styles: null,
+				title: null,
+				renderer: null
+			},
 			trigger
 		})
 
@@ -287,7 +345,7 @@ export default class Core {
 	 * @param {string|HTMLElement|false} trigger
 	 * @return {Promise<void>}
 	 */
-	afterFetch(url, TransitionClass, entry, trigger) {
+	_afterFetch(url, TransitionClass, entry, trigger) {
 		this.currentLocation = url
 		this.popTarget = this.currentLocation.href
 
@@ -301,11 +359,11 @@ export default class Core {
 			})
 
 			if (this.reloadJsFilter) {
-				this.loadScripts(entry.scripts)
+				this._loadScripts(entry.scripts)
 			}
 
 			if (this.reloadCssFilter) {
-				this.loadStyles(entry.styles)
+				this._loadStyles(entry.styles)
 			}
 
 			// If the fetched url had a redirect chain, then replace the history to reflect the final resolved URL
@@ -330,11 +388,12 @@ export default class Core {
 	}
 
 	/**
+	 * @private
 	 * Load up scripts from the target page if needed
 	 *
 	 * @param {HTMLElement[]} cachedScripts
 	 */
-	loadScripts(cachedScripts) {
+	_loadScripts(cachedScripts) {
 		const newScripts = [...cachedScripts]
 		const currentScripts = Array.from(document.querySelectorAll('script')).filter(this.reloadJsFilter)
 
@@ -355,11 +414,12 @@ export default class Core {
 	}
 
 	/**
+	 * @private
 	 * Load up styles from the target page if needed
 	 *
 	 * @param {Array<HTMLLinkElement|HTMLStyleElement>} cachedStyles
 	 */
-	loadStyles(cachedStyles) {
+	_loadStyles(cachedStyles) {
 		const currentStyles = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).filter(this.reloadCssFilter)
 		const currentInlineStyles = Array.from(document.querySelectorAll('style')).filter(this.reloadCssFilter)
 
@@ -391,9 +451,15 @@ export default class Core {
 
 	/**
 	 * @private
+	 * Sync <meta> and <link rel="canonical"> tags from a fetched page into the current document head.
+	 *
+	 * @param {Document|Node} page
+	 */
+	/**
+	 * @private
 	 * @param {string} links
 	 */
-	attachEvents(links) {
+	_attachEvents(links) {
 		E.delegate('click', links, this.onClick)
 		E.on('popstate', window, this.onPopstate)
 
@@ -468,6 +534,10 @@ export default class Core {
 	 * @param {MouseEvent} e
 	 */
 	onPrefetch = (e) => {
+		if (this.isTransitioning) {
+			return
+		}
+
 		const target = processUrl(e.currentTarget.href)
 
 		if (this.currentLocation.host !== target.host) {
@@ -489,22 +559,32 @@ export default class Core {
 			return this.activePromises.get(url)
 		}
 
+		this._fetchController = new AbortController()
+		const signal = this._fetchController.signal
+
 		const request = new Promise((resolve, reject) => {
 			let resolvedUrl
 
 			fetch(url, {
 				mode: 'same-origin',
 				method: 'GET',
-				headers: { 'X-Requested-With': 'Taxi' },
-				credentials: 'same-origin'
+				credentials: 'same-origin',
+				...this.fetchOptions,
+				headers: {
+					'X-Requested-With': 'Taxi',
+					...this.fetchOptions.headers,
+				},
+				signal
 			})
 				.then((response) => {
 					if (!response.ok) {
-						reject('Taxi encountered a non 2xx HTTP status code')
+						reject(new Error('Taxi encountered a non 2xx HTTP status code'))
 
 						if (runFallback) {
 							window.location.href = url
 						}
+
+						return
 					}
 
 					resolvedUrl = response.url
@@ -512,13 +592,17 @@ export default class Core {
 					return response.text()
 				})
 				.then((htmlString) => {
-					resolve({ html: parseDom(htmlString), url: resolvedUrl })
+					if (htmlString !== undefined) {
+						resolve({ html: parseDom(htmlString), url: resolvedUrl })
+					}
 				})
 				.catch((err) => {
-					reject(err)
+					if (err.name !== 'AbortError') {
+						reject(err)
 
-					if (runFallback) {
-						window.location.href = url
+						if (runFallback) {
+							window.location.href = url
+						}
 					}
 				})
 				.finally(() => {
@@ -534,20 +618,51 @@ export default class Core {
 	/**
 	 * @private
 	 * @param {string|false} transition
-	 * @return {Transition|function}
+	 * @return {typeof Transition}
 	 */
-	chooseTransition(transition) {
+	_chooseTransition(transition) {
 		if (transition) {
+			if (!this.transitions[transition]) {
+				console.warn(`Taxi: transition "${transition}" is not registered. Falling back to default.`)
+				return this.defaultTransition
+			}
+
 			return this.transitions[transition]
 		}
 
 		const routeTransition = this.router?.findMatch(this.currentLocation, this.targetLocation)
 
 		if (routeTransition) {
+			if (!this.transitions[routeTransition]) {
+				console.warn(`Taxi: route transition "${routeTransition}" is not registered. Falling back to default.`)
+				return this.defaultTransition
+			}
+
 			return this.transitions[routeTransition]
 		}
 
 		return this.defaultTransition
+	}
+
+	/**
+	 * @private
+	 * Sets a cache entry, evicting the oldest non-current entry if maxCacheSize is reached.
+	 *
+	 * @param {string} url
+	 * @param {CacheEntry} entry
+	 */
+	_setCacheEntry(url, entry) {
+		if (this.maxCacheSize > 0 && !this.cache.has(url) && this.cache.size >= this.maxCacheSize) {
+			for (const key of this.cache.keys()) {
+				// Never evict the current page
+				if (key !== this.currentLocation?.href) {
+					this.cache.delete(key)
+					break
+				}
+			}
+		}
+
+		this.cache.set(url, entry)
 	}
 
 	/**
@@ -558,10 +673,15 @@ export default class Core {
 	 */
 	createCacheEntry(page, url) {
 		const content = page.querySelector('[data-taxi-view]')
-		const Renderer = content.dataset.taxiView.length ? this.renderers[content.dataset.taxiView] : this.defaultRenderer
 
-		if (!Renderer) {
-			console.warn(`The Renderer "${content.dataset.taxiView}" was set in the data-taxi-view of the requested page, but not registered in Taxi.`)
+		if (!content) {
+			throw new Error(`Taxi: the fetched page for "${url}" does not contain a [data-taxi-view] element.`)
+		}
+
+		const RendererClass = content.dataset.taxiView.length ? this.renderers[content.dataset.taxiView] : this.defaultRenderer
+
+		if (!RendererClass) {
+			console.warn(`Taxi: the renderer "${content.dataset.taxiView}" is set in [data-taxi-view] but was not registered.`)
 		}
 
 		return {
@@ -572,7 +692,7 @@ export default class Core {
 			scripts: this.reloadJsFilter ? Array.from(page.querySelectorAll('script')).filter(this.reloadJsFilter) : [],
 			styles: this.reloadCssFilter ? Array.from(page.querySelectorAll('link[rel="stylesheet"], style')).filter(this.reloadCssFilter) : [],
 			title: page.title,
-			renderer: new Renderer({
+			renderer: new (RendererClass || this.defaultRenderer)({
 				wrapper: this.wrapper,
 				title: page.title,
 				content,

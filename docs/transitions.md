@@ -18,20 +18,28 @@ import { Transition } from '@unseenco/taxi'
 export default class MyTransition extends Transition {
   /**
    * Handle the transition leaving the previous page.
+   * Call done() or return a Promise when the animation is complete.
    * @param { { from: HTMLElement, trigger: string|HTMLElement|false, done: function } } props
    */
   onLeave({ from, trigger, done }) {
-    // do something ...
+    // using the done() callback:
     done()
+
+    // or returning a Promise (e.g. a GSAP tween):
+    // return gsap.to(from, { opacity: 0 })
   }
 
   /**
    * Handle the transition entering the next page.
+   * Call done() or return a Promise when the animation is complete.
    * @param { { to: HTMLElement, trigger: string|HTMLElement|false, done: function } } props
    */
   onEnter({ to, trigger, done }) {
-    // do something else ...
+    // using the done() callback:
     done()
+
+    // or returning a Promise:
+    // return gsap.from(to, { opacity: 0 })
   }
 }
 ```
