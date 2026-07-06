@@ -10,7 +10,7 @@ export default class Renderer {
 		this.page = page
 		this.title = title
 		this.wrapper = wrapper
-		this.content = this.wrapper.querySelector('[data-taxi-view]') || this.wrapper.lastElementChild
+		this.content = this.wrapper.querySelector('[data-taxi-view]') || this.wrapper.lastElementChild || content
 	}
 
 	onEnter() {
@@ -40,11 +40,8 @@ export default class Renderer {
 		const activeView = this.wrapper.querySelector('[data-taxi-view]')
 		const newContent = this._DOM.firstElementChild
 
-		if (activeView && activeView.parentNode) {
-			activeView.parentNode.appendChild(newContent)
-		} else {
-			this.wrapper.appendChild(newContent)
-		}
+		const parent = activeView ? activeView.parentNode : (this.wrapper._lastParentNode || this.wrapper)
+		parent.appendChild(newContent)
 
 		this.content = newContent
 		this._DOM = null
@@ -58,7 +55,9 @@ export default class Renderer {
 	}
 
 	remove() {
-		this.content.remove()
+		if (this.content) {
+			this.content.remove()
+		}
 	}
 
 	/**
@@ -89,6 +88,10 @@ export default class Renderer {
 	leave(transition, trigger, removeOldContent) {
 		return new Promise((resolve) => {
 			this.onLeave()
+
+			if (this.content) {
+				this.wrapper._lastParentNode = this.content.parentNode
+			}
 
 			transition.leave({ trigger, from: this.content })
 				.then(() => {
