@@ -10,7 +10,7 @@ export default class Renderer {
 		this.page = page
 		this.title = title
 		this.wrapper = wrapper
-		this.content = this.wrapper.lastElementChild
+		this.content = this.wrapper.querySelector('[data-taxi-view]') || this.wrapper.lastElementChild
 	}
 
 	onEnter() {
@@ -36,8 +36,17 @@ export default class Renderer {
 
 	update() {
 		document.title = this.title
-		this.wrapper.appendChild(this._DOM.firstElementChild)
-		this.content = this.wrapper.lastElementChild
+
+		const activeView = this.wrapper.querySelector('[data-taxi-view]')
+		const newContent = this._DOM.firstElementChild
+
+		if (activeView && activeView.parentNode) {
+			activeView.parentNode.appendChild(newContent)
+		} else {
+			this.wrapper.appendChild(newContent)
+		}
+
+		this.content = newContent
 		this._DOM = null
 	}
 
@@ -49,7 +58,7 @@ export default class Renderer {
 	}
 
 	remove() {
-		this.wrapper.firstElementChild.remove()
+		this.content.remove()
 	}
 
 	/**
