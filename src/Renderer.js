@@ -40,8 +40,15 @@ export default class Renderer {
 		const activeView = this.wrapper.querySelector('[data-taxi-view]')
 		const newContent = this._DOM.firstElementChild
 
-		const parent = activeView ? activeView.parentNode : (this.wrapper._lastParentNode || this.wrapper)
-		parent.appendChild(newContent)
+		if (activeView) {
+			activeView.parentNode.insertBefore(newContent, activeView.nextSibling)
+		} else {
+			const parent = this.wrapper._lastParentNode || this.wrapper
+			const sibling = this.wrapper._lastNextSibling
+			const nextSibling = (sibling && sibling.parentNode === parent) ? sibling : null
+
+			parent.insertBefore(newContent, nextSibling)
+		}
 
 		this.content = newContent
 		this._DOM = null
@@ -91,6 +98,7 @@ export default class Renderer {
 
 			if (this.content) {
 				this.wrapper._lastParentNode = this.content.parentNode
+				this.wrapper._lastNextSibling = this.content.nextSibling
 			}
 
 			transition.leave({ trigger, from: this.content })
