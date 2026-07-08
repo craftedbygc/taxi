@@ -1,69 +1,58 @@
-import Transition from "./Transition"
+import Transition from "./Transition";
 
 export default class Renderer {
 	/**
 	 * @param {{content: HTMLElement|Element, page: Document|Node, title: string, wrapper: Element}} props
 	 */
 	constructor({ content, page, title, wrapper }) {
-		this._contentString = content.outerHTML
-		this._DOM = null
-		this.page = page
-		this.title = title
-		this.wrapper = wrapper
-		this.content = this.wrapper.querySelector('[data-taxi-view]') || this.wrapper.lastElementChild || content
+		this._contentString = content.outerHTML;
+		this._DOM = null;
+		this.page = page;
+		this.title = title;
+		this.wrapper = wrapper;
+		this.content =
+			this.wrapper.querySelector("[data-taxi-view]") ||
+			this.wrapper.lastElementChild;
 	}
 
-	onEnter() {
+	onEnter() {}
 
-	}
+	onEnterCompleted() {}
 
-	onEnterCompleted() {
+	onLeave() {}
 
-	}
-
-	onLeave() {
-
-	}
-
-	onLeaveCompleted() {
-
-	}
+	onLeaveCompleted() {}
 
 	initialLoad() {
-		this.onEnter()
-		this.onEnterCompleted()
+		this.onEnter();
+		this.onEnterCompleted();
 	}
 
-	update() {
-		document.title = this.title
+	update(siblingAfter = null) {
+		document.title = this.title;
 
-		const activeView = this.wrapper.querySelector('[data-taxi-view]')
-		const newContent = this._DOM.firstElementChild
+		const newContent = this._DOM.firstElementChild;
 
-		if (activeView) {
-			activeView.parentNode.insertBefore(newContent, activeView.nextSibling)
+		if (siblingAfter && siblingAfter.parentNode === this.wrapper) {
+			this.wrapper.insertBefore(newContent, siblingAfter);
 		} else {
-			const parent = this.wrapper._lastParentNode || this.wrapper
-			const sibling = this.wrapper._lastNextSibling
-			const nextSibling = (sibling && sibling.parentNode === parent) ? sibling : null
-
-			parent.insertBefore(newContent, nextSibling)
+			this.wrapper.appendChild(newContent);
 		}
 
-		this.content = newContent
-		this._DOM = null
+		this.content = newContent;
+		this._DOM = null;
 	}
 
 	createDom() {
 		if (!this._DOM) {
-			this._DOM = document.createElement('div')
-			this._DOM.innerHTML = this._contentString
+			this._DOM = document.createElement("div");
+			this._DOM.innerHTML = this._contentString;
 		}
 	}
 
 	remove() {
-		if (this.content) {
-			this.content.remove()
+		if (this.content && this.content.parentNode === this.wrapper) {
+			this.content.remove();
 		}
 	}
 
@@ -75,14 +64,13 @@ export default class Renderer {
 	 */
 	enter(transition, trigger) {
 		return new Promise((resolve) => {
-			this.onEnter()
+			this.onEnter();
 
-			transition.enter({ trigger, to: this.content })
-				.then(() => {
-					this.onEnterCompleted()
-					resolve()
-				})
-		})
+			transition.enter({ trigger, to: this.content }).then(() => {
+				this.onEnterCompleted();
+				resolve();
+			});
+		});
 	}
 
 	/**
@@ -94,22 +82,21 @@ export default class Renderer {
 	 */
 	leave(transition, trigger, removeOldContent) {
 		return new Promise((resolve) => {
-			this.onLeave()
+			this.onLeave();
 
 			if (this.content) {
-				this.wrapper._lastParentNode = this.content.parentNode
-				this.wrapper._lastNextSibling = this.content.nextSibling
+				this.wrapper._lastParentNode = this.content.parentNode;
+				this.wrapper._lastNextSibling = this.content.nextSibling;
 			}
 
-			transition.leave({ trigger, from: this.content })
-				.then(() => {
-					if (removeOldContent) {
-						this.remove()
-					}
+			transition.leave({ trigger, from: this.content }).then(() => {
+				if (removeOldContent) {
+					this.remove();
+				}
 
-					this.onLeaveCompleted()
-					resolve()
-				})
-		})
+				this.onLeaveCompleted();
+				resolve();
+			});
+		});
 	}
 }

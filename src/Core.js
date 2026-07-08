@@ -1,10 +1,10 @@
-import E from '@unseenco/e'
-import { appendElement, parseDom, processUrl, reloadElement } from './helpers'
-import Transition from './Transition'
-import Renderer from './Renderer'
-import RouteStore from './RouteStore'
+import E from "@unseenco/e";
+import { appendElement, parseDom, processUrl, reloadElement } from "./helpers";
+import Transition from "./Transition";
+import Renderer from "./Renderer";
+import RouteStore from "./RouteStore";
 
-const IN_PROGRESS = 'A transition is currently in progress'
+const IN_PROGRESS = "A transition is currently in progress";
 
 /**
  * @typedef CacheEntry
@@ -20,23 +20,23 @@ const IN_PROGRESS = 'A transition is currently in progress'
  */
 
 export default class Core {
-	isTransitioning = false
+	isTransitioning = false;
 
 	/**
 	 * @type {CacheEntry|null}
 	 */
-	currentCacheEntry = null
+	currentCacheEntry = null;
 
 	/**
 	 * @type {Map<string, CacheEntry>}
 	 */
-	cache = new Map()
+	cache = new Map();
 
 	/**
 	 * @private
 	 * @type {Map<string, Promise>}
 	 */
-	activePromises = new Map()
+	activePromises = new Map();
 
 	/**
 	 * @param {{
@@ -53,60 +53,67 @@ export default class Core {
 	 */
 	constructor(parameters = {}) {
 		const {
-			links = 'a[href]:not([target]):not([href^=\\#]):not([data-taxi-ignore])',
+			links = "a[href]:not([target]):not([href^=\\#]):not([data-taxi-ignore])",
 			removeOldContent = true,
 			allowInterruption = false,
 			bypassCache = false,
 			enablePrefetch = true,
 			renderers = {
-				default: Renderer
+				default: Renderer,
 			},
 			transitions = {
-				default: Transition
+				default: Transition,
 			},
-			reloadJsFilter = (element) => element.dataset.taxiReload !== undefined,
-			reloadCssFilter = (element) => true //element.dataset.taxiReload !== undefined
-		} = parameters
+			reloadJsFilter = (element) =>
+				element.dataset.taxiReload !== undefined,
+			reloadCssFilter = (element) => true, //element.dataset.taxiReload !== undefined
+		} = parameters;
 
-		this.renderers = renderers
-		this.transitions = transitions
-		this.defaultRenderer = this.renderers.default || Renderer
-		this.defaultTransition = this.transitions.default || Transition
-		this.wrapper = document.querySelector('[data-taxi]')
-		this.reloadJsFilter = reloadJsFilter
-		this.reloadCssFilter = reloadCssFilter
-		this.removeOldContent = removeOldContent
-		this.allowInterruption = allowInterruption
-		this.bypassCache = bypassCache
-		this.enablePrefetch = enablePrefetch
-		this.cache = new Map()
-		this.isPopping = false
+		this.renderers = renderers;
+		this.transitions = transitions;
+		this.defaultRenderer = this.renderers.default || Renderer;
+		this.defaultTransition = this.transitions.default || Transition;
+		this.wrapper = document.querySelector("[data-taxi]");
+		this.reloadJsFilter = reloadJsFilter;
+		this.reloadCssFilter = reloadCssFilter;
+		this.removeOldContent = removeOldContent;
+		this.allowInterruption = allowInterruption;
+		this.bypassCache = bypassCache;
+		this.enablePrefetch = enablePrefetch;
+		this.cache = new Map();
+		this.isPopping = false;
 
 		// Add delegated link events
-		this.attachEvents(links)
+		this.attachEvents(links);
 
-		this.currentLocation = processUrl(window.location.href)
+		this.currentLocation = processUrl(window.location.href);
 
 		// as this is the initial page load, prime this page into the cache
-		this.cache.set(this.currentLocation.href, this.createCacheEntry(document.cloneNode(true), window.location.href))
+		this.cache.set(
+			this.currentLocation.href,
+			this.createCacheEntry(
+				document.cloneNode(true),
+				window.location.href,
+			),
+		);
 
 		// fire the current Renderer enter methods
-		this.currentCacheEntry = this.cache.get(this.currentLocation.href)
-		this.currentCacheEntry.renderer.initialLoad()
+		this.currentCacheEntry = this.cache.get(this.currentLocation.href);
+		this.currentCacheEntry.renderer.initialLoad();
 	}
 
 	/**
 	 * @param {string} renderer
 	 */
 	setDefaultRenderer(renderer) {
-		this.defaultRenderer = this.renderers[renderer]
+		this.defaultRenderer = this.renderers[renderer];
 	}
 
 	/**
 	 * @param {string} transition
 	 */
 	setDefaultTransition(transition) {
-		this.defaultTransition = this.transitions[transition]
+		this.defaultTransition = this.transitions[transition];
 	}
 
 	/**
@@ -118,10 +125,10 @@ export default class Core {
 	 */
 	addRoute(fromPattern, toPattern, transition) {
 		if (!this.router) {
-			this.router = new RouteStore()
+			this.router = new RouteStore();
 		}
 
-		this.router.add(fromPattern, toPattern, transition)
+		this.router.add(fromPattern, toPattern, transition);
 	}
 
 	/**
@@ -133,21 +140,24 @@ export default class Core {
 	 */
 	preload(url, preloadAssets = false) {
 		// convert relative URLs to absolute
-		url = processUrl(url).href
+		url = processUrl(url).href;
 
 		if (!this.cache.has(url)) {
 			return this.fetch(url, false)
 				.then(async (response) => {
-					this.cache.set(url, this.createCacheEntry(response.html, response.url))
+					this.cache.set(
+						url,
+						this.createCacheEntry(response.html, response.url),
+					);
 
 					if (preloadAssets) {
-						this.cache.get(url).renderer.createDom()
+						this.cache.get(url).renderer.createDom();
 					}
 				})
-				.catch(err => console.warn(err))
+				.catch((err) => console.warn(err));
 		}
 
-		return Promise.resolve()
+		return Promise.resolve();
 	}
 
 	/**
@@ -158,13 +168,16 @@ export default class Core {
 	 * @param {string} [url]
 	 */
 	updateCache(url) {
-		const key = processUrl(url || window.location.href).href
+		const key = processUrl(url || window.location.href).href;
 
 		if (this.cache.has(key)) {
-			this.cache.delete(key)
+			this.cache.delete(key);
 		}
 
-		this.cache.set(key, this.createCacheEntry(document.cloneNode(true), key))
+		this.cache.set(
+			key,
+			this.createCacheEntry(document.cloneNode(true), key),
+		);
 	}
 
 	/**
@@ -174,10 +187,10 @@ export default class Core {
 	 * @param {string} [url]
 	 */
 	clearCache(url) {
-		const key = processUrl(url || window.location.href).href
+		const key = processUrl(url || window.location.href).href;
 
 		if (this.cache.has(key)) {
-			this.cache.delete(key)
+			this.cache.delete(key);
 		}
 	}
 
@@ -191,49 +204,76 @@ export default class Core {
 		return new Promise((resolve, reject) => {
 			// Don't allow multiple navigations to occur at once
 			if (!this.allowInterruption && this.isTransitioning) {
-				reject(new Error(IN_PROGRESS))
-				return
+				reject(new Error(IN_PROGRESS));
+				return;
 			}
 
-			this.isTransitioning = true
-			this.isPopping = true
-			this.targetLocation = processUrl(url)
-			this.popTarget = window.location.href
+			this.isTransitioning = true;
+			this.isPopping = true;
+			this.targetLocation = processUrl(url);
+			this.popTarget = window.location.href;
 
-			const TransitionClass = new (this.chooseTransition(transition))({ wrapper: this.wrapper })
+			const TransitionClass = new (this.chooseTransition(transition))({
+				wrapper: this.wrapper,
+			});
 
-			let navigationPromise
+			let navigationPromise;
 
-			if (this.bypassCache || !this.cache.has(this.targetLocation.href) || this.cache.get(this.targetLocation.href).skipCache) {
+			if (
+				this.bypassCache ||
+				!this.cache.has(this.targetLocation.href) ||
+				this.cache.get(this.targetLocation.href).skipCache
+			) {
 				const fetched = this.fetch(this.targetLocation.href)
 					.then((response) => {
-						this.cache.set(this.targetLocation.href, this.createCacheEntry(response.html, response.url))
-						this.cache.get(this.targetLocation.href).renderer.createDom()
+						this.cache.set(
+							this.targetLocation.href,
+							this.createCacheEntry(response.html, response.url),
+						);
+						this.cache
+							.get(this.targetLocation.href)
+							.renderer.createDom();
 					})
-					.catch(err => {
+					.catch((err) => {
 						// we encountered a 4** or 5** error, redirect to the requested URL
-						window.location.href = url
-					})
+						window.location.href = url;
+					});
 
-				navigationPromise = this.beforeFetch(this.targetLocation, TransitionClass, trigger)
-					.then(async () => {
-						return fetched.then(async () => {
-							return await this.afterFetch(this.targetLocation, TransitionClass, this.cache.get(this.targetLocation.href), trigger)
-						})
-					})
+				navigationPromise = this.beforeFetch(
+					this.targetLocation,
+					TransitionClass,
+					trigger,
+				).then(async () => {
+					return fetched.then(async () => {
+						return await this.afterFetch(
+							this.targetLocation,
+							TransitionClass,
+							this.cache.get(this.targetLocation.href),
+							trigger,
+						);
+					});
+				});
 			} else {
-				this.cache.get(this.targetLocation.href).renderer.createDom()
+				this.cache.get(this.targetLocation.href).renderer.createDom();
 
-				navigationPromise = this.beforeFetch(this.targetLocation, TransitionClass, trigger)
-					.then(async () => {
-						return await this.afterFetch(this.targetLocation, TransitionClass, this.cache.get(this.targetLocation.href), trigger)
-					})
+				navigationPromise = this.beforeFetch(
+					this.targetLocation,
+					TransitionClass,
+					trigger,
+				).then(async () => {
+					return await this.afterFetch(
+						this.targetLocation,
+						TransitionClass,
+						this.cache.get(this.targetLocation.href),
+						trigger,
+					);
+				});
 			}
 
 			navigationPromise.then(() => {
-				resolve()
-			})
-		})
+				resolve();
+			});
+		});
 	}
 
 	/**
@@ -242,7 +282,7 @@ export default class Core {
 	 * @param {any} callback
 	 */
 	on(event, callback) {
-		E.on(event, callback)
+		E.on(event, callback);
 	}
 
 	/**
@@ -251,7 +291,7 @@ export default class Core {
 	 * @param {any} [callback]
 	 */
 	off(event, callback) {
-		E.off(event, callback)
+		E.off(event, callback);
 	}
 
 	/**
@@ -262,21 +302,26 @@ export default class Core {
 	 * @return {Promise<void>}
 	 */
 	beforeFetch(url, TransitionClass, trigger) {
-		E.emit('NAVIGATE_OUT', {
+		E.emit("NAVIGATE_OUT", {
 			from: this.currentCacheEntry,
-			trigger
-		})
+			trigger,
+		});
 
 		return new Promise((resolve) => {
-			this.currentCacheEntry.renderer.leave(TransitionClass, trigger, this.removeOldContent)
+			const currentContent = this.currentCacheEntry.renderer.content;
+			this.siblingAfter = currentContent
+				? currentContent.nextSibling
+				: null;
+			this.currentCacheEntry.renderer
+				.leave(TransitionClass, trigger, this.removeOldContent)
 				.then(() => {
-					if (trigger !== 'popstate') {
-						window.history.pushState({}, '', url.raw)
+					if (trigger !== "popstate") {
+						window.history.pushState({}, "", url.raw);
 					}
 
-					resolve()
-				})
-		})
+					resolve();
+				});
+		});
 	}
 
 	/**
@@ -288,45 +333,55 @@ export default class Core {
 	 * @return {Promise<void>}
 	 */
 	afterFetch(url, TransitionClass, entry, trigger) {
-		this.currentLocation = url
-		this.popTarget = this.currentLocation.href
+		this.currentLocation = url;
+		this.popTarget = this.currentLocation.href;
 
 		return new Promise((resolve) => {
-			entry.renderer.update()
+			let targetSibling = this.siblingAfter;
 
-			E.emit('NAVIGATE_IN', {
+			if (!this.removeOldContent) {
+				const oldContent =
+					this.wrapper.querySelector("[data-taxi-view]");
+				targetSibling = oldContent ? oldContent.nextSibling : null;
+			}
+
+			entry.renderer.update(targetSibling);
+
+			E.emit("NAVIGATE_IN", {
 				from: this.currentCacheEntry,
 				to: entry,
-				trigger
-			})
+				trigger,
+			});
 
 			if (this.reloadJsFilter) {
-				this.loadScripts(entry.scripts)
+				this.loadScripts(entry.scripts);
 			}
 
 			if (this.reloadCssFilter) {
-				this.loadStyles(entry.styles)
+				this.loadStyles(entry.styles);
 			}
 
 			// If the fetched url had a redirect chain, then replace the history to reflect the final resolved URL
-			if (trigger !== 'popstate' && url.href !== processUrl(entry.finalUrl).href) {
-				window.history.replaceState({}, '', entry.finalUrl)
+			if (
+				trigger !== "popstate" &&
+				url.href !== processUrl(entry.finalUrl).href
+			) {
+				window.history.replaceState({}, "", entry.finalUrl);
 			}
 
-			entry.renderer.enter(TransitionClass, trigger)
-				.then(() => {
-					E.emit('NAVIGATE_END', {
-						from: this.currentCacheEntry,
-						to: entry,
-						trigger
-					})
+			entry.renderer.enter(TransitionClass, trigger).then(() => {
+				E.emit("NAVIGATE_END", {
+					from: this.currentCacheEntry,
+					to: entry,
+					trigger,
+				});
 
-					this.currentCacheEntry = entry
-					this.isTransitioning = false
-					this.isPopping = false
-					resolve()
-				})
-		})
+				this.currentCacheEntry = entry;
+				this.isTransitioning = false;
+				this.isPopping = false;
+				resolve();
+			});
+		});
 	}
 
 	/**
@@ -335,22 +390,24 @@ export default class Core {
 	 * @param {HTMLElement[]} cachedScripts
 	 */
 	loadScripts(cachedScripts) {
-		const newScripts = [...cachedScripts]
-		const currentScripts = Array.from(document.querySelectorAll('script')).filter(this.reloadJsFilter)
+		const newScripts = [...cachedScripts];
+		const currentScripts = Array.from(
+			document.querySelectorAll("script"),
+		).filter(this.reloadJsFilter);
 
 		// loop through all new scripts
 		for (let i = 0; i < currentScripts.length; i++) {
 			for (let n = 0; n < newScripts.length; n++) {
 				if (currentScripts[i].outerHTML === newScripts[n].outerHTML) {
-					reloadElement(currentScripts[i], 'SCRIPT')
-					newScripts.splice(n, 1)
-					break
+					reloadElement(currentScripts[i], "SCRIPT");
+					newScripts.splice(n, 1);
+					break;
 				}
 			}
 		}
 
 		for (const script of newScripts) {
-			appendElement(script, 'SCRIPT')
+			appendElement(script, "SCRIPT");
 		}
 	}
 
@@ -360,32 +417,39 @@ export default class Core {
 	 * @param {Array<HTMLLinkElement|HTMLStyleElement>} cachedStyles
 	 */
 	loadStyles(cachedStyles) {
-		const currentStyles = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).filter(this.reloadCssFilter)
-		const currentInlineStyles = Array.from(document.querySelectorAll('style')).filter(this.reloadCssFilter)
+		const currentStyles = Array.from(
+			document.querySelectorAll('link[rel="stylesheet"]'),
+		).filter(this.reloadCssFilter);
+		const currentInlineStyles = Array.from(
+			document.querySelectorAll("style"),
+		).filter(this.reloadCssFilter);
 
-		const newInlineStyles = cachedStyles.filter(el => {
+		const newInlineStyles = cachedStyles.filter((el) => {
 			// no el.href, assume it's an inline style
 			if (!el.href) {
-				return true
+				return true;
 			} else if (!currentStyles.find((link) => link.href === el.href)) {
-				document.body.append(el)
-				return false
+				document.body.append(el);
+				return false;
 			}
-		})
+		});
 
 		// loop through all new inline styles
 		for (let i = 0; i < currentInlineStyles.length; i++) {
 			for (let n = 0; n < newInlineStyles.length; n++) {
-				if (currentInlineStyles[i].outerHTML === newInlineStyles[n].outerHTML) {
-					reloadElement(currentInlineStyles[i], 'STYLE')
-					newInlineStyles.splice(n, 1)
-					break
+				if (
+					currentInlineStyles[i].outerHTML ===
+					newInlineStyles[n].outerHTML
+				) {
+					reloadElement(currentInlineStyles[i], "STYLE");
+					newInlineStyles.splice(n, 1);
+					break;
 				}
 			}
 		}
 
 		for (const style of newInlineStyles) {
-			appendElement(style, 'STYLE')
+			appendElement(style, "STYLE");
 		}
 	}
 
@@ -394,11 +458,11 @@ export default class Core {
 	 * @param {string} links
 	 */
 	attachEvents(links) {
-		E.delegate('click', links, this.onClick)
-		E.on('popstate', window, this.onPopstate)
+		E.delegate("click", links, this.onClick);
+		E.on("popstate", window, this.onPopstate);
 
 		if (this.enablePrefetch) {
-			E.delegate('mouseenter focus', links, this.onPrefetch)
+			E.delegate("mouseenter focus", links, this.onPrefetch);
 		}
 	}
 
@@ -408,74 +472,84 @@ export default class Core {
 	 */
 	onClick = (e) => {
 		if (!(e.metaKey || e.ctrlKey)) {
-			const target = processUrl(e.currentTarget.href)
-			this.currentLocation = processUrl(window.location.href)
+			const target = processUrl(e.currentTarget.href);
+			this.currentLocation = processUrl(window.location.href);
 
 			if (this.currentLocation.host !== target.host) {
-				return
+				return;
 			}
 
 			// the target is a new URL, or is removing the hash from the current URL
-			if (this.currentLocation.href !== target.href || (this.currentLocation.hasHash && !target.hasHash)) {
-				e.preventDefault()
+			if (
+				this.currentLocation.href !== target.href ||
+				(this.currentLocation.hasHash && !target.hasHash)
+			) {
+				e.preventDefault();
 				// noinspection JSIgnoredPromiseFromCall
-				this.navigateTo(target.raw, e.currentTarget.dataset.transition || false, e.currentTarget).catch(err => console.warn(err))
-				return
+				this.navigateTo(
+					target.raw,
+					e.currentTarget.dataset.transition || false,
+					e.currentTarget,
+				).catch((err) => console.warn(err));
+				return;
 			}
 
 			// a click to the current URL was detected
 			if (!this.currentLocation.hasHash && !target.hasHash) {
-				e.preventDefault()
+				e.preventDefault();
 			}
 		}
-	}
+	};
 
 	/**
 	 * @private
 	 * @return {void|boolean}
 	 */
 	onPopstate = () => {
-		const target = processUrl(window.location.href)
+		const target = processUrl(window.location.href);
 
 		// don't trigger for on-page anchors
 		if (
-			target.pathname === this.currentLocation.pathname
-			&& target.search === this.currentLocation.search
-			&& !this.isPopping
+			target.pathname === this.currentLocation.pathname &&
+			target.search === this.currentLocation.search &&
+			!this.isPopping
 		) {
-			return false
+			return false;
 		}
 
-		if (!this.allowInterruption && (this.isTransitioning || this.isPopping)) {
+		if (
+			!this.allowInterruption &&
+			(this.isTransitioning || this.isPopping)
+		) {
 			// overwrite history state with current page if currently navigating
-			window.history.pushState({}, '', this.popTarget)
-			console.warn(IN_PROGRESS)
-			return false
+			window.history.pushState({}, "", this.popTarget);
+			console.warn(IN_PROGRESS);
+			return false;
 		}
 
 		if (!this.isPopping) {
-			this.popTarget = window.location.href
+			this.popTarget = window.location.href;
 		}
 
-		this.isPopping = true
+		this.isPopping = true;
 
 		// noinspection JSIgnoredPromiseFromCall
-		this.navigateTo(window.location.href, false, 'popstate')
-	}
+		this.navigateTo(window.location.href, false, "popstate");
+	};
 
 	/**
 	 * @private
 	 * @param {MouseEvent} e
 	 */
 	onPrefetch = (e) => {
-		const target = processUrl(e.currentTarget.href)
+		const target = processUrl(e.currentTarget.href);
 
 		if (this.currentLocation.host !== target.host) {
-			return
+			return;
 		}
 
-		this.preload(e.currentTarget.href, false)
-	}
+		this.preload(e.currentTarget.href, false);
+	};
 
 	/**
 	 * @private
@@ -486,49 +560,49 @@ export default class Core {
 	fetch(url, runFallback = true) {
 		// If Taxi is currently performing a fetch for the given URL, return that instead of starting a new request
 		if (this.activePromises.has(url)) {
-			return this.activePromises.get(url)
+			return this.activePromises.get(url);
 		}
 
 		const request = new Promise((resolve, reject) => {
-			let resolvedUrl
+			let resolvedUrl;
 
 			fetch(url, {
-				mode: 'same-origin',
-				method: 'GET',
-				headers: { 'X-Requested-With': 'Taxi' },
-				credentials: 'same-origin'
+				mode: "same-origin",
+				method: "GET",
+				headers: { "X-Requested-With": "Taxi" },
+				credentials: "same-origin",
 			})
 				.then((response) => {
 					if (!response.ok) {
-						reject('Taxi encountered a non 2xx HTTP status code')
+						reject("Taxi encountered a non 2xx HTTP status code");
 
 						if (runFallback) {
-							window.location.href = url
+							window.location.href = url;
 						}
 					}
 
-					resolvedUrl = response.url
+					resolvedUrl = response.url;
 
-					return response.text()
+					return response.text();
 				})
 				.then((htmlString) => {
-					resolve({ html: parseDom(htmlString), url: resolvedUrl })
+					resolve({ html: parseDom(htmlString), url: resolvedUrl });
 				})
 				.catch((err) => {
-					reject(err)
+					reject(err);
 
 					if (runFallback) {
-						window.location.href = url
+						window.location.href = url;
 					}
 				})
 				.finally(() => {
-					this.activePromises.delete(url)
-				})
-		})
+					this.activePromises.delete(url);
+				});
+		});
 
-		this.activePromises.set(url, request)
+		this.activePromises.set(url, request);
 
-		return request
+		return request;
 	}
 
 	/**
@@ -538,16 +612,19 @@ export default class Core {
 	 */
 	chooseTransition(transition) {
 		if (transition) {
-			return this.transitions[transition]
+			return this.transitions[transition];
 		}
 
-		const routeTransition = this.router?.findMatch(this.currentLocation, this.targetLocation)
+		const routeTransition = this.router?.findMatch(
+			this.currentLocation,
+			this.targetLocation,
+		);
 
 		if (routeTransition) {
-			return this.transitions[routeTransition]
+			return this.transitions[routeTransition];
 		}
 
-		return this.defaultTransition
+		return this.defaultTransition;
 	}
 
 	/**
@@ -557,27 +634,39 @@ export default class Core {
 	 * @return {CacheEntry}
 	 */
 	createCacheEntry(page, url) {
-		const content = page.querySelector('[data-taxi-view]')
-		const Renderer = content.dataset.taxiView.length ? this.renderers[content.dataset.taxiView] : this.defaultRenderer
+		const content = page.querySelector("[data-taxi-view]");
+		const Renderer = content.dataset.taxiView.length
+			? this.renderers[content.dataset.taxiView]
+			: this.defaultRenderer;
 
 		if (!Renderer) {
-			console.warn(`The Renderer "${content.dataset.taxiView}" was set in the data-taxi-view of the requested page, but not registered in Taxi.`)
+			console.warn(
+				`The Renderer "${content.dataset.taxiView}" was set in the data-taxi-view of the requested page, but not registered in Taxi.`,
+			);
 		}
 
 		return {
 			page,
 			content,
 			finalUrl: url,
-			skipCache: content.hasAttribute('data-taxi-nocache'),
-			scripts: this.reloadJsFilter ? Array.from(page.querySelectorAll('script')).filter(this.reloadJsFilter) : [],
-			styles: this.reloadCssFilter ? Array.from(page.querySelectorAll('link[rel="stylesheet"], style')).filter(this.reloadCssFilter) : [],
+			skipCache: content.hasAttribute("data-taxi-nocache"),
+			scripts: this.reloadJsFilter
+				? Array.from(page.querySelectorAll("script")).filter(
+						this.reloadJsFilter,
+					)
+				: [],
+			styles: this.reloadCssFilter
+				? Array.from(
+						page.querySelectorAll('link[rel="stylesheet"], style'),
+					).filter(this.reloadCssFilter)
+				: [],
 			title: page.title,
 			renderer: new Renderer({
 				wrapper: this.wrapper,
 				title: page.title,
 				content,
-				page
-			})
-		}
+				page,
+			}),
+		};
 	}
 }

@@ -19,7 +19,7 @@ export default class Renderer {
     onLeave(): void;
     onLeaveCompleted(): void;
     initialLoad(): void;
-    update(): void;
+    update(siblingAfter?: ChildNode | null): void;
     createDom(): void;
     remove(): void;
     /**
