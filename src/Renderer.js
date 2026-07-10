@@ -32,11 +32,12 @@ export default class Renderer {
 		document.title = this.title;
 
 		const newContent = this._DOM.firstElementChild;
+		const parent = (siblingAfter && siblingAfter.parentNode) || this.wrapper._lastParentNode || this.wrapper;
 
-		if (siblingAfter && siblingAfter.parentNode === this.wrapper) {
-			this.wrapper.insertBefore(newContent, siblingAfter);
+		if (siblingAfter && siblingAfter.parentNode === parent) {
+			parent.insertBefore(newContent, siblingAfter);
 		} else {
-			this.wrapper.appendChild(newContent);
+			parent.appendChild(newContent);
 		}
 
 		this.content = newContent;
@@ -51,7 +52,7 @@ export default class Renderer {
 	}
 
 	remove() {
-		if (this.content && this.content.parentNode === this.wrapper) {
+		if (this.content && this.wrapper.contains(this.content)) {
 			this.content.remove();
 		}
 	}
