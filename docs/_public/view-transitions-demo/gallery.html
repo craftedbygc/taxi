@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<title>Taxi.js — View Transitions demo</title>
+	<meta name="robots" content="noindex">
+	<link rel="stylesheet" href="/view-transitions-demo/style.css">
+</head>
+<body>
+	<div data-taxi>
+		<div data-taxi-view>
+			<main>
+				<h1>Photo gallery</h1>
+				<p>This mini-site runs its own <code>Taxi</code> instance with <code>enableViewTransitions: true</code>. Click a photo: it morphs into the detail page while everything else on the page simply cross-fades.</p>
+
+				<ul class="gallery">
+					<li>
+						<a class="card" href="/view-transitions-demo/detail-1.html">
+							<span class="photo photo-1" style="view-transition-name: photo-1">🦊</span>
+							<span class="caption">Fox</span>
+						</a>
+					</li>
+					<li>
+						<a class="card" href="/view-transitions-demo/detail-2.html">
+							<span class="photo photo-2" style="view-transition-name: photo-2">🐳</span>
+							<span class="caption">Whale</span>
+						</a>
+					</li>
+					<li>
+						<a class="card" href="/view-transitions-demo/detail-3.html">
+							<span class="photo photo-3" style="view-transition-name: photo-3">🦄</span>
+							<span class="caption">Unicorn</span>
+						</a>
+					</li>
+				</ul>
+			</main>
+		</div>
+	</div>
+
+	<script src="/assets/js/view-transitions-demo.js"></script>
+</body>
+</html>

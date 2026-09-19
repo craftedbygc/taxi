@@ -382,3 +382,118 @@ describe('Core — enablePrefetch strategies', () => {
 		expect(taxi.cache.has('http://localhost/about')).toBe(true)
 	})
 })
+
+describe('Core — enableViewTransitions', () => {
+	function mockVT(finished = Promise.resolve()) {
+		document.startViewTransition = vi.fn((cb) => {
+			cb()
+			return { updateCallbackDone: Promise.resolve(), finished }
+		})
+	}
+
+	it('defaults to false', () => {
+		const taxi = createCore()
+		expect(taxi.enableViewTransitions).toBe(false)
+	})
+
+	it('calls startViewTransition on navigation when enabled and supported', async () => {
+		createDOM()
+		vi.stubGlobal('fetch', mockFetchSuccess(buildPageHTML()))
+		mockVT()
+		const taxi = new Core({ enableViewTransitions: true })
+
+		await taxi.navigateTo('/target')
+
+		expect(document.startViewTransition).toHaveBeenCalledOnce()
+	})
+
+	it('does NOT call startViewTransition when enableViewTransitions is false', async () => {
+		createDOM()
+		vi.stubGlobal('fetch', mockFetchSuccess(buildPageHTML()))
+		mockVT()
+		const taxi = new Core({ enableViewTransitions: false })
+
+		await taxi.navigateTo('/target')
+
+		expect(document.startViewTransition).not.toHaveBeenCalled()
+	})
+
+	it('falls back to normal navigation when startViewTransition is not supported', async () => {
+		createDOM()
+		vi.stubGlobal('fetch', mockFetchSuccess(buildPageHTML()))
+		delete document.startViewTransition
+
+		const taxi = new Core({ enableViewTransitions: true })
+		await taxi.navigateTo('/target')
+
+		expect(taxi.currentCacheEntry.finalUrl).toBe('http://localhost/page')
+	})
+
+	it('new page is in DOM after navigation via view transition', async () => {
+		createDOM()
+		vi.stubGlobal('fetch', mockFetchSuccess(buildPageHTML('', '<p>New content</p>')))
+		mockVT()
+		const taxi = new Core({ enableViewTransitions: true })
+
+		await taxi.navigateTo('/target')
+
+		expect(document.querySelector('[data-taxi-view]').innerHTML).toContain('New content')
+	})
+
+	it('onEnterCompleted and NAVIGATE_END wait for the view transition to finish', async () => {
+		createDOM()
+		vi.stubGlobal('fetch', mockFetchSuccess(buildPageHTML()))
+
+		let resolveFinished
+		const finished = new Promise((resolve) => { resolveFinished = resolve })
+		mockVT(finished)
+
+		const { Renderer } = await import('../src/taxi.js')
+		const onEnterCompleted = vi.fn()
+		class TrackingRenderer extends Renderer {
+			onEnterCompleted() {
+				onEnterCompleted()
+				super.onEnterCompleted()
+			}
+		}
+
+		const navigateEnd = vi.fn()
+		const taxi = new Core({ enableViewTransitions: true, renderers: { default: TrackingRenderer } })
+		taxi.on('NAVIGATE_END', navigateEnd)
+
+		const navigation = taxi.navigateTo('/target')
+
+		// Let the DOM-swap microtasks (updateCallbackDone etc.) settle, but `finished` is still pending
+		await new Promise((r) => setTimeout(r, 0))
+		await new Promise((r) => setTimeout(r, 0))
+
+		expect(onEnterCompleted).not.toHaveBeenCalled()
+		expect(navigateEnd).not.toHaveBeenCalled()
+		expect(taxi.isTransitioning).toBe(true)
+
+		resolveFinished()
+		await navigation
+
+		expect(onEnterCompleted).toHaveBeenCalledOnce()
+		expect(navigateEnd).toHaveBeenCalledOnce()
+		expect(taxi.isTransitioning).toBe(false)
+	})
+
+	it('still completes navigation when the view transition finished promise rejects (skipped transition)', async () => {
+		createDOM()
+		vi.stubGlobal('fetch', mockFetchSuccess(buildPageHTML()))
+
+		const finished = Promise.reject(new Error('transition skipped'))
+		finished.catch(() => {}) // avoid an unhandled-rejection warning in this test; Core.js attaches its own .catch()
+		mockVT(finished)
+
+		const navigateEnd = vi.fn()
+		const taxi = new Core({ enableViewTransitions: true })
+		taxi.on('NAVIGATE_END', navigateEnd)
+
+		await expect(taxi.navigateTo('/target')).resolves.toBeUndefined()
+
+		expect(navigateEnd).toHaveBeenCalledOnce()
+		expect(taxi.isTransitioning).toBe(false)
+	})
+})

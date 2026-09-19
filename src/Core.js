@@ -51,6 +51,7 @@ export default class Core {
 	 * 		allowInterruption?: boolean,
 	 * 		bypassCache?: boolean,
 	 * 		enablePrefetch?: false|'hover'|'visible',
+	 * 		enableViewTransitions?: boolean,
 	 * 		maxCacheSize?: number,
 	 * 		fetchOptions?: RequestInit,
 	 * 		renderers?: Object.<string, typeof Renderer>,
@@ -66,6 +67,7 @@ export default class Core {
 			allowInterruption = false,
 			bypassCache = false,
 			enablePrefetch = 'hover',
+			enableViewTransitions = false,
 			maxCacheSize = 0,
 			fetchOptions = {},
 			renderers = {
@@ -90,6 +92,7 @@ export default class Core {
 		this.bypassCache = bypassCache
 		// normalise legacy boolean
 		this.enablePrefetch = enablePrefetch === true ? 'hover' : enablePrefetch
+		this.enableViewTransitions = enableViewTransitions
 		this.maxCacheSize = maxCacheSize
 		this.fetchOptions = fetchOptions
 		this.cache = new Map()
@@ -248,7 +251,9 @@ export default class Core {
 			this.targetLocation = processUrl(url)
 			this.popTarget = window.location.href
 
-			const TransitionClass = new (this.#chooseTransition(transition))({ wrapper: this.wrapper })
+			const useVT = this.enableViewTransitions && 'startViewTransition' in document
+			// When using View Transitions, bypass JS transition animations — the browser handles the visual swap
+			const transitionInstance = new (useVT ? Transition : this.#chooseTransition(transition))({ wrapper: this.wrapper })
 
 			let navigationPromise
 
@@ -259,18 +264,18 @@ export default class Core {
 						this.cache.get(this.targetLocation.href).renderer.createDom()
 					})
 
-				navigationPromise = this.#beforeFetch(this.targetLocation, TransitionClass, trigger)
+				navigationPromise = this.#beforeFetch(this.targetLocation, transitionInstance, trigger)
 					.then(async () => {
 						return fetched.then(async () => {
-							return await this.#afterFetch(this.targetLocation, TransitionClass, this.cache.get(this.targetLocation.href), trigger)
+							return await this.#afterFetch(this.targetLocation, transitionInstance, this.cache.get(this.targetLocation.href), trigger)
 						})
 					})
 			} else {
 				this.cache.get(this.targetLocation.href).renderer.createDom()
 
-				navigationPromise = this.#beforeFetch(this.targetLocation, TransitionClass, trigger)
+				navigationPromise = this.#beforeFetch(this.targetLocation, transitionInstance, trigger)
 					.then(async () => {
-						return await this.#afterFetch(this.targetLocation, TransitionClass, this.cache.get(this.targetLocation.href), trigger)
+						return await this.#afterFetch(this.targetLocation, transitionInstance, this.cache.get(this.targetLocation.href), trigger)
 					})
 			}
 
@@ -305,11 +310,11 @@ export default class Core {
 
 	/**
 	 * @param {{ raw: string, href: string, hasHash: boolean, pathname: string }} url
-	 * @param {Transition} TransitionClass
+	 * @param {Transition} transition
 	 * @param {string|HTMLElement|false} trigger
 	 * @return {Promise<void>}
 	 */
-	#beforeFetch(url, TransitionClass, trigger) {
+	#beforeFetch(url, transition, trigger) {
 		E.emit('NAVIGATE_OUT', {
 			from: this.#currentCacheEntry,
 			to: this.cache.get(url.href) || {
@@ -325,8 +330,12 @@ export default class Core {
 			trigger
 		})
 
+		// When View Transitions is active, defer old-content removal so the browser can
+		// capture the full old page as the "before" screenshot inside startViewTransition.
+		const useVT = this.enableViewTransitions && 'startViewTransition' in document
+
 		return new Promise((resolve) => {
-			this.#currentCacheEntry.renderer.leave(TransitionClass, trigger, this.removeOldContent)
+			this.#currentCacheEntry.renderer.leave(transition, trigger, useVT ? false : this.removeOldContent)
 				.then(() => {
 					if (trigger !== 'popstate') {
 						window.history.pushState({}, '', url.raw)
@@ -339,56 +348,72 @@ export default class Core {
 
 	/**
 	 * @param {{ raw: string, href: string, host: string, hasHash: boolean, pathname: string }} url
-	 * @param {Transition} TransitionClass
+	 * @param {Transition} transition
 	 * @param {CacheEntry} entry
 	 * @param {string|HTMLElement|false} trigger
 	 * @return {Promise<void>}
 	 */
-	#afterFetch(url, TransitionClass, entry, trigger) {
+	async #afterFetch(url, transition, entry, trigger) {
 		this.currentLocation = url
 		this.popTarget = this.currentLocation.href
 
-		return new Promise((resolve) => {
-			entry.renderer.update()
+		const useVT = this.enableViewTransitions && 'startViewTransition' in document
 
-			E.emit('NAVIGATE_IN', {
-				from: this.#currentCacheEntry,
-				to: entry,
-				trigger
+		/** @type {{updateCallbackDone: Promise<void>, finished: Promise<void>}|null} */
+		let viewTransition = null
+
+		if (useVT) {
+			// Capture "before" (old content), swap to "after" (new content) inside the browser's transition.
+			const fromRenderer = this.#currentCacheEntry.renderer
+			viewTransition = document.startViewTransition(() => {
+				if (this.removeOldContent) fromRenderer.remove()
+				entry.renderer.update()
 			})
+			await viewTransition.updateCallbackDone
+		} else {
+			entry.renderer.update()
+		}
 
-			if (this.reloadJsFilter) {
-				this.#loadScripts(entry.scripts)
-			}
-
-			if (this.reloadCssFilter) {
-				this.#loadStyles(entry.styles)
-			}
-
-			// If the fetched url had a redirect chain, then replace the history to reflect the final resolved URL
-			if (trigger !== 'popstate' && url.href !== processUrl(entry.finalUrl).href) {
-				window.history.replaceState({}, '', entry.finalUrl)
-			}
-
-			entry.renderer.enter(TransitionClass, trigger)
-				.then(() => {
-					E.emit('NAVIGATE_END', {
-						from: this.#currentCacheEntry,
-						to: entry,
-						trigger
-					})
-
-					this.#currentCacheEntry = entry
-					this.isTransitioning = false
-					this.isPopping = false
-
-					if (this.enablePrefetch === 'visible') {
-						this.#observeLinks()
-					}
-
-					resolve()
-				})
+		E.emit('NAVIGATE_IN', {
+			from: this.#currentCacheEntry,
+			to: entry,
+			trigger
 		})
+
+		if (this.reloadJsFilter) {
+			this.#loadScripts(entry.scripts)
+		}
+
+		if (this.reloadCssFilter) {
+			this.#loadStyles(entry.styles)
+		}
+
+		// If the fetched url had a redirect chain, then replace the history to reflect the final resolved URL
+		if (trigger !== 'popstate' && url.href !== processUrl(entry.finalUrl).href) {
+			window.history.replaceState({}, '', entry.finalUrl)
+		}
+
+		// When using View Transitions, onEnterCompleted/NAVIGATE_END should reflect the browser
+		// animation actually finishing on screen, not just the DOM swap. `finished` can reject if
+		// the transition was skipped (e.g. document hidden), so it's caught to avoid ever hanging
+		// or rejecting the navigation itself.
+		const enterExtraWait = viewTransition ? viewTransition.finished.catch(() => {}) : null
+
+		await entry.renderer.enter(transition, trigger, enterExtraWait)
+
+		E.emit('NAVIGATE_END', {
+			from: this.#currentCacheEntry,
+			to: entry,
+			trigger
+		})
+
+		this.#currentCacheEntry = entry
+		this.isTransitioning = false
+		this.isPopping = false
+
+		if (this.enablePrefetch === 'visible') {
+			this.#observeLinks()
+		}
 	}
 
 	/**

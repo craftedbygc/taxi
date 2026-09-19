@@ -59,14 +59,19 @@ export default class Renderer {
 	 * Called when transitioning into the current page.
 	 * @param {Transition} transition
 	 * @param {string|HTMLElement|false} trigger
+	 * @param {Promise<void>|null} [extraWait] An additional promise (e.g. a View Transition's
+	 * `finished` promise) that must also resolve before onEnterCompleted() fires.
 	 * @return {Promise<null>}
 	 */
-	enter(transition, trigger) {
+	enter(transition, trigger, extraWait = null) {
 		return new Promise((resolve) => {
 			this.trigger = trigger
 			this.onEnter()
 
-			transition.enter({ trigger, to: this.content })
+			const transitionDone = transition.enter({ trigger, to: this.content })
+			const done = extraWait ? Promise.all([transitionDone, extraWait]) : transitionDone
+
+			done
 				.then(() => {
 					this.onEnterCompleted()
 					resolve()

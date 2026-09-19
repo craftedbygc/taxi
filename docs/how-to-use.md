@@ -150,6 +150,30 @@ const taxi = new Core({
 
 > **Note:** `enablePrefetch: true` is still accepted and maps to `'hover'` for backwards compatibility.
 
+### enableViewTransitions `boolean`
+Opt in to the browser's [View Transitions API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transitions_API) for page swaps. Defaults to `false`.
+
+When enabled and the browser supports it, Taxi wraps the DOM swap (remove old page, insert new page) inside `document.startViewTransition()`, giving you:
+- A default cross-fade animation with no extra code
+- Element-to-element transitions via `view-transition-name` CSS
+
+```js
+const taxi = new Core({
+    enableViewTransitions: true
+})
+```
+
+Apply a custom CSS transition by naming elements:
+```css
+.hero {
+    view-transition-name: hero;
+}
+```
+
+> **Note:** When `enableViewTransitions` is active, custom JS `Transition` classes are bypassed — the browser handles the visual animation. Renderer lifecycle hooks (`onLeave`, `onEnter`, etc.) still fire as normal, but `onEnterCompleted` (and the `NAVIGATE_END` event) now wait for the browser's animation to visually finish before firing, rather than firing as soon as the new content is in the DOM. `onLeave`/`onLeaveCompleted` are unaffected and still fire immediately, since they're JS-side bookkeeping hooks rather than part of the visual animation. Browsers that don't support the API fall back to the standard behaviour automatically.
+
+See [View Transitions]({{ global.url }}/view-transitions/) for a deeper explanation and a live demo, including how to scope the animation to a single element (e.g. a specific `<div>`).
+
 ### maxCacheSize `number`
 By default Taxi caches every page it visits indefinitely. Set `maxCacheSize` to a positive integer to limit how many pages are kept in the cache at once.
 

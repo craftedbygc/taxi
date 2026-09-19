@@ -20,7 +20,7 @@ export default class DefaultTransition extends Transition {
 		gsap.timeline()
 			.set(tail, {width: '100%'})
 			.to(overlay, { x: '100%', ease: 'power3.out', duration: .85 }, 0)
-			.to(tail, { x: '100%',  ease: 'power3.out', duration: .85 }, .15)
+			.to(tail, { x: '100%',  ease: 'power3.out', duration: .85 }, .2)
 			.to(this.wrapper, { opacity: 1 }, .3)
 			.then(() => {
 				gsap.set(tail, { width: 0, x: 0 })

@@ -2,6 +2,7 @@ let mix = require('laravel-mix')
 require('mix-tailwindcss')
 
 mix.js('docs/assets/js/index.js', 'assets/js')
+	.js('docs/assets/js/view-transitions-demo.js', 'assets/js')
 	.setPublicPath('_site')
 	.version()
 	.sass('docs/assets/sass/index.scss', 'assets/css')

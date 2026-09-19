@@ -104,6 +104,46 @@ describe('Renderer', () => {
 			expect(triggers).toContainEqual({ method: 'onEnterCompleted', trigger: 'popstate' })
 		})
 
+		it('waits for an extraWait promise before calling onEnterCompleted', async () => {
+			const r = makeRenderer()
+			const onEnterCompleted = vi.fn()
+			r.onEnterCompleted = onEnterCompleted
+
+			r.createDom()
+			r.update()
+
+			const t = new Transition({ wrapper: r.wrapper })
+			let resolveExtraWait
+			const extraWait = new Promise((resolve) => { resolveExtraWait = resolve })
+
+			const enterPromise = r.enter(t, false, extraWait)
+
+			// The base Transition resolves its own enter() immediately, but onEnterCompleted
+			// must still wait on extraWait (e.g. a View Transition's `finished` promise).
+			await Promise.resolve()
+			await Promise.resolve()
+			expect(onEnterCompleted).not.toHaveBeenCalled()
+
+			resolveExtraWait()
+			await enterPromise
+
+			expect(onEnterCompleted).toHaveBeenCalledOnce()
+		})
+
+		it('calls onEnterCompleted normally when extraWait is not provided', async () => {
+			const r = makeRenderer()
+			const onEnterCompleted = vi.fn()
+			r.onEnterCompleted = onEnterCompleted
+
+			r.createDom()
+			r.update()
+
+			const t = new Transition({ wrapper: r.wrapper })
+			await r.enter(t, false)
+
+			expect(onEnterCompleted).toHaveBeenCalledOnce()
+		})
+
 		it('sets this.trigger before calling onLeave and onLeaveCompleted', async () => {
 			createDOM()
 			const wrapper = document.querySelector('[data-taxi]')

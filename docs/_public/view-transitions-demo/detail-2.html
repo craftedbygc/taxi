@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<title>Taxi.js — Whale</title>
+	<meta name="robots" content="noindex">
+	<link rel="stylesheet" href="/view-transitions-demo/style.css">
+</head>
+<body>
+	<div data-taxi>
+		<div data-taxi-view>
+			<main class="detail">
+				<a class="back-link" href="/view-transitions-demo/gallery.html">← Back to gallery</a>
+
+				<div class="photo photo-2" style="view-transition-name: photo-2">🐳</div>
+
+				<h1>Whale</h1>
+				<p>Only this photo element carries <code>view-transition-name: photo-2</code>, matching the same name on the gallery card. Because the names match, the browser morphs the shared element between its old position/size and its new one instead of just cross-fading it.</p>
+				<p>The heading and this text have no <code>view-transition-name</code>, so they use the default root transition (a simple cross-fade) - proving a single element can be singled out for its own animation.</p>
+			</main>
+		</div>
+	</div>
+
+	<script src="/assets/js/view-transitions-demo.js"></script>
+</body>
+</html>

@@ -35,9 +35,11 @@ export default class Renderer {
      * Called when transitioning into the current page.
      * @param {Transition} transition
      * @param {string|HTMLElement|false} trigger
+     * @param {Promise<void>|null} [extraWait] An additional promise (e.g. a View Transition's
+     * `finished` promise) that must also resolve before onEnterCompleted() fires.
      * @return {Promise<null>}
      */
-    enter(transition: Transition, trigger: string | HTMLElement | false): Promise<null>;
+    enter(transition: Transition, trigger: string | HTMLElement | false, extraWait?: Promise<void> | null): Promise<null>;
 
     /**
      * Called when transitioning away from the current page.

@@ -111,6 +111,6 @@ If there was no explicit transition, and no matches from the router, finally the
 <div class="border rounded-sm p-4 mt-16">
     <div class="text-sm mb-2 font-bold">What's next:</div>
     <div>
-        <a href="{{ global.url }}/routing/">Routing</a>
+        <a href="{{ global.url }}/view-transitions/">View Transitions</a>
     </div>
 </div>
