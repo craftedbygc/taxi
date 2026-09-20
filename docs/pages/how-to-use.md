@@ -93,14 +93,35 @@ const taxi = new Core({ ... })
 
 Let's look at these in more detail.
 
-### renderers `Object.<string, Renderer>`
+### renderers 
+
+<div class="sm:text-right sm:-mt-8 md:-mt-10 2xl:-mt-12 not-prose">
+
+`Record<string, Renderer>`
+
+</div>
+
 Please see [Renderers](/renderers/) for more information.
 
 
-### transitions `Object.<string, Transition>`
+### transitions 
+
+<div class="sm:text-right sm:-mt-8 md:-mt-10 2xl:-mt-12 not-prose">
+
+`Object.<string, Transition>`
+
+</div>
+
 Please see [Transitions](/transitions/) for more information.
 
-### links `string`
+### links 
+
+<div class="sm:text-right sm:-mt-8 md:-mt-10 2xl:-mt-12 not-prose">
+
+`string`
+
+</div>
+
 Links is a CSS selector which Taxi uses to decide if a clicked link should be transitioned or not.
 
 Here is the default value:
@@ -115,20 +136,48 @@ As you can see the default value ignored links with a `target` attribute, is an 
 You can use this option to extend this behaviour and fine tune which links are considered valid.
 
 
-### removeOldContent `boolean`
+### removeOldContent 
+
+<div class="sm:text-right sm:-mt-8 md:-mt-10 2xl:-mt-12 not-prose">
+
+`boolean`
+
+</div>
+
 Taxi will remove the previous page's content after the Transition's `onLeave` method has finished. Set this to `false` to disable this behaviour.
 
-### allowInterruption `boolean`
+### allowInterruption 
+
+<div class="sm:text-right sm:-mt-8 md:-mt-10 2xl:-mt-12 not-prose">
+
+`boolean`
+
+</div>
+
 Taxi blocks further navigation while a transition is in progress. Set this to `true` to disable this behaviour.
 
 
-### bypassCache `boolean`
+### bypassCache 
+
+<div class="sm:text-right sm:-mt-8 md:-mt-10 2xl:-mt-12 not-prose">
+
+`boolean`
+
+</div>
+
 Default behaviour is to cache the contents of a URL after fetching it to make repeated visits faster. Set this to `true` to disable the cache completely.
 
 If you want default behaviour, but wish to force certain pages to always be fetched (and never loaded from cache), you can add the `data-taxi-nocache` attribute to the `data-taxi-view` element on that page. 
 
 
-### enablePrefetch `false | 'hover' | 'visible'`
+### enablePrefetch 
+
+<div class="sm:text-right sm:-mt-8 md:-mt-10 2xl:-mt-12 not-prose">
+
+`false | 'hover' | 'visible'`
+
+</div>
+
 Controls the automatic prefetch strategy. Defaults to `'hover'`.
 
 | Value | Behaviour |
@@ -151,7 +200,14 @@ const taxi = new Core({
 
 > **Note:** `enablePrefetch: true` is still accepted and maps to `'hover'` for backwards compatibility.
 
-### enableViewTransitions `boolean`
+### enableViewTransitions 
+
+<div class="sm:text-right sm:-mt-8 md:-mt-10 2xl:-mt-12 not-prose">
+
+`boolean`
+
+</div>
+
 Opt in to the browser's [View Transitions API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transitions_API) for page swaps. Defaults to `false`.
 
 When enabled and the browser supports it, Taxi wraps the DOM swap (remove old page, insert new page) inside `document.startViewTransition()`, giving you:
@@ -175,7 +231,14 @@ Apply a custom CSS transition by naming elements:
 
 See [View Transitions](/view-transitions/) for a deeper explanation and a live demo, including how to scope the animation to a single element (e.g. a specific `<div>`).
 
-### maxCacheSize `number`
+### maxCacheSize
+
+<div class="sm:text-right sm:-mt-8 md:-mt-10 2xl:-mt-12 not-prose">
+
+`number`
+
+</div>
+
 By default Taxi caches every page it visits indefinitely. Set `maxCacheSize` to a positive integer to limit how many pages are kept in the cache at once.
 
 When the limit is reached, the oldest cached page (that isn't the current page) is evicted to make room. Set to `0` (default) for unlimited caching.
@@ -186,7 +249,14 @@ const taxi = new Core({
 })
 ```
 
-### fetchOptions `RequestInit`
+### fetchOptions
+
+<div class="sm:text-right sm:-mt-8 md:-mt-10 2xl:-mt-12 not-prose">
+
+`RequestInit`
+
+</div>
+
 An object of options merged into every `fetch()` request Taxi makes. Use this to add custom headers, change credentials mode, etc.
 
 ```js
@@ -198,10 +268,24 @@ const taxi = new Core({
 })
 ```
 
-### reloadJsFilter `bool|function(element: HTMLElement)`
+### reloadJsFilter 
+
+<div class="sm:text-right sm:-mt-8 md:-mt-10 2xl:-mt-12 not-prose">
+
+`bool|function(element: HTMLElement)`
+
+</div>
+
 Please see [Reloading JS](/reloading-js/) for more information.
 
-### reloadCssFilter `bool|function(element: HTMLLinkElement)`
+### reloadCssFilter
+
+<div class="sm:text-right sm:-mt-8 md:-mt-10 2xl:-mt-12 not-prose">
+
+`bool|function(element: HTMLLinkElement)`
+
+</div>
+
 Please see [Reloading CSS](/reloading-css/) for more information.
 
 

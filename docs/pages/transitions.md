@@ -4,6 +4,7 @@ title: Transitions
 ---
 
 # Transitions
+## Overview
 Whenever a user navigates on your site, a Transition class is run to provide the fancy animation between the two pages.
 
 A transition consists of an `onLeave` method called when leaving the current page, and an `onEnter` method which is called after the new content has been added to the DOM.

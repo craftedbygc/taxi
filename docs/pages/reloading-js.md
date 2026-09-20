@@ -4,6 +4,7 @@ title: Reloading JS
 ---
 
 # Running JS on New Pages
+## Overview
 Taxi can reload and run js present on a fetched page during the navigation cycle. This is especially useful when working with traditional CMSs such as WordPress or Magento, or if you wanted to split your js if you have a particularly heavy page.
 
 It will also parse and execute inline js, allowing you to add data to the `window` object for example.

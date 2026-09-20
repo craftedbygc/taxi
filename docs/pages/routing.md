@@ -4,6 +4,7 @@ title: Routing
 ---
 
 # Routing
+## Overview
 Routing in Taxi is used to choose which [Transition](/transitions/) to choose when a user performs a navigation.
 
 They are defined via the `addRoute` method, and consist of a regex to run against the current URL, a regex to run against the new URL after the navigation, and the transition to use if matched.

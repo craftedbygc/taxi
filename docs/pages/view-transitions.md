@@ -4,6 +4,7 @@ title: View Transitions
 ---
 
 # View Transitions
+## Overview
 Taxi can opt in to the browser's native [View Transitions API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transitions_API) to animate page swaps, instead of (or in addition to) writing your own JS [Transition](/transitions/).
 
 Enable it with the `enableViewTransitions` option:

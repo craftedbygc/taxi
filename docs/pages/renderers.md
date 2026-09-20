@@ -4,6 +4,7 @@ title: Renderers
 ---
 
 # Renderers
+## Overview
 A Renderer is run everytime a page is shown or hidden when using Taxi. They are an ideal place to init/destroy components on the page, or play intro animations.
 
 All Renderers should extend `@unseenco/taxi.Renderer` and look something like this:

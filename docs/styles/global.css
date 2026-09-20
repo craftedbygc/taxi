@@ -48,5 +48,51 @@
     }
 }
 
+@layer base {
+    code:not(pre code) {
+        @apply bg-gray-100 px-1 border rounded-sm font-normal!;
+
+        color: var(--tw-prose-body) !important;
+        break-inside: avoid;
+        white-space: nowrap;
+
+        &:before,
+        &:after {
+            content: none !important;
+        }
+
+        .dark & {
+            @apply bg-code border-0;
+        }
+    }
+
+    pre:not([class]) {
+        @apply bg-code border rounded block text-gray-200 text-base;
+    }
+
+    h1, h2, h3 {
+        @apply font-neue relative;
+        scroll-margin-top: 6rem;
+    }
+
+    .active a {
+        @apply translate-x-[7px];
+    }
+
+    .code-toolbar {
+        @apply relative;
+
+        .toolbar {
+            @apply absolute top-2 right-2 text-sm bg-slate-700 text-white opacity-0 transition-opacity py-0.5 px-1 rounded shadow;
+        }
+
+        &:hover {
+            .toolbar {
+                @apply opacity-100;
+            }
+        }
+    }
+}
+
 /* Safelist equivalents (if needed for runtime/dynamic classes) */
 @source "../../docs/**/*.{html,js,njk,md,astro}";

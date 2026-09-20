@@ -2,7 +2,14 @@
 import '../styles/global.css';
 import Nav from "../components/nav.astro";
 
-const { title, } = Astro.props.frontmatter ?? Astro.props;
+const { title } = Astro.props.frontmatter ?? Astro.props;
+
+// `headings` is a top-level prop passed by Astro to Markdown layouts (not nested
+// under `frontmatter`), and each heading's `slug` is the auto-generated id Astro
+// assigns to that heading element. See:
+// https://docs.astro.build/en/guides/markdown-content/#heading-ids-and-plugins
+const { headings = [] } = Astro.props;
+const tocHeadings = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 3);
 
 const global = {
 	metaDesc: "Taxi is a \uD83E\uDD0F small and \uD83D\uDC0A snappy js library for adding slick PJAX navigation and beautiful transitions to your website.",
@@ -55,10 +62,27 @@ const global = {
 		<div data-taxi-view class="index">
 
 
-			<main class="dark:text-white lg:ml-72 2xl:ml-80 pb-16 pt-36 px-4 sm:px-8 relative z-10">
-				<div class="prose-sm md:prose 2xl:prose-lg prose-neutral md:max-w-full lg:prose 2xl:max-w-screen-lg prose-stone dark:prose-invert">
+			<main class="dark:text-white lg:ml-72 2xl:ml-80 pb-16 pt-36 px-4 sm:px-8 relative z-10 2xl:flex gap-x-12">
+				<div class="prose-sm md:prose 2xl:prose-lg prose-headings:font-normal md:max-w-full lg:prose 2xl:max-w-screen-lg prose-stone dark:prose-invert min-w-0!">
 					<slot />
 				</div>
+
+				{tocHeadings.length > 0 && (
+					<div class="grow min-w-64 ">
+						<nav aria-label="Table of contents" class="hidden 2xl:block sticky top-36  font-mono text-xs">
+							<p class="font-bold mb-2 dark:text-white">On this page</p>
+							<ul class="space-y-2 ">
+								{tocHeadings.map((heading) => (
+									<li class={heading.depth === 3 ? 'pl-4 border-l border-black/20' : 'pl-0'}>
+										<a href={`#${heading.slug}`} class="hover:underline dark:text-white">
+											{heading.text}
+										</a>
+									</li>
+								))}
+							</ul>
+						</nav>
+					</div>
+				)}
 			</main>
 
 			<div class="fixed right-4 bottom-4 md:right-12 md:bottom-12 2xl:right-20 2xl:bottom-20 w-full h-full max-w-[20vh] max-h-[20vh] md:max-w-[35vh] md:max-h-[35vh] 2xl:max-w-[40vh] 2xl:max-h-[40vh] bg-contain z-0">

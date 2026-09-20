@@ -4,6 +4,7 @@ title: Reloading CSS
 ---
 
 # Running CSS on New Pages
+## Overview
 Similarly to [Reloading JS](/reloading-js/) Taxi can also reload and run CSS present from the next page after navigation.
 
 If enabled, this feature will run just after the `NAVIGATE_IN` event, after the new content has been appended to the DOM, but before the `Renderer.onEnter` method is called.
