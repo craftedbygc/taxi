@@ -10,3 +10,7 @@ tests
 .nojekyll
 .github
 .babelrc
+.astro
+vite.config.mjs
+vitest.config.js
+astro.config.mjs
