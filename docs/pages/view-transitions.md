@@ -29,7 +29,7 @@ Browsers without support simply fall back to Taxi's regular behaviour, so this i
 `onLeave`/`onLeaveCompleted` are unaffected and still fire immediately (before the browser even takes its "before" screenshot) - they're JS-side bookkeeping hooks, not part of the visual animation.
 
 
-## Can it transition just one element, like a specific div?
+## Can it transition just one element?
 **Yes.** Give an element a unique `view-transition-name` and the browser pulls it out of the default cross-fade entirely, giving it its own "before" and "after" snapshot that it animates (morphs) between - regardless of where or how big it is on each page. Everything else on the page keeps using the default root transition.
 
 ```css
