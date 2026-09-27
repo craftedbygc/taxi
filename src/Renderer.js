@@ -1,4 +1,4 @@
-import Transition from "./Transition"
+/** @typedef {import('./Transition.js').default} Transition */
 
 export default class Renderer {
 	/**
@@ -11,6 +11,8 @@ export default class Renderer {
 		this.title = title
 		this.wrapper = wrapper
 		this.content = this.wrapper.lastElementChild
+		/** @type {string|HTMLElement|false} */
+		this.trigger = false
 	}
 
 	onEnter() {
@@ -30,11 +32,14 @@ export default class Renderer {
 	}
 
 	initialLoad() {
-		this.onEnter()
-		this.onEnterCompleted()
+		this.trigger = 'initialLoad'
 	}
 
 	update() {
+		if (!this._DOM) {
+			throw new Error('Taxi Renderer: update() was called before createDom(). Ensure createDom() runs first.')
+		}
+
 		document.title = this.title
 		this.wrapper.appendChild(this._DOM.firstElementChild)
 		this.content = this.wrapper.lastElementChild
@@ -49,20 +54,26 @@ export default class Renderer {
 	}
 
 	remove() {
-		this.wrapper.firstElementChild.remove()
+		this.content.remove()
 	}
 
 	/**
 	 * Called when transitioning into the current page.
 	 * @param {Transition} transition
 	 * @param {string|HTMLElement|false} trigger
-	 * @return {Promise<null>}
+	 * @param {Promise<void>|null} [extraWait] An additional promise (e.g. a View Transition's
+	 * `finished` promise) that must also resolve before onEnterCompleted() fires.
+	 * @return {Promise<void>}
 	 */
-	enter(transition, trigger) {
+	enter(transition, trigger, extraWait = null) {
 		return new Promise((resolve) => {
+			this.trigger = trigger
 			this.onEnter()
 
-			transition.enter({ trigger, to: this.content })
+			const transitionDone = transition.enter({ trigger, to: this.content })
+			const done = extraWait ? Promise.all([transitionDone, extraWait]) : transitionDone
+
+			done
 				.then(() => {
 					this.onEnterCompleted()
 					resolve()
@@ -75,10 +86,11 @@ export default class Renderer {
 	 * @param {Transition} transition
 	 * @param {string|HTMLElement|false} trigger
 	 * @param {boolean} removeOldContent
-	 * @return {Promise<null>}
+	 * @return {Promise<void>}
 	 */
 	leave(transition, trigger, removeOldContent) {
 		return new Promise((resolve) => {
+			this.trigger = trigger
 			this.onLeave()
 
 			transition.leave({ trigger, from: this.content })

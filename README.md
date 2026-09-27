@@ -14,6 +14,8 @@
 
 ----
 
+> **Upgrading from 1.x?** See the [upgrade guide](https://taxi.js.org/upgrading/) and [CHANGELOG](CHANGELOG.md).
+
 Taxi is a js library for adding AJAX navigation and beautiful transitions to your website.
 
 It was designed as a drop-in replacement for [Highway.js](https://github.com/Dogstudio/highway) which is sadly no longer maintained.
