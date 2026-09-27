@@ -12,20 +12,5 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()],
-    build: {
-      rollupOptions: {
-        // view-transitions-demo.js is referenced directly (unhashed) by the
-        // static, non-templated demo pages in docs/public/view-transitions-demo,
-        // so it needs its own entry point with a stable output filename.
-        input: {
-          'view-transitions-demo': './docs/js/view-transitions-demo.js',
-        },
-        output: {
-          entryFileNames: (chunk) => chunk.name === 'view-transitions-demo'
-            ? 'assets/js/view-transitions-demo.js'
-            : 'assets/[name]-[hash].js',
-        },
-      },
-    },
   },
 });

@@ -45,9 +45,9 @@ As long as an element with `view-transition-name: hero` exists on both the page 
 ## Live demo
 Below is a small, self-contained example: a photo gallery where clicking a card navigates (via a real Taxi instance) to a detail page. Each photo shares the same `view-transition-name` between the gallery and detail views, so it morphs from its small square into the larger detail layout, while the heading/text around it simply fades.
 
-<p><a href="/view-transitions-demo/gallery.html" target="_blank" rel="noopener">Open the demo in a new tab ↗</a></p>
+<p><a href="/view-transitions-demo/gallery" target="_blank" rel="noopener">Open the demo in a new tab ↗</a></p>
 
-<iframe src="/view-transitions-demo/gallery.html" title="Taxi.js View Transitions demo" loading="lazy" style="width: 100%; height: 32rem; border: 2px solid currentColor; border-radius: 0.5rem;"></iframe>
+<iframe src="/view-transitions-demo/gallery" title="Taxi.js View Transitions demo" loading="lazy" style="width: 100%; height: 32rem; border: 2px solid currentColor; border-radius: 0.5rem;"></iframe>
 
 <div class="border rounded-sm p-4 mt-16">
     <div class="text-sm mb-2 font-bold">What's next:</div>
