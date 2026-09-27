@@ -10,6 +10,11 @@ export default defineConfig({
 
   outDir: '_site',
 
+  // Pages build to <page>/index.html, so a link without the trailing slash
+  // triggers a server redirect (which the host issues over http, causing
+  // mixed-content errors). Enforcing it makes the dev server 404 on those links.
+  trailingSlash: 'always',
+
   vite: {
     plugins: [tailwindcss()],
   },
