@@ -4,13 +4,13 @@ title: Navigation Lifecycle
 ---
 
 # Navigation Lifecycle
-Now that you understand [Renderers](/renderers) and [Transitions](/transitions/), how does it all fit together?
+Now that you understand [Renderers](/renderers/) and [Transitions](/transitions/), how does it all fit together?
 
 Let's use a **real world example** to find out:
 
 1. A user clicks a link in your app
 2. Taxi will go and fetch the new page the user has requested, and attach it to the current Document so images etc start downloading
-3. Taxi [checks to see which Transition](/transitions) should be used
+3. Taxi [checks to see which Transition](/transitions/) should be used
 4. The current Renderer's `onLeave` method is called
 5. Then the chosen Transition's `onLeave`. <br>The old page content is removed here unless you set `removeOldContent: false` when initing Taxi.
 6. Then the Renderer's `onLeaveCompleted`

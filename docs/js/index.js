@@ -11,8 +11,7 @@ E.on('DOMContentLoaded', window, function () {
 		},
 		transitions: {
 			default: DefaultTransition
-		},
-		enableAccessibility: true
+		}
 	})
 
 	const navItems = document.querySelectorAll('.js-nav li')
