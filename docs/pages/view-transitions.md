@@ -23,6 +23,8 @@ Custom JS `Transition` classes are bypassed in favour of this browser-driven ani
 
 Browsers without support simply fall back to Taxi's regular behaviour, so this is safe to enable.
 
+If the user has asked their system for reduced motion (`prefers-reduced-motion: reduce`), Taxi skips the View Transition and swaps the content instantly. Your JS `Transition` classes stay bypassed in that case too, so nothing animates.
+
 ## Lifecycle timing
 `onEnter` fires as soon as the new content is in the DOM (matching the browser starting its animation), but `onEnterCompleted` - and the `NAVIGATE_END` event - wait for the browser's `finished` promise, i.e. until the animation has actually finished playing on screen. `isTransitioning` also stays `true` for that whole duration, so you can rely on it (or `NAVIGATE_END`) to know the animation is visually done, not just that the DOM has been swapped.
 

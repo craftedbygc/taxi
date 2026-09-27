@@ -104,7 +104,9 @@ There may be things you want to setup at this time such as persistent components
 
 To aid with this, Renderers also have an `initialLoad` method which is only run on a user's first visit.
 
-As no navigation has taken place, Taxi won't fire your Renderer's `onEnter` or `onEnterCompleted` methods automatically, so we suggest running them here if needed:
+As no navigation has taken place, Taxi won't fire your Renderer's `onEnter` or `onEnterCompleted` methods automatically, so we suggest running them here if needed.
+
+> **Upgrading from 1.x:** in 1.x the base `initialLoad` called `onEnter` and `onEnterCompleted` for you, so if you never overrode `initialLoad` they ran on first load. In 2.0 they don't, add the method below to keep the old behaviour.
 
 ```js
 import { Renderer } from '@unseenco/taxi';

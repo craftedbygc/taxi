@@ -52,6 +52,17 @@ In the above example, if the user was navigating from `/pages/specific` to the h
 
 This is because the first example registers the catch-all **before** the specific rule, so the specific one is never reached.
 
+If a "from" pattern matches but none of its "to" patterns do, Taxi carries on checking the routes declared after it:
+
+```js
+taxi.addRoute('/pages/specific', '', 'something')
+taxi.addRoute('/pages/.*', '.*', 'somethingElse')
+```
+
+Navigating from `/pages/specific` to `/about` doesn't match the first route's `''` destination, so the second route is checked and "somethingElse" runs.
+
+> **Upgrading from 1.x:** 1.x stopped at the first matching "from" pattern even if none of its "to" patterns matched, so a later catch-all never got a chance. Check your route order if you relied on that.
+
 
 <div class="border rounded-sm p-4 mt-16">
     <div class="text-sm mb-2 font-bold">What's next:</div>

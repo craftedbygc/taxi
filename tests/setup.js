@@ -83,6 +83,11 @@ export function mockFetchNetworkError() {
 // ─── Global reset ─────────────────────────────────────────────────────────────
 
 beforeEach(() => {
+	// tests running in the node environment (e.g. ssr.test.js) have no DOM to reset
+	if (typeof document === 'undefined') {
+		return
+	}
+
 	// Reset document body before each test
 	document.body.innerHTML = ''
 	document.head.innerHTML = ''
@@ -94,4 +99,5 @@ beforeEach(() => {
 
 afterEach(() => {
 	vi.restoreAllMocks()
+	vi.unstubAllGlobals()
 })

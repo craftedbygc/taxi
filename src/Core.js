@@ -1,22 +1,44 @@
 import E from '@unseenco/e'
-import { appendElement, parseDom, processUrl, reloadElement } from './helpers'
-import Transition from './Transition'
-import Renderer from './Renderer'
-import RouteStore from './RouteStore'
+import { appendElement, parseDom, processUrl, reloadElement } from './helpers.js'
+import Transition from './Transition.js'
+import Renderer from './Renderer.js'
+import RouteStore from './RouteStore.js'
 
 const IN_PROGRESS = 'A transition is currently in progress'
 
 /**
+ * Interrupted navigations are expected when allowInterruption is true, so they aren't worth a warning.
+ * @param {Error} err
+ */
+const warnUnlessInterrupted = (err) => {
+	if (err.name !== 'AbortError') {
+		console.warn(err)
+	}
+}
+
+/**
  * @typedef CacheEntry
  * @type {object}
- * @property {typeof Renderer|Renderer} renderer
+ * @property {Renderer} renderer
  * @property {Document|Node} page
- * @property {array} scripts
- * @property {HTMLLinkElement[]} styles
+ * @property {HTMLScriptElement[]} scripts
+ * @property {Array<HTMLLinkElement|HTMLStyleElement>} styles
  * @property {string} finalUrl
  * @property {boolean} skipCache
  * @property {string} title
  * @property {HTMLElement|Element} content
+ */
+
+/**
+ * @typedef {'NAVIGATE_OUT'|'NAVIGATE_IN'|'NAVIGATE_END'} TaxiEvent
+ */
+
+/**
+ * @typedef NavigationEventPayload
+ * @type {object}
+ * @property {CacheEntry} from
+ * @property {CacheEntry} to For NAVIGATE_OUT, a stub with null values (except finalUrl) if the page isn't cached yet
+ * @property {string|HTMLElement|false} trigger
  */
 
 export default class Core {
@@ -31,14 +53,26 @@ export default class Core {
 	/** @type {Map<string, Promise>} */
 	#activePromises = new Map()
 
-	/** @type {AbortController|null} */
-	#fetchController = null
+	/**
+	 * Controller for the current navigation's own fetch. Preloads are never aborted by it.
+	 * @type {AbortController|null}
+	 */
+	#navigationController = null
+
+	/**
+	 * Incremented for every navigation so an interrupted navigation can tell it is no longer the current one.
+	 * @type {number}
+	 */
+	#navigationId = 0
 
 	/** @type {string|null} */
 	#linksSelector = null
 
 	/** @type {IntersectionObserver|null} */
 	#prefetchObserver = null
+
+	/** @type {HTMLElement|null} */
+	#announcer = null
 
 	get currentCacheEntry() {
 		return this.#currentCacheEntry
@@ -52,12 +86,13 @@ export default class Core {
 	 * 		bypassCache?: boolean,
 	 * 		enablePrefetch?: false|'hover'|'visible',
 	 * 		enableViewTransitions?: boolean,
+	 * 		enableAccessibility?: boolean,
 	 * 		maxCacheSize?: number,
 	 * 		fetchOptions?: RequestInit,
 	 * 		renderers?: Object.<string, typeof Renderer>,
 	 * 		transitions?: Object.<string, typeof Transition>,
-	 * 		reloadJsFilter?: boolean|function(HTMLElement): boolean,
-	 * 		reloadCssFilter?: boolean|function(HTMLLinkElement): boolean,
+	 * 		reloadJsFilter?: boolean|((element: HTMLElement) => boolean),
+	 * 		reloadCssFilter?: boolean|((element: HTMLLinkElement|HTMLStyleElement) => boolean),
 	 * }} parameters
 	 */
 	constructor(parameters = {}) {
@@ -68,6 +103,7 @@ export default class Core {
 			bypassCache = false,
 			enablePrefetch = 'hover',
 			enableViewTransitions = false,
+			enableAccessibility = false,
 			maxCacheSize = 0,
 			fetchOptions = {},
 			renderers = {
@@ -85,6 +121,11 @@ export default class Core {
 		this.defaultRenderer = this.renderers.default || Renderer
 		this.defaultTransition = this.transitions.default || Transition
 		this.wrapper = document.querySelector('[data-taxi]')
+
+		if (!this.wrapper) {
+			throw new Error('Taxi: no [data-taxi] wrapper element was found in the document.')
+		}
+
 		this.reloadJsFilter = reloadJsFilter
 		this.reloadCssFilter = reloadCssFilter
 		this.removeOldContent = removeOldContent
@@ -93,13 +134,11 @@ export default class Core {
 		// normalise legacy boolean
 		this.enablePrefetch = enablePrefetch === true ? 'hover' : enablePrefetch
 		this.enableViewTransitions = enableViewTransitions
+		this.enableAccessibility = enableAccessibility
 		this.maxCacheSize = maxCacheSize
 		this.fetchOptions = fetchOptions
 		this.cache = new Map()
 		this.isPopping = false
-
-		// Add delegated link events
-		this.#attachEvents(links)
 
 		this.currentLocation = processUrl(window.location.href)
 
@@ -108,6 +147,14 @@ export default class Core {
 
 		// fire the current Renderer enter methods
 		this.#currentCacheEntry = this.cache.get(this.currentLocation.href)
+
+		// Add delegated link events, only once the page is known to be valid so a failed init leaves nothing behind
+		this.#attachEvents(links)
+
+		if (this.enableAccessibility) {
+			this.#createAnnouncer()
+		}
+
 		this.#currentCacheEntry.renderer.initialLoad()
 	}
 
@@ -168,7 +215,7 @@ export default class Core {
 				})
 		}
 
-		return Promise.resolve(this.cache.get(url))
+		return Promise.resolve(this.#touchCacheEntry(url))
 	}
 
 	/**
@@ -185,7 +232,46 @@ export default class Core {
 			this.cache.delete(key)
 		}
 
-		this.#setCacheEntry(key, this.#createCacheEntry(document.cloneNode(true), key))
+		const entry = this.#createCacheEntry(document.cloneNode(true), key)
+
+		// Keep the live Renderer instance for the current page so any state set up in
+		// onEnter/initialLoad is still there when onLeave runs, just refresh its snapshot.
+		if (key === this.currentLocation?.href && this.#currentCacheEntry) {
+			const renderer = this.#currentCacheEntry.renderer
+			renderer._contentString = entry.content.outerHTML
+			renderer.page = entry.page
+			renderer.title = entry.title
+			entry.renderer = renderer
+			this.#currentCacheEntry = entry
+		}
+
+		this.#setCacheEntry(key, entry)
+
+		// pick up any links added via AJAX
+		if (this.enablePrefetch === 'visible') {
+			this.#observeLinks()
+		}
+	}
+
+	/**
+	 * Removes all event listeners and observers added by Taxi.
+	 * The current page is left as-is.
+	 */
+	destroy() {
+		E.off('click', this.#linksSelector, this.#onClick)
+		E.off('popstate', window, this.#onPopstate)
+
+		if (this.enablePrefetch === 'hover') {
+			E.off('mouseenter focus', this.#linksSelector, this.#onPrefetch)
+		}
+
+		this.#prefetchObserver?.disconnect()
+		this.#prefetchObserver = null
+		this.#navigationController?.abort()
+		this.#navigationController = null
+		this.#announcer?.remove()
+		this.#announcer = null
+		this.cache.clear()
 	}
 
 	/**
@@ -230,7 +316,7 @@ export default class Core {
 	 * @param {string} url
 	 * @param {string|false} [transition]
 	 * @param {string|false|HTMLElement} [trigger]
-	 * @return {Promise<void|Error>}
+	 * @return {Promise<void>}
 	 */
 	navigateTo(url, transition = false, trigger = false) {
 		return new Promise((resolve, reject) => {
@@ -240,51 +326,86 @@ export default class Core {
 				return
 			}
 
-			// Abort any in-flight fetch when interruption is allowed
-			if (this.allowInterruption && this.#fetchController) {
-				this.#fetchController.abort()
-				this.#fetchController = null
-			}
+			// Supersede any navigation already in progress (only possible when allowInterruption is true).
+			// Only that navigation's own request is aborted, in-flight preloads are left alone.
+			this.#navigationController?.abort()
+
+			const id = ++this.#navigationId
+			const controller = new AbortController()
+			this.#navigationController = controller
 
 			this.isTransitioning = true
 			this.isPopping = true
 			this.targetLocation = processUrl(url)
 			this.popTarget = window.location.href
 
-			const useVT = this.enableViewTransitions && 'startViewTransition' in document
-			// When using View Transitions, bypass JS transition animations — the browser handles the visual swap
-			const transitionInstance = new (useVT ? Transition : this.#chooseTransition(transition))({ wrapper: this.wrapper })
+			const target = this.targetLocation
+			const viewTransitionsSupported = this.enableViewTransitions && 'startViewTransition' in document
+			// Users who prefer reduced motion get an instant swap instead of the browser's animation
+			const useVT = viewTransitionsSupported && !window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
+			// When View Transitions are enabled, bypass JS transition animations — the browser handles the visual swap
+			const transitionInstance = new (viewTransitionsSupported ? Transition : this.#chooseTransition(transition))({ wrapper: this.wrapper })
+
+			// Rejects if a newer navigation has started since this one
+			const assertCurrent = () => {
+				if (id !== this.#navigationId) {
+					throw new DOMException('Taxi: navigation was interrupted by a newer navigation', 'AbortError')
+				}
+			}
 
 			let navigationPromise
 
-			if (this.bypassCache || !this.cache.has(this.targetLocation.href) || this.cache.get(this.targetLocation.href).skipCache) {
-				const fetched = this.#fetch(this.targetLocation.href)
+			if (this.bypassCache || !this.cache.has(target.href) || this.cache.get(target.href).skipCache) {
+				const fetched = this.#fetch(target.href, true, controller.signal)
 					.then((response) => {
-						this.#setCacheEntry(this.targetLocation.href, this.#createCacheEntry(response.html, response.url))
-						this.cache.get(this.targetLocation.href).renderer.createDom()
+						let entry
+
+						try {
+							entry = this.#createCacheEntry(response.html, response.url)
+						} catch (err) {
+							// The page isn't Taxi-compatible (e.g. a login redirect), so let the browser load it
+							window.location.href = target.raw
+							throw err
+						}
+
+						this.#setCacheEntry(target.href, entry)
+						entry.renderer.createDom()
+
+						return entry
 					})
 
-				navigationPromise = this.#beforeFetch(this.targetLocation, transitionInstance, trigger)
-					.then(async () => {
-						return fetched.then(async () => {
-							return await this.#afterFetch(this.targetLocation, transitionInstance, this.cache.get(this.targetLocation.href), trigger)
-						})
+				// the rejection is handled by navigationPromise below, this stops it being
+				// reported as unhandled while the leave transition is still running
+				fetched.catch(() => {})
+
+				navigationPromise = this.#beforeFetch(target, transitionInstance, trigger, useVT, assertCurrent)
+					.then(() => fetched)
+					.then((entry) => {
+						assertCurrent()
+						return this.#afterFetch(target, transitionInstance, entry, trigger, useVT, id)
 					})
 			} else {
-				this.cache.get(this.targetLocation.href).renderer.createDom()
+				const entry = this.#touchCacheEntry(target.href)
+				entry.renderer.createDom()
 
-				navigationPromise = this.#beforeFetch(this.targetLocation, transitionInstance, trigger)
-					.then(async () => {
-						return await this.#afterFetch(this.targetLocation, transitionInstance, this.cache.get(this.targetLocation.href), trigger)
+				navigationPromise = this.#beforeFetch(target, transitionInstance, trigger, useVT, assertCurrent)
+					.then(() => {
+						assertCurrent()
+						return this.#afterFetch(target, transitionInstance, entry, trigger, useVT, id)
 					})
 			}
 
 			navigationPromise
 				.then(() => resolve())
 				.catch((err) => {
-					// Reset transitioning state so navigation isn't permanently blocked
-					this.isTransitioning = false
-					this.isPopping = false
+					// Reset transitioning state so navigation isn't permanently blocked,
+					// unless a newer navigation now owns that state
+					if (id === this.#navigationId) {
+						this.isTransitioning = false
+						this.isPopping = false
+						this.#navigationController = null
+					}
+
 					reject(err)
 				})
 		})
@@ -292,8 +413,8 @@ export default class Core {
 
 	/**
 	 * Add an event listener.
-	 * @param {string} event
-	 * @param {any} callback
+	 * @param {TaxiEvent} event
+	 * @param {(payload: NavigationEventPayload) => void} callback
 	 */
 	on(event, callback) {
 		E.on(event, callback)
@@ -301,8 +422,8 @@ export default class Core {
 
 	/**
 	 * Remove an event listener.
-	 * @param {string} event
-	 * @param {any} [callback]
+	 * @param {TaxiEvent} event
+	 * @param {(payload: NavigationEventPayload) => void} [callback]
 	 */
 	off(event, callback) {
 		E.off(event, callback)
@@ -312,9 +433,11 @@ export default class Core {
 	 * @param {{ raw: string, href: string, hasHash: boolean, pathname: string }} url
 	 * @param {Transition} transition
 	 * @param {string|HTMLElement|false} trigger
+	 * @param {boolean} useVT
+	 * @param {function(): void} assertCurrent
 	 * @return {Promise<void>}
 	 */
-	#beforeFetch(url, transition, trigger) {
+	#beforeFetch(url, transition, trigger, useVT, assertCurrent) {
 		E.emit('NAVIGATE_OUT', {
 			from: this.#currentCacheEntry,
 			to: this.cache.get(url.href) || {
@@ -332,18 +455,15 @@ export default class Core {
 
 		// When View Transitions is active, defer old-content removal so the browser can
 		// capture the full old page as the "before" screenshot inside startViewTransition.
-		const useVT = this.enableViewTransitions && 'startViewTransition' in document
+		return this.#currentCacheEntry.renderer.leave(transition, trigger, useVT ? false : this.removeOldContent)
+			.then(() => {
+				// don't push history for a navigation that has since been interrupted
+				assertCurrent()
 
-		return new Promise((resolve) => {
-			this.#currentCacheEntry.renderer.leave(transition, trigger, useVT ? false : this.removeOldContent)
-				.then(() => {
-					if (trigger !== 'popstate') {
-						window.history.pushState({}, '', url.raw)
-					}
-
-					resolve()
-				})
-		})
+				if (trigger !== 'popstate') {
+					window.history.pushState({}, '', url.raw)
+				}
+			})
 	}
 
 	/**
@@ -351,13 +471,13 @@ export default class Core {
 	 * @param {Transition} transition
 	 * @param {CacheEntry} entry
 	 * @param {string|HTMLElement|false} trigger
+	 * @param {boolean} useVT
+	 * @param {number} id
 	 * @return {Promise<void>}
 	 */
-	async #afterFetch(url, transition, entry, trigger) {
+	async #afterFetch(url, transition, entry, trigger, useVT, id) {
 		this.currentLocation = url
 		this.popTarget = this.currentLocation.href
-
-		const useVT = this.enableViewTransitions && 'startViewTransition' in document
 
 		/** @type {{updateCallbackDone: Promise<void>, finished: Promise<void>}|null} */
 		let viewTransition = null
@@ -393,6 +513,10 @@ export default class Core {
 			window.history.replaceState({}, '', entry.finalUrl)
 		}
 
+		if (this.enableAccessibility) {
+			this.#announceNavigation(entry)
+		}
+
 		// When using View Transitions, onEnterCompleted/NAVIGATE_END should reflect the browser
 		// animation actually finishing on screen, not just the DOM swap. `finished` can reject if
 		// the transition was skipped (e.g. document hidden), so it's caught to avoid ever hanging
@@ -408,8 +532,13 @@ export default class Core {
 		})
 
 		this.#currentCacheEntry = entry
-		this.isTransitioning = false
-		this.isPopping = false
+
+		// if a newer navigation started while this one was entering, that navigation now owns this state
+		if (id === this.#navigationId) {
+			this.isTransitioning = false
+			this.isPopping = false
+			this.#navigationController = null
+		}
 
 		if (this.enablePrefetch === 'visible') {
 			this.#observeLinks()
@@ -496,9 +625,12 @@ export default class Core {
 	 * Already-preloaded links are unobserved immediately to avoid redundant fetches.
 	 */
 	#observeLinks() {
-		if (!('IntersectionObserver' in window)) return
+		if (!('IntersectionObserver' in window) || navigator.connection?.saveData) return
 
-		if (!this.#prefetchObserver) {
+		if (this.#prefetchObserver) {
+			// drop links from the previous page
+			this.#prefetchObserver.disconnect()
+		} else {
 			this.#prefetchObserver = new IntersectionObserver((entries) => {
 				entries.forEach((entry) => {
 					if (entry.isIntersecting) {
@@ -510,7 +642,9 @@ export default class Core {
 		}
 
 		document.querySelectorAll(this.#linksSelector).forEach((el) => {
-			if (!this.cache.has(processUrl(el.href).href)) {
+			const target = processUrl(el.href)
+
+			if (target.host === window.location.host && !this.cache.has(target.href)) {
 				this.#prefetchObserver.observe(el)
 			}
 		})
@@ -518,26 +652,30 @@ export default class Core {
 
 	/** @param {MouseEvent} e */
 	#onClick = (e) => {
-		if (!(e.metaKey || e.ctrlKey)) {
-			const target = processUrl(e.currentTarget.href)
-			this.currentLocation = processUrl(window.location.href)
+		// leave modified clicks (new tab/window, download), download links, and clicks
+		// already handled elsewhere to the browser
+		if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.currentTarget.hasAttribute('download')) {
+			return
+		}
 
-			if (this.currentLocation.host !== target.host) {
-				return
-			}
+		const target = processUrl(e.currentTarget.href)
+		this.currentLocation = processUrl(window.location.href)
 
-			// the target is a new URL, or is removing the hash from the current URL
-			if (this.currentLocation.href !== target.href || (this.currentLocation.hasHash && !target.hasHash)) {
-				e.preventDefault()
-				// noinspection JSIgnoredPromiseFromCall
-				this.navigateTo(target.raw, e.currentTarget.dataset.transition || false, e.currentTarget).catch(err => console.warn(err))
-				return
-			}
+		if (this.currentLocation.host !== target.host) {
+			return
+		}
 
-			// a click to the current URL was detected
-			if (!this.currentLocation.hasHash && !target.hasHash) {
-				e.preventDefault()
-			}
+		// the target is a new URL, or is removing the hash from the current URL
+		if (this.currentLocation.href !== target.href || (this.currentLocation.hasHash && !target.hasHash)) {
+			e.preventDefault()
+			// noinspection JSIgnoredPromiseFromCall
+			this.navigateTo(target.raw, e.currentTarget.dataset.transition || false, e.currentTarget).catch(warnUnlessInterrupted)
+			return
+		}
+
+		// a click to the current URL was detected
+		if (!this.currentLocation.hasHash && !target.hasHash) {
+			e.preventDefault()
 		}
 	}
 
@@ -567,8 +705,7 @@ export default class Core {
 
 		this.isPopping = true
 
-		// noinspection JSIgnoredPromiseFromCall
-		this.navigateTo(window.location.href, false, 'popstate')
+		this.navigateTo(window.location.href, false, 'popstate').catch(warnUnlessInterrupted)
 	}
 
 	/** @param {MouseEvent} e */
@@ -583,22 +720,27 @@ export default class Core {
 			return
 		}
 
-		this.preload(e.currentTarget.href, false)
+		this.preload(e.currentTarget.href, false).catch(() => {})
 	}
 
 	/**
 	 * @param {string} url
 	 * @param {boolean} [runFallback]
+	 * @param {AbortSignal} [signal]
 	 * @return {Promise<{html: Document, url: string}>}
 	 */
-	#fetch(url, runFallback = true) {
+	#fetch(url, runFallback = true, signal = undefined) {
 		// If Taxi is currently performing a fetch for the given URL, return that instead of starting a new request
 		if (this.#activePromises.has(url)) {
 			return this.#activePromises.get(url)
 		}
 
-		this.#fetchController = new AbortController()
-		const signal = this.#fetchController.signal
+		// forget an aborted request straight away so nothing else can pick it up before it settles
+		signal?.addEventListener('abort', () => {
+			if (this.#activePromises.get(url) === request) {
+				this.#activePromises.delete(url)
+			}
+		})
 
 		const request = new Promise((resolve, reject) => {
 			let resolvedUrl
@@ -635,16 +777,16 @@ export default class Core {
 					}
 				})
 				.catch((err) => {
-					if (err.name !== 'AbortError') {
-						reject(err)
+					reject(err)
 
-						if (runFallback) {
-							window.location.href = url
-						}
+					if (runFallback && err.name !== 'AbortError') {
+						window.location.href = url
 					}
 				})
 				.finally(() => {
-					this.#activePromises.delete(url)
+					if (this.#activePromises.get(url) === request) {
+						this.#activePromises.delete(url)
+					}
 				})
 		})
 
@@ -682,7 +824,55 @@ export default class Core {
 	}
 
 	/**
-	 * Sets a cache entry, evicting the oldest non-current entry if maxCacheSize is reached.
+	 * Adds a visually hidden live region used to announce page changes to screen readers.
+	 */
+	#createAnnouncer() {
+		this.#announcer = document.createElement('div')
+		this.#announcer.setAttribute('data-taxi-announcer', '')
+		this.#announcer.setAttribute('aria-live', 'assertive')
+		this.#announcer.setAttribute('aria-atomic', 'true')
+		this.#announcer.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0'
+		document.body.appendChild(this.#announcer)
+	}
+
+	/**
+	 * Announces the new page title and moves focus to the new content, so keyboard and
+	 * screen reader users aren't left on a link that no longer exists.
+	 *
+	 * @param {CacheEntry} entry
+	 */
+	#announceNavigation(entry) {
+		if (this.#announcer) {
+			this.#announcer.textContent = entry.title || document.title
+		}
+
+		const content = entry.renderer.content
+		const target = content.querySelector('h1') || content
+
+		if (!target.hasAttribute('tabindex')) {
+			target.setAttribute('tabindex', '-1')
+		}
+
+		target.focus({ preventScroll: true })
+	}
+
+	/**
+	 * Marks a cache entry as recently used by moving it to the end of the cache.
+	 *
+	 * @param {string} url
+	 * @return {CacheEntry}
+	 */
+	#touchCacheEntry(url) {
+		const entry = this.cache.get(url)
+
+		this.cache.delete(url)
+		this.cache.set(url, entry)
+
+		return entry
+	}
+
+	/**
+	 * Sets a cache entry, evicting the least recently used non-current entry if maxCacheSize is reached.
 	 *
 	 * @param {string} url
 	 * @param {CacheEntry} entry

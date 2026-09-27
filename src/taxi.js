@@ -1,6 +1,6 @@
-import Core from "./Core"
-import Renderer from "./Renderer"
-import Transition from "./Transition"
+import Core from "./Core.js"
+import Renderer from "./Renderer.js"
+import Transition from "./Transition.js"
 
 export {
 	Core,

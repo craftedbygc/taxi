@@ -56,22 +56,23 @@ Now when you navigate in your app, `data-taxi-view` will be replaced with the `d
 
 
 ## Via CDN
-You can use Taxi via a CDN thanks to the kind folks at unpkg.com. Just be sure to note that the main export is `taxi` with a lowercase t:
+You can load Taxi as an ES module straight from a CDN. jsDelivr's `+esm` endpoint also resolves Taxi's dependency (`@unseenco/e`) for you:
 
 ```html
-<script src="https://unpkg.com/@unseenco/e@2.2.2/dist/e.umd.js" crossorigin></script>
-<script src="https://unpkg.com/@unseenco/taxi@1.0.3/dist/taxi.umd.js" crossorigin></script>
-
 <main data-taxi>
     <article data-taxi-view>
         ...
     </article>
 </main>
 
-<script>
-    const t = new taxi.Core()
+<script type="module">
+    import { Core } from 'https://cdn.jsdelivr.net/npm/@unseenco/taxi@2/+esm'
+
+    const taxi = new Core()
 </script>
 ```
+
+> **Note:** 2.0 no longer ships a UMD build, so the old `taxi.umd.js` / global `taxi` approach is no longer available. See [Upgrading to 2.0](/upgrading/).
 
 ## Which links are handled by Taxi?
 Taxi will only transition links to a domain which is the same as the current URL (for obvious reasons).
@@ -81,6 +82,9 @@ By default, Taxi will not transition links which:
 * have `data-taxi-ignore` present on the link element;
 * are anchor links for the current page;
 * have a `target` attribute present on the link element;
+* have a `download` attribute present on the link element;
+* are clicked with a modifier key held (<kbd>cmd</kbd>, <kbd>ctrl</kbd>, <kbd>shift</kbd> or <kbd>alt</kbd>), so opening in a new tab/window or downloading works as normal;
+* have had `preventDefault()` called on their click event by your own code before it reaches Taxi.
 
 Of course, you can always change this behaviour using the [links option](#links-string).
 
@@ -127,7 +131,7 @@ Links is a CSS selector which Taxi uses to decide if a clicked link should be tr
 Here is the default value:
 ```js
 const taxi = new Core({ 
-    links: 'a:not([target]):not([href^=\\#]):not([data-taxi-ignore])'
+    links: 'a[href]:not([target]):not([href^=\\#]):not([data-taxi-ignore])'
 })
 ```
 
@@ -155,6 +159,8 @@ Taxi will remove the previous page's content after the Transition's `onLeave` me
 </div>
 
 Taxi blocks further navigation while a transition is in progress. Set this to `true` to disable this behaviour.
+
+When a new navigation interrupts one in progress, the interrupted navigation's request is aborted and its `navigateTo()` Promise rejects with an `AbortError`. Any preloads still downloading are left alone, so the new navigation can reuse them.
 
 
 ### bypassCache 
@@ -198,6 +204,11 @@ const taxi = new Core({
 })
 ```
 
+When using `'visible'`:
+* only links to the current domain are observed;
+* nothing is prefetched if the user has enabled a data saver mode (`navigator.connection.saveData`);
+* links are re-scanned after each navigation. If you add links to the page yourself (e.g. an infinite loader), call [`updateCache()`](/api-events/#updatecache) afterwards and they will be picked up too.
+
 > **Note:** `enablePrefetch: true` is still accepted and maps to `'hover'` for backwards compatibility.
 
 ### enableViewTransitions 
@@ -227,9 +238,39 @@ Apply a custom CSS transition by naming elements:
 }
 ```
 
-> **Note:** When `enableViewTransitions` is active, custom JS `Transition` classes are bypassed — the browser handles the visual animation. Renderer lifecycle hooks (`onLeave`, `onEnter`, etc.) still fire as normal, but `onEnterCompleted` (and the `NAVIGATE_END` event) now wait for the browser's animation to visually finish before firing, rather than firing as soon as the new content is in the DOM. `onLeave`/`onLeaveCompleted` are unaffected and still fire immediately, since they're JS-side bookkeeping hooks rather than part of the visual animation. Browsers that don't support the API fall back to the standard behaviour automatically.
+> **Note:** When `enableViewTransitions` is active, custom JS `Transition` classes are bypassed — the browser handles the visual animation. Renderer lifecycle hooks (`onLeave`, `onEnter`, etc.) still fire as normal, but `onEnterCompleted` (and the `NAVIGATE_END` event) now wait for the browser's animation to visually finish before firing, rather than firing as soon as the new content is in the DOM. `onLeave`/`onLeaveCompleted` are unaffected and still fire immediately, since they're JS-side bookkeeping hooks rather than part of the visual animation. Browsers that don't support the API fall back to the standard behaviour automatically. Users who prefer reduced motion get an instant swap with no animation.
 
 See [View Transitions](/view-transitions/) for a deeper explanation and a live demo, including how to scope the animation to a single element (e.g. a specific `<div>`).
+
+### enableAccessibility
+
+<div class="sm:text-right sm:-mt-8 md:-mt-10 2xl:-mt-12 not-prose">
+
+`boolean`
+
+</div>
+
+Opt in to accessibility handling for page changes. Defaults to `false`.
+
+After a normal page load, screen readers announce the new page and keyboard focus starts at the top of the document. After an AJAX navigation neither happens: focus stays on a link that no longer exists and nothing is announced. With `enableAccessibility: true`, after each navigation Taxi:
+
+* announces the new page's `<title>` through a visually hidden `aria-live` region (added to the end of `<body>` with a `data-taxi-announcer` attribute);
+* moves focus to the first `<h1>` in the new `data-taxi-view`, or to the `data-taxi-view` element itself if there is no `<h1>`. The element gets `tabindex="-1"` so it can take focus, and focus happens with `preventScroll` so your scroll handling is unaffected.
+
+```js
+const taxi = new Core({
+    enableAccessibility: true
+})
+```
+
+Browsers show a focus outline on the focused element. If you'd rather not show it for these programmatically focused elements:
+
+```css
+[data-taxi-view] h1:focus:not(:focus-visible),
+[data-taxi-view]:focus:not(:focus-visible) {
+    outline: none;
+}
+```
 
 ### maxCacheSize
 
@@ -241,7 +282,7 @@ See [View Transitions](/view-transitions/) for a deeper explanation and a live d
 
 By default Taxi caches every page it visits indefinitely. Set `maxCacheSize` to a positive integer to limit how many pages are kept in the cache at once.
 
-When the limit is reached, the oldest cached page (that isn't the current page) is evicted to make room. Set to `0` (default) for unlimited caching.
+When the limit is reached, the least recently used page (that isn't the current page) is evicted to make room. Visiting or preloading a cached page counts as using it. Set to `0` (default) for unlimited caching.
 
 ```js
 const taxi = new Core({
@@ -282,7 +323,7 @@ Please see [Reloading JS](/reloading-js/) for more information.
 
 <div class="sm:text-right sm:-mt-8 md:-mt-10 2xl:-mt-12 not-prose">
 
-`bool|function(element: HTMLLinkElement)`
+`bool|function(element: HTMLLinkElement|HTMLStyleElement)`
 
 </div>
 

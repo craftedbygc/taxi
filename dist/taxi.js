@@ -1,250 +1,10 @@
-//#region node_modules/selector-set/selector-set.next.js
-function e() {
-	if (!(this instanceof e)) return new e();
-	this.size = 0, this.uid = 0, this.selectors = [], this.selectorObjects = {}, this.indexes = Object.create(this.indexes), this.activeIndexes = [];
+import e from "@unseenco/e";
+//#region src/helpers.js
+var t = null;
+function n(e) {
+	return typeof e == "string" ? (t ??= new DOMParser(), t.parseFromString(e, "text/html")) : e;
 }
-var t = window.document.documentElement, n = t.matches || t.webkitMatchesSelector || t.mozMatchesSelector || t.oMatchesSelector || t.msMatchesSelector;
-e.prototype.matchesSelector = function(e, t) {
-	return n.call(e, t);
-}, e.prototype.querySelectorAll = function(e, t) {
-	return t.querySelectorAll(e);
-}, e.prototype.indexes = [];
-var r = /^#((?:[\w\u00c0-\uFFFF\-]|\\.)+)/g;
-e.prototype.indexes.push({
-	name: "ID",
-	selector: function(e) {
-		var t;
-		if (t = e.match(r)) return t[0].slice(1);
-	},
-	element: function(e) {
-		if (e.id) return [e.id];
-	}
-});
-var i = /^\.((?:[\w\u00c0-\uFFFF\-]|\\.)+)/g;
-e.prototype.indexes.push({
-	name: "CLASS",
-	selector: function(e) {
-		var t;
-		if (t = e.match(i)) return t[0].slice(1);
-	},
-	element: function(e) {
-		var t = e.className;
-		if (t) {
-			if (typeof t == "string") return t.split(/\s/);
-			if (typeof t == "object" && "baseVal" in t) return t.baseVal.split(/\s/);
-		}
-	}
-});
-var a = /^((?:[\w\u00c0-\uFFFF\-]|\\.)+)/g;
-e.prototype.indexes.push({
-	name: "TAG",
-	selector: function(e) {
-		var t;
-		if (t = e.match(a)) return t[0].toUpperCase();
-	},
-	element: function(e) {
-		return [e.nodeName.toUpperCase()];
-	}
-}), e.prototype.indexes.default = {
-	name: "UNIVERSAL",
-	selector: function() {
-		return !0;
-	},
-	element: function() {
-		return [!0];
-	}
-};
-var o = typeof window.Map == "function" ? window.Map : (function() {
-	function e() {
-		this.map = {};
-	}
-	return e.prototype.get = function(e) {
-		return this.map[e + " "];
-	}, e.prototype.set = function(e, t) {
-		this.map[e + " "] = t;
-	}, e;
-})(), s = /((?:\((?:\([^()]+\)|[^()]+)+\)|\[(?:\[[^\[\]]*\]|['"][^'"]*['"]|[^\[\]'"]+)+\]|\\.|[^ >+~,(\[\\]+)+|[>+~])(\s*,\s*)?((?:.|\r|\n)*)/g;
-function c(e, t) {
-	e = e.slice(0).concat(e.default);
-	var n = e.length, r, i, a, o, c = t, l, u, d = [];
-	do
-		if (s.exec(""), (a = s.exec(c)) && (c = a[3], a[2] || !c)) {
-			for (r = 0; r < n; r++) if (u = e[r], l = u.selector(a[1])) {
-				for (i = d.length, o = !1; i--;) if (d[i].index === u && d[i].key === l) {
-					o = !0;
-					break;
-				}
-				o || d.push({
-					index: u,
-					key: l
-				});
-				break;
-			}
-		}
-	while (a);
-	return d;
-}
-function l(e, t) {
-	for (var n = 0, r = e.length, i; n < r; n++) if (i = e[n], t.isPrototypeOf(i)) return i;
-}
-e.prototype.logDefaultIndexUsed = function() {}, e.prototype.add = function(e, t) {
-	var n, r, i, a, s, u, d, f, p = this.activeIndexes, m = this.selectors, h = this.selectorObjects;
-	if (typeof e == "string") {
-		for (n = {
-			id: this.uid++,
-			selector: e,
-			data: t
-		}, h[n.id] = n, d = c(this.indexes, e), r = 0; r < d.length; r++) f = d[r], a = f.key, i = f.index, s = l(p, i), s || (s = Object.create(i), s.map = new o(), p.push(s)), i === this.indexes.default && this.logDefaultIndexUsed(n), u = s.map.get(a), u || (u = [], s.map.set(a, u)), u.push(n);
-		this.size++, m.push(e);
-	}
-}, e.prototype.remove = function(e, t) {
-	if (typeof e == "string") {
-		var n, r, i, a, o, s, l, u, d = this.activeIndexes, f = this.selectors = [], p = this.selectorObjects, m = {}, h = arguments.length === 1;
-		for (n = c(this.indexes, e), i = 0; i < n.length; i++) for (r = n[i], a = d.length; a--;) if (s = d[a], r.index.isPrototypeOf(s)) {
-			if (l = s.map.get(r.key), l) for (o = l.length; o--;) u = l[o], u.selector === e && (h || u.data === t) && (l.splice(o, 1), m[u.id] = !0);
-			break;
-		}
-		for (i in m) delete p[i], this.size--;
-		for (i in p) f.push(p[i].selector);
-	}
-};
-function u(e, t) {
-	return e.id - t.id;
-}
-e.prototype.queryAll = function(e) {
-	if (!this.selectors.length) return [];
-	for (var t = {}, n = [], r = this.querySelectorAll(this.selectors.join(", "), e), i = 0, a, o = r.length, s, c, l, d, f; i < o; i++) for (c = r[i], l = this.matches(c), a = 0, s = l.length; a < s; a++) f = l[a], t[f.id] ? d = t[f.id] : (d = {
-		id: f.id,
-		selector: f.selector,
-		data: f.data,
-		elements: []
-	}, t[f.id] = d, n.push(d)), d.elements.push(c);
-	return n.sort(u);
-}, e.prototype.matches = function(e) {
-	if (!e) return [];
-	var t, n, r, i, a, o, s, c, l, d, f, p = this.activeIndexes, m = {}, h = [];
-	for (t = 0, i = p.length; t < i; t++) if (s = p[t], c = s.element(e), c) {
-		for (n = 0, a = c.length; n < a; n++) if (l = s.map.get(c[n])) for (r = 0, o = l.length; r < o; r++) d = l[r], f = d.id, !m[f] && this.matchesSelector(e, d.selector) && (m[f] = !0, h.push(d));
-	}
-	return h.sort(u);
-};
-//#endregion
-//#region node_modules/@unseenco/e/src/utils.js
-var d = {}, f = {}, p = [
-	"mouseenter",
-	"mouseleave",
-	"pointerenter",
-	"pointerleave",
-	"blur",
-	"focus"
-];
-function m(e) {
-	f[e] === void 0 && (f[e] = /* @__PURE__ */ new Set());
-}
-function h(e, t) {
-	f[e] && f[e].forEach((e) => {
-		e(...t);
-	});
-}
-function g(e) {
-	return typeof e == "string" ? document.querySelectorAll(e) : e;
-}
-function _(e) {
-	let t = v(d[e.type], e.target);
-	if (t.length) for (let n = 0; n < t.length; n++) for (let r = 0; r < t[n].stack.length; r++) p.indexOf(e.type) === -1 ? (y(e, t[n].delegatedTarget), t[n].stack[r].data(e)) : (y(e, t[n].delegatedTarget), e.target === t[n].delegatedTarget && t[n].stack[r].data(e));
-}
-function v(e, t) {
-	let n = [], r = t;
-	do {
-		if (r.nodeType !== 1) break;
-		let t = e.matches(r);
-		t.length && n.push({
-			delegatedTarget: r,
-			stack: t
-		});
-	} while (r = r.parentElement);
-	return n;
-}
-function y(e, t) {
-	Object.defineProperty(e, "currentTarget", {
-		configurable: !0,
-		enumerable: !0,
-		get: () => t
-	});
-}
-function b(e) {
-	let t = {};
-	for (let n in e) t[n] = [...e[n]];
-	return t;
-}
-var x = new class {
-	bindAll(e, t) {
-		t ||= Object.getOwnPropertyNames(Object.getPrototypeOf(e));
-		for (let n = 0; n < t.length; n++) e[t[n]] = e[t[n]].bind(e);
-	}
-	on(e, t, n, r) {
-		let i = e.split(" ");
-		for (let e = 0; e < i.length; e++) {
-			if (typeof t == "function" && n === void 0) {
-				m(i[e]), f[i[e]].add(t);
-				continue;
-			}
-			if (t.nodeType && t.nodeType === 1 || t === window || t === document) {
-				t.addEventListener(i[e], n, r);
-				continue;
-			}
-			t = g(t);
-			for (let a = 0; a < t.length; a++) t[a].addEventListener(i[e], n, r);
-		}
-	}
-	delegate(t, n, r) {
-		let i = t.split(" ");
-		for (let t = 0; t < i.length; t++) {
-			let a = d[i[t]];
-			a === void 0 && (a = new e(), d[i[t]] = a, p.indexOf(i[t]) === -1 ? document.addEventListener(i[t], _) : document.addEventListener(i[t], _, !0)), a.add(n, r);
-		}
-	}
-	off(e, t, n, r) {
-		let i = e.split(" ");
-		for (let e = 0; e < i.length; e++) {
-			if (t === void 0) {
-				f[i[e]]?.clear();
-				continue;
-			}
-			if (typeof t == "function") {
-				m(i[e]), f[i[e]].delete(t);
-				continue;
-			}
-			let a = d[i[e]];
-			if (a !== void 0 && (a.remove(t, n), a.size === 0)) {
-				delete d[i[e]], p.indexOf(i[e]) === -1 ? document.removeEventListener(i[e], _) : document.removeEventListener(i[e], _, !0);
-				continue;
-			}
-			if (t.removeEventListener !== void 0) {
-				t.removeEventListener(i[e], n, r);
-				continue;
-			}
-			t = g(t);
-			for (let a = 0; a < t.length; a++) t[a].removeEventListener(i[e], n, r);
-		}
-	}
-	emit(e, ...t) {
-		h(e, t);
-	}
-	debugDelegated() {
-		return JSON.parse(JSON.stringify(d));
-	}
-	debugBus() {
-		return b(f);
-	}
-	hasBus(e) {
-		return this.debugBus().hasOwnProperty(e);
-	}
-}(), S = new DOMParser();
-function C(e) {
-	return typeof e == "string" ? S.parseFromString(e, "text/html") : e;
-}
-function w(e) {
+function r(e) {
 	let t = new URL(e, window.location.origin), n = t.hash.length ? e.replace(t.hash, "") : null;
 	return {
 		hasHash: t.hash.length > 0,
@@ -255,13 +15,13 @@ function w(e) {
 		href: n || t.href
 	};
 }
-function T(e, t) {
-	e.parentNode.replaceChild(D(e, t), e);
+function i(e, t) {
+	e.parentNode.replaceChild(o(e, t), e);
 }
-function E(e, t) {
-	(e.parentNode.tagName === "HEAD" ? document.head : document.body).appendChild(D(e, t));
+function a(e, t) {
+	(e.parentNode.tagName === "HEAD" ? document.head : document.body).appendChild(o(e, t));
 }
-function D(e, t) {
+function o(e, t) {
 	let n = document.createElement(t);
 	for (let t = 0; t < e.attributes.length; t++) {
 		let r = e.attributes[t];
@@ -271,26 +31,30 @@ function D(e, t) {
 }
 //#endregion
 //#region src/Transition.js
-var O = class {
+var s = class {
 	constructor({ wrapper: e }) {
 		this.wrapper = e;
 	}
 	leave(e) {
-		return new Promise((t) => {
-			let n = this.onLeave({
-				...e,
-				done: t
-			});
-			n && typeof n.then == "function" && n.then(t);
-		});
+		return this.#e((e) => this.onLeave(e), e, "onLeave");
 	}
 	enter(e) {
-		return new Promise((t) => {
-			let n = this.onEnter({
-				...e,
-				done: t
-			});
-			n && typeof n.then == "function" && n.then(t);
+		return this.#e((e) => this.onEnter(e), e, "onEnter");
+	}
+	#e(e, t, n) {
+		return new Promise((r) => {
+			let i = (e) => {
+				console.error(`Taxi: Transition ${n}() failed, continuing the navigation.`, e), r();
+			};
+			try {
+				let n = e({
+					...t,
+					done: r
+				});
+				n && typeof n.then == "function" && n.then(() => r(), i);
+			} catch (e) {
+				i(e);
+			}
 		});
 	}
 	onLeave({ from: e, trigger: t, done: n }) {
@@ -299,7 +63,7 @@ var O = class {
 	onEnter({ to: e, trigger: t, done: n }) {
 		n();
 	}
-}, k = class {
+}, c = class {
 	constructor({ content: e, page: t, title: n, wrapper: r }) {
 		this._contentString = e.outerHTML, this._DOM = null, this.page = t, this.title = n, this.wrapper = r, this.content = this.wrapper.lastElementChild, this.trigger = !1;
 	}
@@ -342,7 +106,7 @@ var O = class {
 			});
 		});
 	}
-}, A = class {
+}, l = class {
 	data = /* @__PURE__ */ new Map();
 	regexCache = /* @__PURE__ */ new Map();
 	add(e, t, n) {
@@ -354,20 +118,25 @@ var O = class {
 		}
 		return null;
 	}
-}, j = "A transition is currently in progress", M = class {
+}, u = "A transition is currently in progress", d = (e) => {
+	e.name !== "AbortError" && console.warn(e);
+}, f = class {
 	isTransitioning = !1;
 	cache = /* @__PURE__ */ new Map();
 	#e = null;
 	#t = /* @__PURE__ */ new Map();
 	#n = null;
-	#r = null;
+	#r = 0;
 	#i = null;
+	#a = null;
+	#o = null;
 	get currentCacheEntry() {
 		return this.#e;
 	}
 	constructor(e = {}) {
-		let { links: t = "a[href]:not([target]):not([href^=\\#]):not([data-taxi-ignore])", removeOldContent: n = !0, allowInterruption: r = !1, bypassCache: i = !1, enablePrefetch: a = "hover", enableViewTransitions: o = !1, maxCacheSize: s = 0, fetchOptions: c = {}, renderers: l = { default: k }, transitions: u = { default: O }, reloadJsFilter: d = (e) => e.dataset.taxiReload !== void 0, reloadCssFilter: f = (e) => e.dataset.taxiReload !== void 0 } = e;
-		this.renderers = l, this.transitions = u, this.defaultRenderer = this.renderers.default || k, this.defaultTransition = this.transitions.default || O, this.wrapper = document.querySelector("[data-taxi]"), this.reloadJsFilter = d, this.reloadCssFilter = f, this.removeOldContent = n, this.allowInterruption = r, this.bypassCache = i, this.enablePrefetch = a === !0 ? "hover" : a, this.enableViewTransitions = o, this.maxCacheSize = s, this.fetchOptions = c, this.cache = /* @__PURE__ */ new Map(), this.isPopping = !1, this.#l(t), this.currentLocation = w(window.location.href), this.cache.set(this.currentLocation.href, this.#_(document.cloneNode(!0), window.location.href)), this.#e = this.cache.get(this.currentLocation.href), this.#e.renderer.initialLoad();
+		let { links: t = "a[href]:not([target]):not([href^=\\#]):not([data-taxi-ignore])", removeOldContent: n = !0, allowInterruption: i = !1, bypassCache: a = !1, enablePrefetch: o = "hover", enableViewTransitions: l = !1, enableAccessibility: u = !1, maxCacheSize: d = 0, fetchOptions: f = {}, renderers: p = { default: c }, transitions: m = { default: s }, reloadJsFilter: h = (e) => e.dataset.taxiReload !== void 0, reloadCssFilter: g = (e) => e.dataset.taxiReload !== void 0 } = e;
+		if (this.renderers = p, this.transitions = m, this.defaultRenderer = this.renderers.default || c, this.defaultTransition = this.transitions.default || s, this.wrapper = document.querySelector("[data-taxi]"), !this.wrapper) throw Error("Taxi: no [data-taxi] wrapper element was found in the document.");
+		this.reloadJsFilter = h, this.reloadCssFilter = g, this.removeOldContent = n, this.allowInterruption = i, this.bypassCache = a, this.enablePrefetch = o === !0 ? "hover" : o, this.enableViewTransitions = l, this.enableAccessibility = u, this.maxCacheSize = d, this.fetchOptions = f, this.cache = /* @__PURE__ */ new Map(), this.isPopping = !1, this.currentLocation = r(window.location.href), this.cache.set(this.currentLocation.href, this.#S(document.cloneNode(!0), window.location.href)), this.#e = this.cache.get(this.currentLocation.href), this.#d(t), this.enableAccessibility && this.#v(), this.#e.renderer.initialLoad();
 	}
 	setDefaultRenderer(e) {
 		this.defaultRenderer = this.renderers[e];
@@ -376,159 +145,180 @@ var O = class {
 		this.defaultTransition = this.transitions[e];
 	}
 	addRoute(e, t, n) {
-		this.router ||= new A(), this.router.add(e, t, n);
+		this.router ||= new l(), this.router.add(e, t, n);
 	}
 	preload(e, t = !1) {
-		return e = w(e).href, this.cache.has(e) ? Promise.resolve(this.cache.get(e)) : this.#m(e, !1).then(async (n) => (this.#g(e, this.#_(n.html, n.url)), t && this.cache.get(e).renderer.createDom(), this.cache.get(e)));
+		return e = r(e).href, this.cache.has(e) ? Promise.resolve(this.#b(e)) : this.#g(e, !1).then(async (n) => (this.#x(e, this.#S(n.html, n.url)), t && this.cache.get(e).renderer.createDom(), this.cache.get(e)));
 	}
 	updateCache(e) {
-		let t = w(e || window.location.href).href;
-		this.cache.has(t) && this.cache.delete(t), this.#g(t, this.#_(document.cloneNode(!0), t));
+		let t = r(e || window.location.href).href;
+		this.cache.has(t) && this.cache.delete(t);
+		let n = this.#S(document.cloneNode(!0), t);
+		if (t === this.currentLocation?.href && this.#e) {
+			let e = this.#e.renderer;
+			e._contentString = n.content.outerHTML, e.page = n.page, e.title = n.title, n.renderer = e, this.#e = n;
+		}
+		this.#x(t, n), this.enablePrefetch === "visible" && this.#f();
+	}
+	destroy() {
+		e.off("click", this.#i, this.#p), e.off("popstate", window, this.#m), this.enablePrefetch === "hover" && e.off("mouseenter focus", this.#i, this.#h), this.#a?.disconnect(), this.#a = null, this.#n?.abort(), this.#n = null, this.#o?.remove(), this.#o = null, this.cache.clear();
 	}
 	clearCache(e) {
-		let t = w(e || window.location.href).href;
+		let t = r(e || window.location.href).href;
 		this.cache.has(t) && this.cache.delete(t);
 	}
 	navigateBack() {
 		if (!this.allowInterruption && this.isTransitioning) {
-			console.warn(j);
+			console.warn(u);
 			return;
 		}
 		window.history.back();
 	}
 	navigateForward() {
 		if (!this.allowInterruption && this.isTransitioning) {
-			console.warn(j);
+			console.warn(u);
 			return;
 		}
 		window.history.forward();
 	}
 	navigateTo(e, t = !1, n = !1) {
-		return new Promise((r, i) => {
+		return new Promise((i, a) => {
 			if (!this.allowInterruption && this.isTransitioning) {
-				i(/* @__PURE__ */ Error(j));
+				a(/* @__PURE__ */ Error(u));
 				return;
 			}
-			this.allowInterruption && this.#n && (this.#n.abort(), this.#n = null), this.isTransitioning = !0, this.isPopping = !0, this.targetLocation = w(e), this.popTarget = window.location.href;
-			let a = new (this.enableViewTransitions && "startViewTransition" in document ? O : this.#h(t))({ wrapper: this.wrapper }), o;
-			if (this.bypassCache || !this.cache.has(this.targetLocation.href) || this.cache.get(this.targetLocation.href).skipCache) {
-				let e = this.#m(this.targetLocation.href).then((e) => {
-					this.#g(this.targetLocation.href, this.#_(e.html, e.url)), this.cache.get(this.targetLocation.href).renderer.createDom();
+			this.#n?.abort();
+			let o = ++this.#r, c = new AbortController();
+			this.#n = c, this.isTransitioning = !0, this.isPopping = !0, this.targetLocation = r(e), this.popTarget = window.location.href;
+			let l = this.targetLocation, d = this.enableViewTransitions && "startViewTransition" in document, f = d && !window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches, p = new (d ? s : this.#_(t))({ wrapper: this.wrapper }), m = () => {
+				if (o !== this.#r) throw new DOMException("Taxi: navigation was interrupted by a newer navigation", "AbortError");
+			}, h;
+			if (this.bypassCache || !this.cache.has(l.href) || this.cache.get(l.href).skipCache) {
+				let e = this.#g(l.href, !0, c.signal).then((e) => {
+					let t;
+					try {
+						t = this.#S(e.html, e.url);
+					} catch (e) {
+						throw window.location.href = l.raw, e;
+					}
+					return this.#x(l.href, t), t.renderer.createDom(), t;
 				});
-				o = this.#a(this.targetLocation, a, n).then(async () => e.then(async () => await this.#o(this.targetLocation, a, this.cache.get(this.targetLocation.href), n)));
-			} else this.cache.get(this.targetLocation.href).renderer.createDom(), o = this.#a(this.targetLocation, a, n).then(async () => await this.#o(this.targetLocation, a, this.cache.get(this.targetLocation.href), n));
-			o.then(() => r()).catch((e) => {
-				this.isTransitioning = !1, this.isPopping = !1, i(e);
+				e.catch(() => {}), h = this.#s(l, p, n, f, m).then(() => e).then((e) => (m(), this.#c(l, p, e, n, f, o)));
+			} else {
+				let e = this.#b(l.href);
+				e.renderer.createDom(), h = this.#s(l, p, n, f, m).then(() => (m(), this.#c(l, p, e, n, f, o)));
+			}
+			h.then(() => i()).catch((e) => {
+				o === this.#r && (this.isTransitioning = !1, this.isPopping = !1, this.#n = null), a(e);
 			});
 		});
 	}
-	on(e, t) {
-		x.on(e, t);
+	on(t, n) {
+		e.on(t, n);
 	}
-	off(e, t) {
-		x.off(e, t);
+	off(t, n) {
+		e.off(t, n);
 	}
-	#a(e, t, n) {
-		x.emit("NAVIGATE_OUT", {
+	#s(t, n, r, i, a) {
+		return e.emit("NAVIGATE_OUT", {
 			from: this.#e,
-			to: this.cache.get(e.href) || {
+			to: this.cache.get(t.href) || {
 				page: null,
 				content: null,
-				finalUrl: e.href,
+				finalUrl: t.href,
 				skipCache: null,
 				scripts: null,
 				styles: null,
 				title: null,
 				renderer: null
 			},
-			trigger: n
-		});
-		let r = this.enableViewTransitions && "startViewTransition" in document;
-		return new Promise((i) => {
-			this.#e.renderer.leave(t, n, !r && this.removeOldContent).then(() => {
-				n !== "popstate" && window.history.pushState({}, "", e.raw), i();
-			});
+			trigger: r
+		}), this.#e.renderer.leave(n, r, !i && this.removeOldContent).then(() => {
+			a(), r !== "popstate" && window.history.pushState({}, "", t.raw);
 		});
 	}
-	async #o(e, t, n, r) {
-		this.currentLocation = e, this.popTarget = this.currentLocation.href;
-		let i = this.enableViewTransitions && "startViewTransition" in document, a = null;
-		if (i) {
+	async #c(t, n, i, a, o, s) {
+		this.currentLocation = t, this.popTarget = this.currentLocation.href;
+		let c = null;
+		if (o) {
 			let e = this.#e.renderer;
-			a = document.startViewTransition(() => {
-				this.removeOldContent && e.remove(), n.renderer.update();
-			}), await a.updateCallbackDone;
-		} else n.renderer.update();
-		x.emit("NAVIGATE_IN", {
+			c = document.startViewTransition(() => {
+				this.removeOldContent && e.remove(), i.renderer.update();
+			}), await c.updateCallbackDone;
+		} else i.renderer.update();
+		e.emit("NAVIGATE_IN", {
 			from: this.#e,
-			to: n,
-			trigger: r
-		}), this.reloadJsFilter && this.#s(n.scripts), this.reloadCssFilter && this.#c(n.styles), r !== "popstate" && e.href !== w(n.finalUrl).href && window.history.replaceState({}, "", n.finalUrl);
-		let o = a ? a.finished.catch(() => {}) : null;
-		await n.renderer.enter(t, r, o), x.emit("NAVIGATE_END", {
+			to: i,
+			trigger: a
+		}), this.reloadJsFilter && this.#l(i.scripts), this.reloadCssFilter && this.#u(i.styles), a !== "popstate" && t.href !== r(i.finalUrl).href && window.history.replaceState({}, "", i.finalUrl), this.enableAccessibility && this.#y(i);
+		let l = c ? c.finished.catch(() => {}) : null;
+		await i.renderer.enter(n, a, l), e.emit("NAVIGATE_END", {
 			from: this.#e,
-			to: n,
-			trigger: r
-		}), this.#e = n, this.isTransitioning = !1, this.isPopping = !1, this.enablePrefetch === "visible" && this.#u();
+			to: i,
+			trigger: a
+		}), this.#e = i, s === this.#r && (this.isTransitioning = !1, this.isPopping = !1, this.#n = null), this.enablePrefetch === "visible" && this.#f();
 	}
-	#s(e) {
+	#l(e) {
 		let t = [...e], n = Array.from(document.querySelectorAll("script")).filter(this.reloadJsFilter);
 		for (let e = 0; e < n.length; e++) for (let r = 0; r < t.length; r++) if (n[e].outerHTML === t[r].outerHTML) {
-			T(n[e], "SCRIPT"), t.splice(r, 1);
+			i(n[e], "SCRIPT"), t.splice(r, 1);
 			break;
 		}
-		for (let e of t) E(e, "SCRIPT");
+		for (let e of t) a(e, "SCRIPT");
 	}
-	#c(e) {
+	#u(e) {
 		let t = Array.from(document.querySelectorAll("link[rel=\"stylesheet\"]")).filter(this.reloadCssFilter), n = Array.from(document.querySelectorAll("style")).filter(this.reloadCssFilter), r = e.filter((e) => {
 			if (!e.href) return !0;
 			if (!t.find((t) => t.href === e.href)) return document.body.append(e), !1;
 		});
 		for (let e = 0; e < n.length; e++) for (let t = 0; t < r.length; t++) if (n[e].outerHTML === r[t].outerHTML) {
-			T(n[e], "STYLE"), r.splice(t, 1);
+			i(n[e], "STYLE"), r.splice(t, 1);
 			break;
 		}
-		for (let e of r) E(e, "STYLE");
+		for (let e of r) a(e, "STYLE");
 	}
-	#l(e) {
-		this.#r = e, x.delegate("click", e, this.#d), x.on("popstate", window, this.#f), this.enablePrefetch === "hover" ? x.delegate("mouseenter focus", e, this.#p) : this.enablePrefetch === "visible" && this.#u();
+	#d(t) {
+		this.#i = t, e.delegate("click", t, this.#p), e.on("popstate", window, this.#m), this.enablePrefetch === "hover" ? e.delegate("mouseenter focus", t, this.#h) : this.enablePrefetch === "visible" && this.#f();
 	}
-	#u() {
-		"IntersectionObserver" in window && (this.#i ||= new IntersectionObserver((e) => {
+	#f() {
+		"IntersectionObserver" in window && !navigator.connection?.saveData && (this.#a ? this.#a.disconnect() : this.#a = new IntersectionObserver((e) => {
 			e.forEach((e) => {
-				e.isIntersecting && (this.#i.unobserve(e.target), this.preload(e.target.href).catch(() => {}));
+				e.isIntersecting && (this.#a.unobserve(e.target), this.preload(e.target.href).catch(() => {}));
 			});
-		}), document.querySelectorAll(this.#r).forEach((e) => {
-			this.cache.has(w(e.href).href) || this.#i.observe(e);
+		}), document.querySelectorAll(this.#i).forEach((e) => {
+			let t = r(e.href);
+			t.host === window.location.host && !this.cache.has(t.href) && this.#a.observe(e);
 		}));
 	}
-	#d = (e) => {
-		if (!(e.metaKey || e.ctrlKey)) {
-			let t = w(e.currentTarget.href);
-			if (this.currentLocation = w(window.location.href), this.currentLocation.host !== t.host) return;
+	#p = (e) => {
+		if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.currentTarget.hasAttribute("download")) return;
+		let t = r(e.currentTarget.href);
+		if (this.currentLocation = r(window.location.href), this.currentLocation.host === t.host) {
 			if (this.currentLocation.href !== t.href || this.currentLocation.hasHash && !t.hasHash) {
-				e.preventDefault(), this.navigateTo(t.raw, e.currentTarget.dataset.transition || !1, e.currentTarget).catch((e) => console.warn(e));
+				e.preventDefault(), this.navigateTo(t.raw, e.currentTarget.dataset.transition || !1, e.currentTarget).catch(d);
 				return;
 			}
 			!this.currentLocation.hasHash && !t.hasHash && e.preventDefault();
 		}
 	};
-	#f = () => {
-		let e = w(window.location.href);
+	#m = () => {
+		let e = r(window.location.href);
 		if (e.pathname === this.currentLocation.pathname && e.search === this.currentLocation.search && !this.isPopping) return !1;
-		if (!this.allowInterruption && (this.isTransitioning || this.isPopping)) return window.history.pushState({}, "", this.popTarget), console.warn(j), !1;
-		this.isPopping || (this.popTarget = window.location.href), this.isPopping = !0, this.navigateTo(window.location.href, !1, "popstate");
+		if (!this.allowInterruption && (this.isTransitioning || this.isPopping)) return window.history.pushState({}, "", this.popTarget), console.warn(u), !1;
+		this.isPopping || (this.popTarget = window.location.href), this.isPopping = !0, this.navigateTo(window.location.href, !1, "popstate").catch(d);
 	};
-	#p = (e) => {
+	#h = (e) => {
 		if (this.isTransitioning) return;
-		let t = w(e.currentTarget.href);
-		this.currentLocation.host === t.host && this.preload(e.currentTarget.href, !1);
+		let t = r(e.currentTarget.href);
+		this.currentLocation.host === t.host && this.preload(e.currentTarget.href, !1).catch(() => {});
 	};
-	#m(e, t = !0) {
+	#g(e, t = !0, r = void 0) {
 		if (this.#t.has(e)) return this.#t.get(e);
-		this.#n = new AbortController();
-		let n = this.#n.signal, r = new Promise((r, i) => {
-			let a;
+		r?.addEventListener("abort", () => {
+			this.#t.get(e) === i && this.#t.delete(e);
+		});
+		let i = new Promise((a, o) => {
+			let s;
 			fetch(e, {
 				mode: "same-origin",
 				method: "GET",
@@ -538,32 +328,44 @@ var O = class {
 					"X-Requested-With": "Taxi",
 					...this.fetchOptions.headers
 				},
-				signal: n
+				signal: r
 			}).then((n) => {
 				if (!n.ok) {
-					i(/* @__PURE__ */ Error("Taxi encountered a non 2xx HTTP status code")), t && (window.location.href = e);
+					o(/* @__PURE__ */ Error("Taxi encountered a non 2xx HTTP status code")), t && (window.location.href = e);
 					return;
 				}
-				return a = n.url, n.text();
+				return s = n.url, n.text();
 			}).then((e) => {
-				e !== void 0 && r({
-					html: C(e),
-					url: a
+				e !== void 0 && a({
+					html: n(e),
+					url: s
 				});
 			}).catch((n) => {
-				n.name !== "AbortError" && (i(n), t && (window.location.href = e));
+				o(n), t && n.name !== "AbortError" && (window.location.href = e);
 			}).finally(() => {
-				this.#t.delete(e);
+				this.#t.get(e) === i && this.#t.delete(e);
 			});
 		});
-		return this.#t.set(e, r), r;
+		return this.#t.set(e, i), i;
 	}
-	#h(e) {
+	#_(e) {
 		if (e) return this.transitions[e] ? this.transitions[e] : (console.warn(`Taxi: transition "${e}" is not registered. Falling back to default.`), this.defaultTransition);
 		let t = this.router?.findMatch(this.currentLocation, this.targetLocation);
 		return t ? this.transitions[t] ? this.transitions[t] : (console.warn(`Taxi: route transition "${t}" is not registered. Falling back to default.`), this.defaultTransition) : this.defaultTransition;
 	}
-	#g(e, t) {
+	#v() {
+		this.#o = document.createElement("div"), this.#o.setAttribute("data-taxi-announcer", ""), this.#o.setAttribute("aria-live", "assertive"), this.#o.setAttribute("aria-atomic", "true"), this.#o.style.cssText = "position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0", document.body.appendChild(this.#o);
+	}
+	#y(e) {
+		this.#o && (this.#o.textContent = e.title || document.title);
+		let t = e.renderer.content, n = t.querySelector("h1") || t;
+		n.hasAttribute("tabindex") || n.setAttribute("tabindex", "-1"), n.focus({ preventScroll: !0 });
+	}
+	#b(e) {
+		let t = this.cache.get(e);
+		return this.cache.delete(e), this.cache.set(e, t), t;
+	}
+	#x(e, t) {
 		if (this.maxCacheSize > 0 && !this.cache.has(e) && this.cache.size >= this.maxCacheSize) {
 			for (let e of this.cache.keys()) if (e !== this.currentLocation?.href) {
 				this.cache.delete(e);
@@ -572,7 +374,7 @@ var O = class {
 		}
 		this.cache.set(e, t);
 	}
-	#_(e, t) {
+	#S(e, t) {
 		let n = e.querySelector("[data-taxi-view]");
 		if (!n) throw Error(`Taxi: the fetched page for "${t}" does not contain a [data-taxi-view] element.`);
 		let r = n.dataset.taxiView.length ? this.renderers[n.dataset.taxiView] : this.defaultRenderer;
@@ -594,4 +396,6 @@ var O = class {
 	}
 };
 //#endregion
-export { M as Core, k as Renderer, O as Transition };
+export { f as Core, c as Renderer, s as Transition };
+
+//# sourceMappingURL=taxi.js.map

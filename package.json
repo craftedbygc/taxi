@@ -3,9 +3,9 @@
   "description": "A modern page transition library which supports routing, preloading, and additional script reloading.",
   "version": "2.0.0",
   "author": {
-	"name": "Jake Whiteley / Unseen Studio Ltd",
-	"email": "jake@unseen.co",
-	"url": "https://unseen.co"
+    "name": "Jake Whiteley / Unseen Studio Ltd",
+    "email": "jake@unseen.co",
+    "url": "https://unseen.co"
   },
   "license": "BSD-3-Clause",
   "type": "module",
@@ -13,55 +13,61 @@
   "module": "./dist/taxi.js",
   "types": "./types/taxi.d.ts",
   "exports": {
-	".": {
-	  "types": "./types/taxi.d.ts",
-	  "import": "./dist/taxi.js",
-	  "require": "./dist/taxi.cjs"
-	}
+    ".": {
+      "import": {
+        "types": "./types/taxi.d.ts",
+        "default": "./dist/taxi.js"
+      },
+      "require": {
+        "types": "./types/cjs/taxi.d.ts",
+        "default": "./dist/taxi.cjs"
+      }
+    }
   },
   "files": [
-	"dist",
-	"types"
+    "dist",
+    "types"
   ],
   "sideEffects": false,
   "repository": {
-	"type": "git",
-	"url": "git+https://github.com/craftedbygc/taxi.git"
+    "type": "git",
+    "url": "git+https://github.com/craftedbygc/taxi.git"
   },
   "bugs": {
-	"url": "https://github.com/craftedbygc/taxi/issues"
+    "url": "https://github.com/craftedbygc/taxi/issues"
   },
   "homepage": "https://github.com/craftedbygc/taxi#readme",
   "contributors": [
-	{
-	  "name": "Jake Whiteley",
-	  "email": "jake@craftedbygc.com"
-	}
+    {
+      "name": "Jake Whiteley",
+      "email": "jake@craftedbygc.com"
+    }
   ],
   "dependencies": {
-	"@unseenco/e": "^2.5.0"
+    "@unseenco/e": "^3.0.0"
   },
   "devDependencies": {
-	"astro": "^7.3.3",
-	"@tailwindcss/typography": "^0.5.20",
-	"@tailwindcss/vite": "^4.3.3",
-	"@vitest/coverage-v8": "^5.0.1",
-	"gsap": "^3.10.2",
-	"jsdom": "^29.0.2",
-	"npm-run-all": "^4.1.5",
-	"tailwindcss": "^4.3.3",
-	"typescript": "^7.0.2",
-	"vite": "^8.3.0",
-	"vitest": "^5.0.1"
+    "@tailwindcss/typography": "^0.5.20",
+    "@tailwindcss/vite": "^4.3.3",
+    "@vitest/coverage-v8": "^5.0.1",
+    "astro": "^7.3.3",
+    "gsap": "^3.10.2",
+    "jsdom": "^29.0.2",
+    "npm-run-all": "^4.1.5",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.0",
+    "vitest": "^5.0.1"
   },
   "scripts": {
-	"ts": "tsc",
-	"test": "vitest run",
-	"test:coverage": "vitest run --coverage",
-	"dev": "astro dev",
-	"build": "npm-run-all build:astro ts bundle",
-	"build:astro": "astro build",
-	"preview": "astro preview",
-	"bundle": "vite build"
+    "ts": "tsc && node scripts/build-cjs-types.js",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "dev": "astro dev",
+    "build": "npm-run-all build:astro ts bundle",
+    "build:astro": "astro build",
+    "preview": "astro preview",
+    "bundle": "vite build",
+    "prepublishOnly": "npm-run-all test ts bundle"
   }
 }

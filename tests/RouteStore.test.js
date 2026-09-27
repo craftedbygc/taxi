@@ -61,6 +61,16 @@ describe('RouteStore', () => {
 		expect(result).toBe('catchAll')
 	})
 
+	// Mirrors the example in docs/pages/routing.md
+	it('matches the fall-through example from the routing docs', () => {
+		const store = new RouteStore()
+		store.add('/pages/specific', '', 'something')
+		store.add('/pages/.*', '.*', 'somethingElse')
+
+		expect(store.findMatch(makeUrl('/pages/specific'), makeUrl(''))).toBe('something')
+		expect(store.findMatch(makeUrl('/pages/specific'), makeUrl('/about'))).toBe('somethingElse')
+	})
+
 	it('supports regex patterns in both from and to', () => {
 		const store = new RouteStore()
 		store.add('/blog/.*', '', 'blogToHome')

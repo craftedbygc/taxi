@@ -1,3 +1,5 @@
+/** @typedef {import('./Transition.js').default} Transition */
+
 export default class Renderer {
 	/**
 	 * @param {{content: HTMLElement|Element, page: Document|Node, title: string, wrapper: Element}} props
@@ -61,7 +63,7 @@ export default class Renderer {
 	 * @param {string|HTMLElement|false} trigger
 	 * @param {Promise<void>|null} [extraWait] An additional promise (e.g. a View Transition's
 	 * `finished` promise) that must also resolve before onEnterCompleted() fires.
-	 * @return {Promise<null>}
+	 * @return {Promise<void>}
 	 */
 	enter(transition, trigger, extraWait = null) {
 		return new Promise((resolve) => {
@@ -84,7 +86,7 @@ export default class Renderer {
 	 * @param {Transition} transition
 	 * @param {string|HTMLElement|false} trigger
 	 * @param {boolean} removeOldContent
-	 * @return {Promise<null>}
+	 * @return {Promise<void>}
 	 */
 	leave(transition, trigger, removeOldContent) {
 		return new Promise((resolve) => {

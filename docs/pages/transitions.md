@@ -47,6 +47,8 @@ export default class MyTransition extends Transition {
 
 `this.wrapper` is also available, which is a reference to the main `data-taxi` container.
 
+If `onLeave` or `onEnter` throws, or returns a Promise that rejects, Taxi logs the error with `console.error` and carries on as if the animation had finished, so a broken animation never leaves the navigation stuck.
+
 ## Registering a transition
 As with [renderers](/renderers/), when initializing Taxi you should pass through an object of Transitions to register:
 

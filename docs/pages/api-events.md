@@ -95,6 +95,8 @@ Updates the cached HTML for the provided URL. If no URL is provided, update cach
 
 Useful when adding/removing content via AJAX such as a search page or infinite scroll.
 
+When updating the current page, the active Renderer instance is kept (so any state you set up in `onEnter` is still there when `onLeave` runs) and `currentCacheEntry` is updated to the new entry. If `enablePrefetch` is `'visible'`, any newly added links are also picked up.
+
 ```js
 /**
  * updateCache(url?: string): void
@@ -112,6 +114,20 @@ Remove the cached HTML for the provided URL. If no URL is provided, remove cache
  */
 taxi.clearCache('/path/to/delete')
 ```
+
+## destroy()
+Removes every event listener and observer Taxi has added, aborts any in-flight request, and clears the cache. The current page's content is left as-is.
+
+Useful for hot module reloading, tests, or when handing the page over to something else.
+
+```js
+/**
+ * destroy(): void
+ */
+taxi.destroy()
+```
+
+Listeners you added with `taxi.on()` are not removed, use `taxi.off()` for those.
 
 ## setDefaultRenderer()
 If you don't like "default" as the name of your default renderer, you can change the default renderer to be anything you like here.
@@ -162,6 +178,8 @@ taxi.on('NAVIGATE_END', ({ to, from, trigger }) => {
   // ...
 })
 ```
+
+If you use TypeScript, `on()` and `off()` only accept the three event names above, and the callback's `{ from, to, trigger }` payload is typed.
 
 ### Removing Listeners
 You can call `taxi.off(event_name)` to remove all listeners for an event, or pass the callback to remove just that listener instead:

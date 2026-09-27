@@ -1,4 +1,8 @@
-const parser = new DOMParser()
+/**
+ * Created on first use so importing Taxi doesn't need a DOM (e.g. during SSR).
+ * @type {DOMParser|null}
+ */
+let parser = null
 
 /**
  * Parse a HTML string into a proper Document.
@@ -7,7 +11,13 @@ const parser = new DOMParser()
  * @return {Document|*}
  */
 export function parseDom(html) {
-	return typeof html === 'string' ? parser.parseFromString(html, 'text/html') : html
+	if (typeof html !== 'string') {
+		return html
+	}
+
+	parser ??= new DOMParser()
+
+	return parser.parseFromString(html, 'text/html')
 }
 
 /**

@@ -12,12 +12,13 @@ export default defineConfig({
 		},
 		rollupOptions: {
 			// Externalize dependencies you don't want bundled into your library
-			external: [],
+			external: ['@unseenco/e'],
 			output: {
 				// Provide global variables to use in the UMD build for externalized deps
 				globals: {}
 			}
 		},
+		sourcemap: true,
 		// Optional: Output directory (defaults to 'dist')
 		outDir: 'dist',
 		// Clear outDir before building

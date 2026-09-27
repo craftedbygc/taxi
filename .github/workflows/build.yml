@@ -1,33 +1,51 @@
-name: Build Eleventy
+name: Test & deploy docs
 
 on:
   push:
     branches:
       - main
+  pull_request:
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-24.04
 
-    strategy:
-      matrix:
-        node-version: [16.x]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: npm
+
+      - run: npm ci
+      - run: npm test
+      - run: npm run ts
+      - run: npm run bundle
+
+      - name: Check committed build output is up to date
+        run: git diff --exit-code -- dist types
+
+  deploy-docs:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+      - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 22.x
+          cache: npm
 
-      - name: Install dependencies & build
-        run: |
-          npm ci
-          npm run docs          
+      - run: npm ci
+      - run: npm run build:astro
 
       - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           publish_dir: ./_site
           github_token: ${{ secrets.GITHUB_TOKEN }}

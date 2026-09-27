@@ -1,6 +1,21 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { Core } from '../src/taxi.js'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { Core as BaseCore } from '../src/taxi.js'
 import { createDOM, buildPageHTML, mockFetchSuccess, mockFetchError } from './setup.js'
+
+// Track every instance so its document-level listeners can be removed after each test,
+// otherwise instances from earlier tests keep handling clicks
+const instances = []
+
+class Core extends BaseCore {
+	constructor(options) {
+		super(options)
+		instances.push(this)
+	}
+}
+
+afterEach(() => {
+	instances.splice(0).forEach((taxi) => taxi.destroy())
+})
 
 // Helper: create a Core instance with the DOM already set up
 function createCore(options = {}) {
@@ -495,5 +510,336 @@ describe('Core — enableViewTransitions', () => {
 
 		expect(navigateEnd).toHaveBeenCalledOnce()
 		expect(taxi.isTransitioning).toBe(false)
+	})
+})
+
+describe('Core — 2.0 hardening', () => {
+	it('throws a clear error if [data-taxi] is missing', () => {
+		document.body.innerHTML = '<article data-taxi-view></article>'
+		expect(() => new Core()).toThrow('[data-taxi]')
+	})
+
+	it('updateCache() for the current page keeps the live renderer instance', () => {
+		const taxi = createCore()
+		const renderer = taxi.currentCacheEntry.renderer
+		document.querySelector('[data-taxi-view]').innerHTML = '<p>Updated</p>'
+
+		taxi.updateCache()
+
+		expect(taxi.currentCacheEntry).toBe(taxi.cache.get(taxi.currentLocation.href))
+		expect(taxi.currentCacheEntry.renderer).toBe(renderer)
+		expect(renderer._contentString).toContain('Updated')
+		taxi.destroy()
+	})
+
+	it('evicts the least recently used entry, not the oldest added', async () => {
+		createDOM()
+		const taxi = new Core({ maxCacheSize: 3 })
+
+		vi.stubGlobal('fetch', mockFetchSuccess(buildPageHTML(), 'http://localhost/a'))
+		await taxi.preload('/a')
+		vi.stubGlobal('fetch', mockFetchSuccess(buildPageHTML(), 'http://localhost/b'))
+		await taxi.preload('/b')
+
+		// touch /a so /b becomes least recently used
+		await taxi.preload('/a')
+
+		vi.stubGlobal('fetch', mockFetchSuccess(buildPageHTML(), 'http://localhost/c'))
+		await taxi.preload('/c')
+
+		expect(taxi.cache.has('http://localhost/a')).toBe(true)
+		expect(taxi.cache.has('http://localhost/b')).toBe(false)
+		expect(taxi.cache.has('http://localhost/c')).toBe(true)
+		taxi.destroy()
+	})
+
+	it('rejects and resets state when the fetched page has no [data-taxi-view]', async () => {
+		vi.stubGlobal('fetch', mockFetchSuccess('<html><body><p>Login</p></body></html>', 'http://localhost/login'))
+		const taxi = createCore()
+
+		await expect(taxi.navigateTo('/account')).rejects.toThrow('[data-taxi-view]')
+		expect(taxi.isTransitioning).toBe(false)
+		taxi.destroy()
+	})
+
+	it('a failed hover prefetch does not cause an unhandled rejection', async () => {
+		createDOM()
+		document.body.insertAdjacentHTML('beforeend', '<a href="/missing">Missing</a>')
+		vi.stubGlobal('fetch', mockFetchError())
+		const taxi = new Core()
+
+		document.querySelector('a[href="/missing"]').dispatchEvent(new Event('mouseenter'))
+		await new Promise((r) => setTimeout(r, 0))
+
+		expect(taxi.cache.has('http://localhost/missing')).toBe(false)
+		taxi.destroy()
+	})
+
+	describe('link clicks', () => {
+		function setup(linkAttrs = '') {
+			createDOM()
+			document.body.insertAdjacentHTML('beforeend', `<a href="/about" ${linkAttrs}>About</a>`)
+			const taxi = new Core()
+			const spy = vi.spyOn(taxi, 'navigateTo').mockResolvedValue()
+			return { taxi, spy, link: document.querySelector('a[href="/about"]') }
+		}
+
+		function click(link, init = {}) {
+			const e = new MouseEvent('click', { bubbles: true, cancelable: true, ...init })
+			link.dispatchEvent(e)
+			return e
+		}
+
+		it('intercepts a plain click', () => {
+			const { taxi, spy, link } = setup()
+			click(link)
+			expect(spy).toHaveBeenCalledOnce()
+			taxi.destroy()
+		})
+
+		it.each(['shiftKey', 'altKey', 'metaKey', 'ctrlKey'])('ignores clicks with %s', (key) => {
+			const { taxi, spy, link } = setup()
+			const e = click(link, { [key]: true })
+			expect(spy).not.toHaveBeenCalled()
+			expect(e.defaultPrevented).toBe(false)
+			taxi.destroy()
+		})
+
+		it('ignores links with a download attribute', () => {
+			const { taxi, spy, link } = setup('download')
+			click(link)
+			expect(spy).not.toHaveBeenCalled()
+			taxi.destroy()
+		})
+
+		it('ignores clicks that were already prevented', () => {
+			const { taxi, spy, link } = setup()
+			link.addEventListener('click', (e) => e.preventDefault())
+			click(link)
+			expect(spy).not.toHaveBeenCalled()
+			taxi.destroy()
+		})
+
+		it('stops intercepting clicks after destroy()', () => {
+			const { taxi, spy, link } = setup()
+			taxi.destroy()
+			click(link, { cancelable: false })
+			expect(spy).not.toHaveBeenCalled()
+		})
+	})
+
+	describe('visible prefetch', () => {
+		function mockObserver() {
+			const observe = vi.fn()
+			vi.stubGlobal('IntersectionObserver', class {
+				constructor() { this.observe = observe; this.unobserve = vi.fn(); this.disconnect = vi.fn() }
+			})
+			return observe
+		}
+
+		it('does not observe links to other hosts', () => {
+			createDOM()
+			document.body.insertAdjacentHTML('beforeend', '<a href="https://example.com/">External</a><a href="/about">About</a>')
+			const observe = mockObserver()
+
+			const taxi = new Core({ enablePrefetch: 'visible' })
+
+			expect(observe).toHaveBeenCalledOnce()
+			expect(observe).toHaveBeenCalledWith(expect.objectContaining({ href: 'http://localhost/about' }))
+			taxi.destroy()
+		})
+
+		it('does nothing when the user has data saver enabled', () => {
+			createDOM()
+			document.body.insertAdjacentHTML('beforeend', '<a href="/about">About</a>')
+			const observe = mockObserver()
+			vi.stubGlobal('navigator', { ...navigator, connection: { saveData: true } })
+
+			const taxi = new Core({ enablePrefetch: 'visible' })
+
+			expect(observe).not.toHaveBeenCalled()
+			taxi.destroy()
+		})
+
+		it('observes links added via AJAX after updateCache()', () => {
+			createDOM()
+			const observe = mockObserver()
+			const taxi = new Core({ enablePrefetch: 'visible' })
+
+			document.querySelector('[data-taxi-view]').insertAdjacentHTML('beforeend', '<a href="/more">More</a>')
+			taxi.updateCache()
+
+			expect(observe).toHaveBeenCalledWith(expect.objectContaining({ href: 'http://localhost/more' }))
+			taxi.destroy()
+		})
+	})
+})
+
+describe('Core — interrupted navigations (allowInterruption: true)', () => {
+	// A fetch mock whose responses are released manually, and which honours AbortSignal like the real fetch
+	function deferredFetch() {
+		const pending = []
+		const fn = vi.fn((url, init) => new Promise((resolve, reject) => {
+			pending.push({
+				url,
+				respond: (html) => resolve({ ok: true, url, text: () => Promise.resolve(html) }),
+			})
+			init.signal?.addEventListener('abort', () => reject(new DOMException('The operation was aborted.', 'AbortError')))
+		}))
+		fn.pending = pending
+		return fn
+	}
+
+	const tick = () => new Promise((r) => setTimeout(r, 0))
+
+	it('completes a navigation to a link whose hover preload is still in flight', async () => {
+		createDOM()
+		const fetchMock = deferredFetch()
+		vi.stubGlobal('fetch', fetchMock)
+		const taxi = new Core({ allowInterruption: true })
+
+		// hover starts a preload, then the user clicks before it has finished
+		taxi.preload('/b').catch(() => {})
+		const navigation = taxi.navigateTo('/b')
+		await tick()
+
+		fetchMock.pending[0].respond(buildPageHTML('', '<p>B</p>', 'Page B'))
+		await navigation
+
+		expect(fetchMock).toHaveBeenCalledOnce()
+		expect(document.title).toBe('Page B')
+		expect(taxi.isTransitioning).toBe(false)
+	})
+
+	it('aborts the superseded navigation and completes the newer one', async () => {
+		createDOM()
+		const fetchMock = deferredFetch()
+		vi.stubGlobal('fetch', fetchMock)
+		const taxi = new Core({ allowInterruption: true })
+
+		const first = taxi.navigateTo('/a')
+		await tick()
+		const second = taxi.navigateTo('/b')
+
+		await expect(first).rejects.toMatchObject({ name: 'AbortError' })
+		// the superseded navigation must not reset state the newer one owns
+		expect(taxi.isTransitioning).toBe(true)
+
+		fetchMock.pending.find((p) => p.url === 'http://localhost/b').respond(buildPageHTML('', '<p>B</p>', 'Page B'))
+		await second
+
+		const wrapper = document.querySelector('[data-taxi]')
+		expect(wrapper.textContent).toContain('B')
+		expect(wrapper.textContent).not.toContain('Initial page content')
+		expect(window.location.pathname).toBe('/b')
+		expect(taxi.isTransitioning).toBe(false)
+	})
+
+	it('does not warn about interrupted navigations started by link clicks', async () => {
+		createDOM()
+		document.body.insertAdjacentHTML('beforeend', '<a href="/a">A</a><a href="/b">B</a>')
+		const fetchMock = deferredFetch()
+		vi.stubGlobal('fetch', fetchMock)
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+		new Core({ allowInterruption: true, enablePrefetch: false })
+
+		document.querySelector('a[href="/a"]').click()
+		await tick()
+		document.querySelector('a[href="/b"]').click()
+		await tick()
+
+		expect(warn).not.toHaveBeenCalled()
+	})
+})
+
+describe('Core — prefers-reduced-motion', () => {
+	afterEach(() => {
+		delete window.matchMedia
+		delete document.startViewTransition
+	})
+
+	it('skips the View Transition and custom transitions when the user prefers reduced motion', async () => {
+		createDOM()
+		vi.stubGlobal('fetch', mockFetchSuccess(buildPageHTML('', '<p>New</p>', 'New Page')))
+		window.matchMedia = vi.fn((query) => ({ matches: query === '(prefers-reduced-motion: reduce)' }))
+		document.startViewTransition = vi.fn()
+
+		const { Transition } = await import('../src/taxi.js')
+		const onLeave = vi.fn(({ done }) => done())
+		class Animated extends Transition { onLeave(props) { onLeave(props) } }
+
+		const taxi = new Core({ enableViewTransitions: true, transitions: { default: Animated } })
+		await taxi.navigateTo('/new')
+
+		expect(document.startViewTransition).not.toHaveBeenCalled()
+		expect(onLeave).not.toHaveBeenCalled()
+		expect(document.title).toBe('New Page')
+	})
+})
+
+describe('Core — enableAccessibility', () => {
+	it('is off by default and adds nothing to the page', async () => {
+		createDOM()
+		vi.stubGlobal('fetch', mockFetchSuccess(buildPageHTML('', '<h1>Heading</h1>', 'New Page')))
+		const taxi = new Core()
+
+		await taxi.navigateTo('/new')
+
+		expect(taxi.enableAccessibility).toBe(false)
+		expect(document.querySelector('[data-taxi-announcer]')).toBeNull()
+		expect(document.querySelector('h1').hasAttribute('tabindex')).toBe(false)
+	})
+
+	it('announces the new page title and focuses its h1', async () => {
+		createDOM()
+		vi.stubGlobal('fetch', mockFetchSuccess(buildPageHTML('', '<h1>Heading</h1>', 'New Page')))
+		const taxi = new Core({ enableAccessibility: true })
+
+		const announcer = document.querySelector('[data-taxi-announcer]')
+		expect(announcer.getAttribute('aria-live')).toBe('assertive')
+
+		await taxi.navigateTo('/new')
+
+		expect(announcer.textContent).toBe('New Page')
+		expect(document.activeElement).toBe(document.querySelector('[data-taxi] h1'))
+		expect(document.activeElement.getAttribute('tabindex')).toBe('-1')
+	})
+
+	it('focuses the view itself when the new page has no h1', async () => {
+		createDOM()
+		vi.stubGlobal('fetch', mockFetchSuccess(buildPageHTML('', '<p>No heading</p>', 'New Page')))
+		const taxi = new Core({ enableAccessibility: true })
+
+		await taxi.navigateTo('/new')
+
+		expect(document.activeElement).toBe(taxi.currentCacheEntry.renderer.content)
+	})
+
+	it('removes the announcer on destroy()', () => {
+		createDOM()
+		const taxi = new Core({ enableAccessibility: true })
+		taxi.destroy()
+		expect(document.querySelector('[data-taxi-announcer]')).toBeNull()
+	})
+})
+
+describe('Core — failing transitions', () => {
+	it('completes the navigation when a transition throws or rejects', async () => {
+		createDOM()
+		vi.stubGlobal('fetch', mockFetchSuccess(buildPageHTML('', '<p>New</p>', 'New Page')))
+		const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+		const { Transition } = await import('../src/taxi.js')
+		class Broken extends Transition {
+			onLeave() { throw new Error('leave broke') }
+			onEnter() { return Promise.reject(new Error('enter broke')) }
+		}
+
+		const taxi = new Core({ transitions: { default: Broken } })
+		await taxi.navigateTo('/new')
+
+		expect(document.title).toBe('New Page')
+		expect(taxi.isTransitioning).toBe(false)
+		expect(error).toHaveBeenCalledTimes(2)
 	})
 })
